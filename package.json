@@ -1,0 +1,14 @@
+{
+  "name": "validation",
+  "version": "0.0.1",
+  "description": "Simple validation for any application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "validation"
+  ],
+  "author": "Steve Matney",
+  "license": "MIT"
+}
