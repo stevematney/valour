@@ -8,6 +8,8 @@ Usage
 
 *Using modules*
 ```
+var validation = require('validation');
+
 validation.render('formName', {
   'email': validation.isRequired()
                      .isEmail()
