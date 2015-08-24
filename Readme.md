@@ -1,12 +1,11 @@
 Validation
 ===
-Simple validation for any app.
---
+## Simple validation for any app.
 
 Usage
 --
 
-## Self-managed
+### Self-managed
 ```javascript
 var validation = require('validation');
 
@@ -29,7 +28,7 @@ var notAllowedResult = validation.isValid('formName', { email: 'joe@notallowed.c
 // notAllowedResult === { 'email': {valid: false, messages: ['This email is not allowed']} }
 ```
 
-## Form-listening
+### Form-listening
 
 This will register the appropriate listeners with your form inputs. Ensure that a form with the given name exists and that the 
 
@@ -49,7 +48,7 @@ validation.onValidationResult('formName', function (result) {
   //handle validation result
 });
 ```
-## Async validation
+### Async validation
 
 ```javascript
 var validation = require('validation');
