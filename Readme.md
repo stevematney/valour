@@ -6,7 +6,7 @@ Simple validation for any app.
 Usage
 --
 
-*Self-managed*
+## Self-managed
 ```javascript
 var validation = require('validation');
 
@@ -29,7 +29,7 @@ var notAllowedResult = validation.isValid('formName', { email: 'joe@notallowed.c
 // notAllowedResult === { 'email': {valid: false, messages: ['This email is not allowed']} }
 ```
 
-*Form-listening*
+## Form-listening
 
 This will register the appropriate listeners with your form inputs. Ensure that a form with the given name exists and that the 
 
@@ -48,4 +48,29 @@ validation.registerForm('formName', { // This will throw if no form with this na
 validation.onValidationResult('formName', function (result) {
   //handle validation result
 });
+```
+## Async validation
+
+```javascript
+var validation = require('validation');
+var resolve;
+
+function resolveResult = function () {
+  resolve(true);
+}
+
+validation.register('formName', {
+  'email': validation.isEventuallyValidatedBy(
+    function (resolve) {
+      resolve = resolve;
+      //do async check, then resolve(result);
+    });
+});
+
+var validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
+// validationResult === { 'email': { awaitingValidation: true }}
+
+resolveResult();
+validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
+// validationResult === { 'email': { valid: true }}
 ```
