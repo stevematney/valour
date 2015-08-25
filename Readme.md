@@ -1,6 +1,6 @@
 Validation
 ===
-## Simple validation for any app.
+## Simple javascript validation for any app.
 
 Usage
 --
@@ -52,24 +52,35 @@ validation.onValidationResult('formName', function (result) {
 
 ```javascript
 var validation = require('validation');
-var resolve;
+var resolve, reject;
 
-function resolveResult = function () {
-  resolve(true);
+function resolveResult() {
+  resolve();
+}
+
+function rejectResult() {
+  resolve();
 }
 
 validation.register('formName', {
   'email': validation.isEventuallyValidatedBy(
-    function (resolve) {
+    function (value, resolve, reject) {
       resolve = resolve;
-      //do async check, then resolve(result);
+      reject = reject;
     });
 });
 
 var validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
-// validationResult === { 'email': { awaitingValidation: true }}
+// validationResult === { 'email': { waiting: true }}
 
 resolveResult();
-validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
+validationResult = validation.getState('formName');
 // validationResult === { 'email': { valid: true }}
+
+validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
+// validationResult === { 'email': { waiting: true }}
+
+rejectResult();
+validationResult = validation.getState('formName');
+// validationResult === { 'email': { valid: false }}
 ```
