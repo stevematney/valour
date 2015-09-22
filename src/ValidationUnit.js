@@ -1,20 +1,19 @@
 import validator from 'validator';
 
 export default class ValidationUnit {
-  constructor(val) {
-    this.promiseGenerators = [];
+  constructor(existing = { promiseGenerators: [], funcs: [] }) {
+    this.promiseGenerators = [...existing.promiseGenerators];
+    this.funcs = [...existing.funcs];
     this.messages = [];
   }
 
   createPromiseGenerator(func, message) {
     return () => new Promise((resolve, reject) => {
-      var result = func();
-      func()
-        ? resolve()
-        : (() => {
-            this.messages = [...this.messages, message];
-            reject();
-          }());
+      if (func()) {
+        return resolve();
+      }
+      this.messages = [...this.messages, message];
+      return reject();
     });
   }
 
@@ -23,8 +22,7 @@ export default class ValidationUnit {
     this.valid = undefined;
     this.messages = [];
     return Promise.all(this.promiseGenerators.map((gen) => gen()))
-      .then(() => this.valid = true)
-      .catch(() => this.valid = false);
+    .then(() => this.valid = true, () => this.valid = false)
   }
 
   getState() {
@@ -36,11 +34,19 @@ export default class ValidationUnit {
     };
   }
 
-  setRequirement(func, failureMessage) {
+  forceRequirement(func, failureMessage) {
+    this.funcs = [...this.funcs, func];
     this.promiseGenerators = [
       ...this.promiseGenerators,
       this.createPromiseGenerator(func, failureMessage)
     ];
+  }
+
+  setRequirement(func, failureMessage) {
+    if (this.funcs.filter((testFunc) => testFunc.toString() === func.toString()).length) {
+      return this;
+    }
+    this.forceRequirement(func, failureMessage);
     return this;
   }
 

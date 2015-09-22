@@ -7,6 +7,24 @@ describe('ValidationUnit', () => {
     unit = new ValidationUnit();
   })
 
+  describe('initialization', () => {
+    it('creates an empty list without given generators', () => {
+      expect((new ValidationUnit()).promiseGenerators.length).to.eql(0);
+    });
+
+    it('will take a ValidationUnit with existing generators', () => {
+      let fakeGenerators = ['hello', 'hi'];
+      expect((new ValidationUnit({ promiseGenerators: fakeGenerators })).promiseGenerators).to.deep.equal(fakeGenerators);
+    });
+  });
+
+  describe.only('duplicate validation requirements', () => {
+    it('does not duplicate requirements', () => {
+      unit = unit.isRequired().isRequired();
+      expect(unit.promiseGenerators.length).to.equal(1);
+    });
+  });
+
   describe('requirement chaining', () => {
     let matches = ['foo', 'bar'];
     beforeEach(() => {
