@@ -13,12 +13,13 @@ describe('ValidationUnit', () => {
     });
 
     it('will take a ValidationUnit with existing generators', () => {
-      let fakeGenerators = ['hello', 'hi'];
-      expect((new ValidationUnit({ promiseGenerators: fakeGenerators })).promiseGenerators).to.deep.equal(fakeGenerators);
+      let fakeUnit = new ValidationUnit();
+      fakeUnit.promiseGenerators = ['hello', 'hi'];
+      expect(new ValidationUnit(fakeUnit).promiseGenerators).to.deep.equal(fakeUnit.promiseGenerators);
     });
   });
 
-  describe.only('duplicate validation requirements', () => {
+  describe('duplicate validation requirements', () => {
     it('does not duplicate requirements', () => {
       unit = unit.isRequired().isRequired();
       expect(unit.promiseGenerators.length).to.equal(1);
@@ -28,7 +29,7 @@ describe('ValidationUnit', () => {
   describe('requirement chaining', () => {
     let matches = ['foo', 'bar'];
     beforeEach(() => {
-      unit.isEmail()
+      unit = unit.isEmail()
           .isValidatedBy((value) => !!matches.filter((match) => value.includes(match)).length,
                          'Value should contain "foo" or "bar".');
     });
@@ -36,6 +37,7 @@ describe('ValidationUnit', () => {
     it('provides multiple invalid messages', (done) => {
       unit.runValidation('nope').then(() => {
         let result = unit.getState();
+        console.log('hello!', result);
         expect(result.valid).to.be.false;
         expect(result.messages).to.contain('Not a valid email');
         expect(result.messages).to.contain('Value should contain "foo" or "bar".');
@@ -133,7 +135,7 @@ describe('ValidationUnit', () => {
 
   describe('isEventuallyValidatedBy', () => {
     beforeEach(() => {
-      unit.isEventuallyValidatedBy((val, resolve, reject) => {
+      unit = unit.isEventuallyValidatedBy((val, resolve, reject) => {
         setTimeout(() => (val.length === 4) ? resolve() : reject(), 20);
       }, 'the length should be 4');
     });

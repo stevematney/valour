@@ -4,25 +4,24 @@ export default class ValidationUnit {
   constructor(existing = { promiseGenerators: [], funcs: [] }) {
     this.promiseGenerators = [...existing.promiseGenerators];
     this.funcs = [...existing.funcs];
-    this.messages = [];
   }
 
   createPromiseGenerator(func, message) {
-    return () => new Promise((resolve, reject) => {
-      if (func()) {
+    return (val, messageList) => new Promise((resolve, reject) => {
+      if (func(val)) {
         return resolve();
       }
-      this.messages = [...this.messages, message];
+      messageList.push(message);
       return reject();
     });
   }
 
   runValidation(value) {
-    this.value = value;
     this.valid = undefined;
     this.messages = [];
-    return Promise.all(this.promiseGenerators.map((gen) => gen()))
-    .then(() => this.valid = true, () => this.valid = false)
+    return Promise.all(this.promiseGenerators.map((gen) => gen(value, this.messages)))
+                  .then(() => this.valid = true,
+                        () => this.valid = false);
   }
 
   getState() {
@@ -40,36 +39,36 @@ export default class ValidationUnit {
       ...this.promiseGenerators,
       this.createPromiseGenerator(func, failureMessage)
     ];
+    return new ValidationUnit(this);
   }
 
   setRequirement(func, failureMessage) {
     if (this.funcs.filter((testFunc) => testFunc.toString() === func.toString()).length) {
       return this;
     }
-    this.forceRequirement(func, failureMessage);
-    return this;
+    return this.forceRequirement(func, failureMessage);
   }
 
   isRequired() {
-    return this.setRequirement(() => !!this.value, '{name} is required.')
+    return this.setRequirement((val) => !!val, '{name} is required.')
   }
 
   isEmail() {
-    return this.setRequirement(() => validator.isEmail(this.value), 'Not a valid email');
+    return this.setRequirement((val) => validator.isEmail(val), 'Not a valid email');
   }
 
   isValidatedBy(func, message) {
-    return this.setRequirement(() => func(this.value), message);
+    return this.forceRequirement((val) => func(val), message);
   }
 
   isEventuallyValidatedBy(func, message) {
     this.promiseGenerators = [
       ...this.promiseGenerators,
-      () => new Promise((resolve, reject) => func(this.value, resolve, () => {
-        this.messages = [...this.messages, message];
-        reject()
+      (val, messageList) => new Promise((resolve, reject) => func(val, resolve, () => {
+        messageList.push(message);
+        reject();
       }))
     ];
-    return this;
+    return new ValidationUnit(this);
   }
 }
