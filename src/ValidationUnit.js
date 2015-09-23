@@ -1,8 +1,21 @@
 import validator from 'validator';
 
 export default class ValidationUnit {
-  constructor(existing = { rules: [] }) {
-    this.rules = [...existing.rules];
+  constructor(...existing) {
+    this.rules = existing
+                   .map(ex => ex.rules)
+                   .reduce((list, existingRuleList) => [...list, ...existingRuleList], [])
+                   .reduce((finalRules, rule) => {
+                     let hasEquivalent = finalRules.some(existingRule => this.functionsEqual(existingRule.func, rule.func));
+                     if (!rule.forced && hasEquivalent){
+                       return finalRules;
+                     }
+                     return [...finalRules, rule];
+                   }, []);
+  }
+
+  functionsEqual(func, compareFunc) {
+    return '' + func === '' + compareFunc;
   }
 
   createPromiseGenerator(func, message) {

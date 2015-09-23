@@ -12,10 +12,28 @@ describe('ValidationUnit', () => {
       expect((new ValidationUnit()).rules.length).to.eql(0);
     });
 
-    it('will take a ValidationUnit with existing generators', () => {
+    it('will take a ValidationUnit with existing rules', () => {
       let fakeUnit = new ValidationUnit();
-      fakeUnit.rules = ['hello', 'hi'];
+      fakeUnit.rules = [
+        {forced: true, func: () => 'hello!', generator: () => {}},
+        {forced: false, func: () => 'hola señor!', generator: () => {}}
+      ];
       expect(new ValidationUnit(fakeUnit).rules).to.deep.equal(fakeUnit.rules);
+    });
+
+    it('will take multiple units with multiple rules and reduce them to a list of rules without duplicates (other than forced funcs)', () => {
+      let forcedRule = {forced: true, func: () => 'yo', generator: () => {}};
+      let finalList = [
+        {forced: false, func: () => 'hello!', generator: () => {}},
+        {forced: false, func: () => 'hola señor!', generator: () => {}},
+        {forced: false, func: () => 'holler!', generator: () => {}},
+        forcedRule,
+        forcedRule
+      ];
+      let unitOne = new ValidationUnit({ rules: [finalList[0], finalList[1], finalList[2], finalList[3]] });
+      let unitTwo = new ValidationUnit({ rules: [finalList[1], finalList[2], finalList[3], finalList[1]] });
+      let finalUnit = new ValidationUnit(unitOne, unitTwo);
+      expect(finalUnit.rules).to.deep.equal(finalList);
     });
   });
 
@@ -37,7 +55,6 @@ describe('ValidationUnit', () => {
     it('provides multiple invalid messages', (done) => {
       unit.runValidation('nope').then(() => {
         let result = unit.getState();
-        console.log('hello!', result);
         expect(result.valid).to.be.false;
         expect(result.messages).to.contain('Not a valid email');
         expect(result.messages).to.contain('Value should contain "foo" or "bar".');
