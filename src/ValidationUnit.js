@@ -1,9 +1,8 @@
 import validator from 'validator';
 
 export default class ValidationUnit {
-  constructor(existing = { promiseGenerators: [], funcs: [] }) {
-    this.promiseGenerators = [...existing.promiseGenerators];
-    this.funcs = [...existing.funcs];
+  constructor(existing = { rules: [] }) {
+    this.rules = [...existing.rules];
   }
 
   createPromiseGenerator(func, message) {
@@ -19,7 +18,8 @@ export default class ValidationUnit {
   runValidation(value) {
     this.valid = undefined;
     this.messages = [];
-    return Promise.all(this.promiseGenerators.map((gen) => gen(value, this.messages)))
+    let generators = this.rules.map((rule) => rule.generator);
+    return Promise.all(generators.map((gen) => gen(value, this.messages)))
                   .then(() => this.valid = true,
                         () => this.valid = false);
   }
@@ -33,28 +33,26 @@ export default class ValidationUnit {
     };
   }
 
-  forceRequirement(func, failureMessage) {
-    this.funcs = [...this.funcs, func];
-    this.promiseGenerators = [
-      ...this.promiseGenerators,
-      this.createPromiseGenerator(func, failureMessage)
-    ];
+  forceRequirement(func,
+                   failureMessage,
+                   generator = this.createPromiseGenerator(func, failureMessage),
+                   forced = true) {
+    this.rules = [...this.rules, { func, forced, generator }];
     return new ValidationUnit(this);
   }
 
   setRequirement(func, failureMessage) {
-    if (this.funcs.filter((testFunc) => testFunc.toString() === func.toString()).length) {
+    let matchingFuncs = this.rules.filter((rule) => !rule.forced)
+                                  .map((rule) => rule.func)
+                                  .filter((testFunc) => func.toString() === testFunc.toString());
+    if (matchingFuncs.length) {
       return this;
     }
-    return this.forceRequirement(func, failureMessage);
+    return this.forceRequirement(func, failureMessage, undefined, false);
   }
 
   isRequired() {
     return this.setRequirement((val) => !!val, '{name} is required.')
-  }
-
-  isEmail() {
-    return this.setRequirement((val) => validator.isEmail(val), 'Not a valid email');
   }
 
   isValidatedBy(func, message) {
@@ -62,13 +60,14 @@ export default class ValidationUnit {
   }
 
   isEventuallyValidatedBy(func, message) {
-    this.promiseGenerators = [
-      ...this.promiseGenerators,
-      (val, messageList) => new Promise((resolve, reject) => func(val, resolve, () => {
-        messageList.push(message);
-        reject();
-      }))
-    ];
-    return new ValidationUnit(this);
+    let generator = (val, messageList) => new Promise((resolve, reject) => func(val, resolve, () => {
+                                                       messageList.push(message);
+                                                       reject();
+                                                     }));
+    return this.forceRequirement(func, message, generator);
+  }
+
+  isEmail() {
+    return this.setRequirement((val) => validator.isEmail(val), 'Not a valid email');
   }
 }

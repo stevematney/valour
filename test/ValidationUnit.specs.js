@@ -9,20 +9,20 @@ describe('ValidationUnit', () => {
 
   describe('initialization', () => {
     it('creates an empty list without given generators', () => {
-      expect((new ValidationUnit()).promiseGenerators.length).to.eql(0);
+      expect((new ValidationUnit()).rules.length).to.eql(0);
     });
 
     it('will take a ValidationUnit with existing generators', () => {
       let fakeUnit = new ValidationUnit();
-      fakeUnit.promiseGenerators = ['hello', 'hi'];
-      expect(new ValidationUnit(fakeUnit).promiseGenerators).to.deep.equal(fakeUnit.promiseGenerators);
+      fakeUnit.rules = ['hello', 'hi'];
+      expect(new ValidationUnit(fakeUnit).rules).to.deep.equal(fakeUnit.rules);
     });
   });
 
   describe('duplicate validation requirements', () => {
     it('does not duplicate requirements', () => {
       unit = unit.isRequired().isRequired();
-      expect(unit.promiseGenerators.length).to.equal(1);
+      expect(unit.rules.length).to.equal(1);
     });
   });
 
