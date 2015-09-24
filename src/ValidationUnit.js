@@ -1,4 +1,5 @@
 import validator from 'validator';
+import functionsEqual from './util/functions-equal';
 
 export default class ValidationUnit {
   constructor(...existing) {
@@ -6,16 +7,12 @@ export default class ValidationUnit {
                    .map(ex => ex.rules)
                    .reduce((list, existingRuleList) => [...list, ...existingRuleList], [])
                    .reduce((finalRules, rule) => {
-                     let hasEquivalent = finalRules.some(existingRule => this.functionsEqual(existingRule.func, rule.func));
+                     let hasEquivalent = finalRules.some(existingRule => functionsEqual(existingRule.func, rule.func));
                      if (!rule.forced && hasEquivalent){
                        return finalRules;
                      }
                      return [...finalRules, rule];
                    }, []);
-  }
-
-  functionsEqual(func, compareFunc) {
-    return '' + func === '' + compareFunc;
   }
 
   createPromiseGenerator(func, message) {
@@ -28,7 +25,7 @@ export default class ValidationUnit {
     });
   }
 
-  runValidation(value) {
+  runValidation(value, name) {
     this.valid = undefined;
     this.messages = [];
     let generators = this.rules.map((rule) => rule.generator);
@@ -57,14 +54,14 @@ export default class ValidationUnit {
   setRequirement(func, failureMessage) {
     let matchingFuncs = this.rules.filter((rule) => !rule.forced)
                                   .map((rule) => rule.func)
-                                  .filter((testFunc) => func.toString() === testFunc.toString());
+                                  .filter((testFunc) => functionsEqual(testFunc, func));
     if (matchingFuncs.length) {
       return this;
     }
     return this.forceRequirement(func, failureMessage, undefined, false);
   }
 
-  isRequired() {
+  isRequired(message = '{name} is required.') {
     return this.setRequirement((val) => !!val, '{name} is required.')
   }
 
