@@ -84,9 +84,9 @@ describe('ValidationUnit', () => {
       unit.isRequired();
     })
     it('fails when value not present', (done) => {
-      unit.runValidation(undefined).then(() => {
+      unit.runValidation(null, 'required input').then(() => {
         expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['{name} is required.']);
+        expect(unit.getState().messages).to.deep.equal(['required input is required.']);
         done();
       });
     });
