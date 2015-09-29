@@ -83,8 +83,9 @@ describe('ValidationUnit', () => {
     beforeEach(() => {
       unit.isRequired();
     })
-    it('fails when value not present', (done) => {
-      unit.runValidation(null, 'required input').then(() => {
+
+    it('fails when value not present and formats message with the name', (done) => {
+      unit.runValidation(null, {}, 'required input').then(() => {
         expect(unit.getState().valid).to.be.false;
         expect(unit.getState().messages).to.deep.equal(['required input is required.']);
         done();
@@ -130,7 +131,7 @@ describe('ValidationUnit', () => {
   describe('isValidatedBy', () => {
     let matches = ['foo', 'bar'];
     beforeEach(() => {
-      unit.isValidatedBy((value) => !!matches.filter((match) => value.includes(match)).length,
+      unit = unit.isValidatedBy((value) => !!matches.filter((match) => value.includes(match)).length,
                          'Value should contain "foo" or "bar".')
     });
 
@@ -148,11 +149,35 @@ describe('ValidationUnit', () => {
         done();
       });
     });
+
+    describe('checking against other values', () => {
+      beforeEach(() => {
+        unit = unit.isValidatedBy((value, allValues) => {
+          console.log(value, allValues);
+          return value === allValues.dependent
+        }, 'Value must be equal to "dependent."');
+      })
+
+      it('passes when its dependent values are correct', (done) => {
+        unit.runValidation('foo', { dependent: 'foo' }).then(() => {
+          expect(unit.getState().valid).to.be.true;
+          done();
+        });
+      });
+
+      it('fails when its dependent values are not correct', (done) => {
+        unit.runValidation('foo', { dependent: 'bar' }).then(() => {
+          expect(unit.getState().valid).to.be.false;
+          expect(unit.getState().messages).to.deep.equal(['Value must be equal to "dependent."']);
+          done();
+        });
+      })
+    })
   });
 
   describe('isEventuallyValidatedBy', () => {
     beforeEach(() => {
-      unit = unit.isEventuallyValidatedBy((val, resolve, reject) => {
+      unit = unit.isEventuallyValidatedBy((val, allValues, resolve, reject) => {
         setTimeout(() => (val.length === 4) ? resolve() : reject(), 20);
       }, 'the length should be 4');
     });

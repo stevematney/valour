@@ -16,21 +16,25 @@ export default class ValidationUnit {
                    }, []);
   }
 
+  createCustomPromiseGenerator(func) {
+    return (val, allValues, messageList, name) => new Promise((resolve, reject) => func(val, allValues, messageList, name, resolve, reject));
+  }
+
   createPromiseGenerator(func, message) {
-    return (val, messageList, name) => new Promise((resolve, reject) => {
-      if (func(val)) {
+    return this.createCustomPromiseGenerator((val, allValues, messageList, name, resolve, reject) => {
+      if (func(val, allValues)) {
         return resolve();
       }
-      messageList.push(formatMessage(name, message));
+      messageList.push(formatMessage(name, message))
       return reject();
     });
   }
 
-  runValidation(value, name) {
+  runValidation(value, allValues, name) {
     this.valid = undefined;
     this.messages = [];
     let generators = this.rules.map((rule) => rule.generator);
-    return Promise.all(generators.map((gen) => gen(value, this.messages, name)))
+    return Promise.all(generators.map((gen) => gen(value, allValues, this.messages, name)))
                   .then(() => this.valid = true,
                         () => this.valid = false);
   }
@@ -67,14 +71,14 @@ export default class ValidationUnit {
   }
 
   isValidatedBy(func, message) {
-    return this.forceRequirement((val) => func(val), message);
+    return this.forceRequirement((val, allValues) => func(val, allValues), message);
   }
 
   isEventuallyValidatedBy(func, message) {
-    let generator = (val, messageList, name) => new Promise((resolve, reject) => func(val, resolve, () => {
-                                                       messageList.push(formatMessage(name, message));
-                                                       reject();
-                                                     }));
+    let generator = this.createCustomPromiseGenerator((val, allValues, messageList, name, resolve, reject) => func(val, allValues, resolve, () => {
+      messageList.push(formatMessage(name, message));
+      reject();
+    }));
     return this.forceRequirement(func, message, generator);
   }
 
