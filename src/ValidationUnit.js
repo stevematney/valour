@@ -82,11 +82,19 @@ export default class ValidationUnit {
     return this.setRequirement(val => !!val, '{name} is required.')
   }
 
-  isEmail(message = 'Not a valid email') {
+  isEmail(message = '{name} must be a valid email address.') {
     return this.setRequirement(val => validator.isEmail(val), message);
   }
 
   contains(needle, message = '{name} must contain "{needle}."') {
     return this.setRequirement(val => validator.contains(val, needle), formatValidationMessage(message, {needle}));
+  }
+
+  equals(comparison, message = '{name} must equal "{comparison}."') {
+    return this.setRequirement(val => validator.equals(val, comparison), formatValidationMessage(message, {comparison}));
+  }
+
+  equalsOther(other, message = '{name} must be equal to {other}.') {
+    return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}));
   }
 }

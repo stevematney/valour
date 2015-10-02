@@ -53,20 +53,20 @@ describe('ValidationUnit', () => {
     });
 
     it('provides multiple invalid messages', (done) => {
-      unit.runValidation('nope').then(() => {
+      unit.runValidation('nope', {}, 'Email field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.contain('Not a valid email');
+        expect(result.messages).to.contain('Email field must be a valid email address.');
         expect(result.messages).to.contain('Value should contain "foo" or "bar".');
         done();
       });
     });
 
     it('will fail only one rule', (done) => {
-      unit.runValidation('foo').then(() => {
+      unit.runValidation('foo', {}, 'Email field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Not a valid email' ]);
+        expect(result.messages).to.deep.equal([ 'Email field must be a valid email address.' ]);
       });
 
       unit.runValidation('nope@email.com').then(() => {
@@ -197,9 +197,9 @@ describe('ValidationUnit', () => {
     });
 
     it('fails when value not an email address', (done) => {
-      unit.runValidation('notemail').then(() => {
+      unit.runValidation('notemail', {}, 'Email field').then(() => {
         expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['Not a valid email']);
+        expect(unit.getState().messages).to.deep.equal(['Email field must be a valid email address.']);
         done();
       });
     });
@@ -230,6 +230,54 @@ describe('ValidationUnit', () => {
         expect(unit.getState().messages).to.deep.equal(['Foo input must contain "foo."']);
         done();
       })
-    })
+    });
   });
+
+  describe('equals', () => {
+    beforeEach(() => {
+      unit = unit.equals('one');
+    });
+
+    it('passes when the value is equal', (done) => {
+      unit.runValidation('one').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the value is not equal', (done) => {
+      unit.runValidation('onex', {}, '"One" input').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ '"One" input must equal "one."' ]);
+        done();
+      });
+    });
+  });
+
+  describe('equalsOther', () => {
+    beforeEach(() => {
+      unit = unit.equalsOther('confirmation');
+    });
+
+    it('passes when the value is equal with the given other', (done) => {
+      unit.runValidation('yep', {
+        confirmation: 'yep'
+      }).then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the value is not equal with the given other', (done) => {
+      unit.runValidation('nope', {
+        confirmation: 'yep'
+      }, 'This guy').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal(['This guy must be equal to confirmation.']);
+        done();
+      });
+    })
+  })
 });

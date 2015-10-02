@@ -16,9 +16,10 @@ validation.register('formName', {
                        var disallowedNames = ['joe@notallowed.com', 'steve@isnotavailable.com', 'donotallow@anything.com'];
                        return disallowedNames.indexOf(value) === -1;
                      }, 'This email is not allowed')
+                     .equalsOther('confirmEmail')
                      .isValidatedBy(function (value, allValues) {
-                       return value === allValues.confirmEmail;
-                     }, 'The email field must match the email confirmation field')
+                       return allValues.otherAddresses.indexOf(value) === -1;
+                     }, 'The {name} field cannot be in your other addresses')
 });
 
 var validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
