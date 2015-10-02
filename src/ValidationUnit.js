@@ -97,4 +97,12 @@ export default class ValidationUnit {
   equalsOther(other, message = '{name} must be equal to {other}.') {
     return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}));
   }
+
+  isAfter(date, message = '{name} must be after {date}.') {
+    return this.setRequirement((val) => {
+      var beforeDate = new Date(date.toString());
+      var afterDate = new Date(val.toString());
+      return validator.isAfter(afterDate, beforeDate);
+    }, formatValidationMessage(message, { date }));
+  }
 }

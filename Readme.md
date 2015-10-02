@@ -22,15 +22,15 @@ validation.register('formName', {
                      }, 'The {name} field cannot be in your other addresses')
 });
 
-var validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
+var validationResult = validation.getResult('formName', { email: 'myemail@emailtown.com' });
 // validationResult === { 'email': {valid: true} }
-var notIncludedResult = validation.isValid('formName', {});
+var notIncludedResult = validation.getResult('formName', {});
 // notIncludedResult === {'email': {valid: false, messages: ['Email is required.']}}
-var nonEmailResult = validation.isValid('formName', { email: 'notanemail' });
+var nonEmailResult = validation.getResult('formName', { email: 'notanemail' });
 // nonEmailResult === { 'email': {valid: false, messages: ['This is not a valid email address']} }
-var notAllowedResult = validation.isValid('formName', { email: 'joe@notallowed.com' });
+var notAllowedResult = validation.getResult('formName', { email: 'joe@notallowed.com' });
 // notAllowedResult === { 'email': {valid: false, messages: ['This email is not allowed']} }
-var notAllowedResult = validation.isValid('formName', { email: 'joe@isallowed.com', confirmEmail: 'joe@notallowed.com' });
+var notAllowedResult = validation.getResult('formName', { email: 'joe@isallowed.com', confirmEmail: 'joe@notallowed.com' });
 // notAllowedResult === { 'email': {valid: false, messages: ['The email field must match the email confirmation field']} }
 ```
 
@@ -76,17 +76,17 @@ validation.register('formName', {
     });
 });
 
-var validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
+var validationResult = validation.getResult('formName', { email: 'myemail@emailtown.com' });
 // validationResult === { 'email': { waiting: true }}
 
 resolveResult();
-validationResult = validation.getState('formName');
+validationResult = validation.getResult('formName');
 // validationResult === { 'email': { valid: true }}
 
-validationResult = validation.isValid('formName', { email: 'myemail@emailtown.com' });
+validationResult = validation.getResult('formName', { email: 'myemail@emailtown.com' });
 // validationResult === { 'email': { waiting: true }}
 
 rejectResult();
-validationResult = validation.getState('formName');
+validationResult = validation.getResult('formName');
 // validationResult === { 'email': { valid: false }}
 ```

@@ -278,6 +278,25 @@ describe('ValidationUnit', () => {
         expect(result.messages).to.deep.equal(['This guy must be equal to confirmation.']);
         done();
       });
+    });
+  });
+
+  describe('isAfter', () => {
+    beforeEach(() => {
+      unit = unit.isAfter('1/1/2014');
     })
-  })
+    it('passes when the value is after the given date', (done) => {
+      unit.runValidation('1/1/2015').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('passes when the given value is a date and after the given date', (done) => {
+      unit.runValidation(new Date('1/1/2015')).then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    })
+  });
 });
