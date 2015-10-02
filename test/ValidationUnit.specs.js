@@ -79,55 +79,6 @@ describe('ValidationUnit', () => {
     });
   });
 
-  describe('isRequired', () => {
-    beforeEach(() => {
-      unit.isRequired();
-    })
-
-    it('fails when value not present and formats message with the name', (done) => {
-      unit.runValidation(null, {}, 'required input').then(() => {
-        expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['required input is required.']);
-        done();
-      });
-    });
-
-    it('fails on empty strings', (done) => {
-      unit.runValidation('I\'m here!').then(() => {
-        expect(unit.getState().valid).to.be.true;
-        done();
-      });
-    })
-
-    it('passes when value is present', (done) => {
-      unit.runValidation('I\'m here!').then(() => {
-        expect(unit.getState().valid).to.be.true;
-        done();
-      });
-    });
-  });
-
-  describe('isEmail', () => {
-    beforeEach(() => {
-      unit.isEmail();
-    });
-
-    it('fails when value not an email address', (done) => {
-      unit.runValidation('notemail').then(() => {
-        expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['Not a valid email']);
-        done();
-      });
-    });
-
-    it('passes when value is an email address', (done) => {
-      unit.runValidation('real@mail.com').then(() => {
-        expect(unit.getState().valid).to.be.true;
-        done();
-      });
-    });
-  });
-
   describe('isValidatedBy', () => {
     let matches = ['foo', 'bar'];
     beforeEach(() => {
@@ -171,6 +122,14 @@ describe('ValidationUnit', () => {
           expect(unit.getState().messages).to.deep.equal(['Value must be equal to "dependent."']);
           done();
         });
+      });
+
+      it('will fail with multiple validation messages', (done) => {
+        unit.runValidation('doo', { dependent: 'bar' }).then(() => {
+          expect(unit.getState().valid).to.be.false;
+          expect(unit.getState().messages).to.deep.equal(['Value should contain "foo" or "bar".', 'Value must be equal to "dependent."']);
+          done();
+        });
       })
     })
   });
@@ -202,5 +161,75 @@ describe('ValidationUnit', () => {
 
       expect(unit.getState().waiting).to.be.true;
     });
+  });
+
+  describe('isRequired', () => {
+    beforeEach(() => {
+      unit = unit.isRequired();
+    })
+
+    it('fails when value not present and formats message with the name', (done) => {
+      unit.runValidation(null, {}, 'required input').then(() => {
+        expect(unit.getState().valid).to.be.false;
+        expect(unit.getState().messages).to.deep.equal(['required input is required.']);
+        done();
+      });
+    });
+
+    it('fails on empty strings', (done) => {
+      unit.runValidation('I\'m here!').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    })
+
+    it('passes when value is present', (done) => {
+      unit.runValidation('I\'m here!').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+  });
+
+  describe('isEmail', () => {
+    beforeEach(() => {
+      unit = unit.isEmail();
+    });
+
+    it('fails when value not an email address', (done) => {
+      unit.runValidation('notemail').then(() => {
+        expect(unit.getState().valid).to.be.false;
+        expect(unit.getState().messages).to.deep.equal(['Not a valid email']);
+        done();
+      });
+    });
+
+    it('passes when value is an email address', (done) => {
+      unit.runValidation('real@mail.com').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+  });
+
+  describe('contains', () => {
+    beforeEach(() => {
+      unit = unit.contains('foo');
+    });
+
+    it('passes when the value is contained', (done) => {
+      unit.runValidation('food').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('passes when the value is not contained', (done) => {
+      unit.runValidation('eat', {}, 'Foo input').then(() => {
+        expect(unit.getState().valid).to.be.false
+        expect(unit.getState().messages).to.deep.equal(['Foo input must contain "foo."']);
+        done();
+      })
+    })
   });
 });

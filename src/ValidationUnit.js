@@ -1,6 +1,6 @@
 import validator from 'validator';
 import functionsEqual from './util/functions-equal';
-import formatMessage from './util/format-message';
+import formatValidationMessage from './util/format-validation-message';
 
 export default class ValidationUnit {
   constructor(...existing) {
@@ -25,7 +25,7 @@ export default class ValidationUnit {
       if (func(val, allValues)) {
         return resolve();
       }
-      messageList.push(formatMessage(name, message))
+      messageList.push(formatValidationMessage(message, { name }))
       return reject();
     });
   }
@@ -66,23 +66,27 @@ export default class ValidationUnit {
     return this.forceRequirement(func, failureMessage, undefined, false);
   }
 
-  isRequired(message = '{name} is required.') {
-    return this.setRequirement((val) => !!val, '{name} is required.')
-  }
-
   isValidatedBy(func, message) {
     return this.forceRequirement((val, allValues) => func(val, allValues), message);
   }
 
   isEventuallyValidatedBy(func, message) {
     let generator = this.createCustomPromiseGenerator((val, allValues, messageList, name, resolve, reject) => func(val, allValues, resolve, () => {
-      messageList.push(formatMessage(name, message));
+      messageList.push(formatValidationMessage(message, { name }));
       reject();
     }));
     return this.forceRequirement(func, message, generator);
   }
 
-  isEmail() {
-    return this.setRequirement((val) => validator.isEmail(val), 'Not a valid email');
+  isRequired(message = '{name} is required.') {
+    return this.setRequirement(val => !!val, '{name} is required.')
+  }
+
+  isEmail(message = 'Not a valid email') {
+    return this.setRequirement(val => validator.isEmail(val), message);
+  }
+
+  contains(needle, message = '{name} must contain "{needle}."') {
+    return this.setRequirement(val => validator.contains(val, needle), formatValidationMessage(message, {needle}));
   }
 }
