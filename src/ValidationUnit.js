@@ -2,6 +2,12 @@ import validator from 'validator';
 import functionsEqual from './util/functions-equal';
 import formatValidationMessage from './util/format-validation-message';
 
+function getDates(beforeIn, afterIn) {
+  let before = new Date(beforeIn.toString());
+  let after = new Date(afterIn.toString());
+  return { before, after };
+}
+
 export default class ValidationUnit {
   constructor(...existing) {
     this.rules = existing
@@ -100,9 +106,15 @@ export default class ValidationUnit {
 
   isAfter(date, message = '{name} must be after {date}.') {
     return this.setRequirement((val) => {
-      var beforeDate = new Date(date.toString());
-      var afterDate = new Date(val.toString());
-      return validator.isAfter(afterDate, beforeDate);
+      let dates = getDates(date, val);
+      return validator.isAfter(dates.after, dates.before);
+    }, formatValidationMessage(message, { date }));
+  }
+
+  isBefore(date, message = '{name} must be before {date}.') {
+    return this.setRequirement((val) => {
+      let dates = getDates(val, date);
+      return validator.isBefore(dates.before, dates.after);
     }, formatValidationMessage(message, { date }));
   }
 }

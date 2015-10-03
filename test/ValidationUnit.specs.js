@@ -281,7 +281,7 @@ describe('ValidationUnit', () => {
     });
   });
 
-  describe('isAfter', () => {
+    describe('isAfter', () => {
     beforeEach(() => {
       unit = unit.isAfter('1/1/2014');
     })
@@ -297,6 +297,43 @@ describe('ValidationUnit', () => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
+    });
+
+    it('fails when the given value is before the given date', (done) => {
+      unit.runValidation('1/1/2013', {}, 'Date input').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal(['Date input must be after 1/1/2014.']);
+        done();
+      });
+    });
+  });
+
+  describe('isBefore', () => {
+    beforeEach(() => {
+      unit = unit.isBefore('1/1/2016');
     })
+    it('passes when the value is before the given date', (done) => {
+      unit.runValidation('1/1/2015').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('passes when the given value is a date and before the given date', (done) => {
+      unit.runValidation(new Date('1/1/2015')).then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is after the given date', (done) => {
+      unit.runValidation('1/2/2016', {}, 'Date input').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal(['Date input must be before 1/1/2016.']);
+        done();
+      });
+    });
   });
 });
