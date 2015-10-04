@@ -336,4 +336,48 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isAlpha', () => {
+    beforeEach(() => {
+      unit = unit.isAlpha();
+    });
+
+    it('passes when the value is only alphabetical', (done) => {
+      unit.runValidation('abc').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done()
+      });
+    });
+
+    it('fails when the value is not only alphabetical', (done) => {
+      unit.runValidation('abc123', {}, 'Alpha input').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal(['Alpha input must use only alphabetical characters.']);
+        done();
+      });
+    });
+  });
+
+  describe('isAlphanumeric', () => {
+    beforeEach(() => {
+      unit = unit.isAlphanumeric();
+    });
+
+    it('passes when the unit is alphanumeric', (done) => {
+      unit.runValidation('abc123').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the unit is not alphanumeric', (done) => {
+      unit.runValidation('abc123, and you', {}, 'Alphanumeric input').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal(['Alphanumeric input must use only alphanumeric characters.']);
+        done();
+      });
+    });
+  });
 });

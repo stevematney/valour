@@ -117,4 +117,12 @@ export default class ValidationUnit {
       return validator.isBefore(dates.before, dates.after);
     }, formatValidationMessage(message, { date }));
   }
+
+  isAlpha(message = '{name} must use only alphabetical characters.') {
+    return this.setRequirement(val => validator.isAlpha(val), message);
+  }
+
+  isAlphanumeric(message = '{name} must use only alphanumeric characters.') {
+    return this.setRequirement(val => validator.isAlphanumeric(val), message);
+  }
 }
