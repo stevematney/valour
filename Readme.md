@@ -36,7 +36,7 @@ var notAllowedResult = validation.getResult('formName', { email: 'joe@isallowed.
 
 ### Form-listening
 
-This will register the appropriate listeners with your form inputs. Ensure that a form with the given name exists and that the
+This will register the appropriate listeners with your form inputs. Ensure that a form with the given name exists and that the names of the inputs in the form correspond to the names of the rules you provide to `registerForm`.
 
 ```javascript
 var validation = require('validation');
