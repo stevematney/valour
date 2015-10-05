@@ -380,4 +380,23 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isAscii', () => {
+    beforeEach(() => {
+      unit = unit.isAscii();
+    });
+
+    it('passes when the string contains only ascii characters.', () => {
+      unit.runValidation('yep!').then(() => {
+        expect(unit.valid).to.be.true;
+      });
+    });
+
+    it('fails when the string has more than ascii characters', () => {
+      unit.runValidation('nope! ӂ', {}, 'Ascii field').then(() => {
+        expect(unit.valid).to.be.false;
+        expect(unit.messages).to.deep.equal('Ascii field must use only ASCII characters.');
+      });
+    });
+  });
 });

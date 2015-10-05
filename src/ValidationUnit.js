@@ -125,4 +125,48 @@ export default class ValidationUnit {
   isAlphanumeric(message = '{name} must use only alphanumeric characters.') {
     return this.setRequirement(val => validator.isAlphanumeric(val), message);
   }
+
+  isAscii(message = '{name} must use only ASCII characters') {
+    return this.setRequirement(val => validator.isAscii(val), message);
+  }
 }
+
+
+/*
+isAscii(str)
+isBase64(str)
+isBoolean(str)
+isByteLength(str, min [, max])
+isCreditCard(str)
+isCurrency(str, options)
+isDate(str)
+isDecimal(str)
+isDivisibleBy(str, number)
+isEmail(str [, options])
+isFQDN(str [, options])
+isFloat(str [, options])
+isFullWidth(str)
+isHalfWidth(str)
+isHexColor(str)
+isHexadecimal(str)
+isIP(str [, version])
+isISBN(str [, version])
+isISIN(str)
+isISO8601(str)
+isIn(str, values)
+isInt(str [, options])
+isJSON(str)
+isLength(str, min [, max])
+isLowercase(str)
+isMobilePhone(str, locale)
+isMongoId(str)
+isMultibyte(str)
+isNull(str)
+isNumeric(str)
+isSurrogatePair(str)
+isURL(str [, options])
+isUUID(str [, version])
+isUppercase(str)
+isVariableWidth(str)
+matches(str, pattern [, modifiers])
+ */
