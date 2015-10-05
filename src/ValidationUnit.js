@@ -126,15 +126,17 @@ export default class ValidationUnit {
     return this.setRequirement(val => validator.isAlphanumeric(val), message);
   }
 
-  isAscii(message = '{name} must use only ASCII characters') {
+  isAscii(message = '{name} must use only ASCII characters.') {
     return this.setRequirement(val => validator.isAscii(val), message);
+  }
+
+  isBase64(message = '{name} must be base64 encoded.') {
+    return this.setRequirement(val => validator.isBase64(val), message);
   }
 }
 
 
 /*
-isAscii(str)
-isBase64(str)
 isBoolean(str)
 isByteLength(str, min [, max])
 isCreditCard(str)

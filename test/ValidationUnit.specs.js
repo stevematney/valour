@@ -386,16 +386,41 @@ describe('ValidationUnit', () => {
       unit = unit.isAscii();
     });
 
-    it('passes when the string contains only ascii characters.', () => {
+    it('passes when the string contains only ascii characters.', (done) => {
       unit.runValidation('yep!').then(() => {
-        expect(unit.valid).to.be.true;
+        expect(unit.getState().valid).to.be.true;
+        done();
       });
     });
 
-    it('fails when the string has more than ascii characters', () => {
-      unit.runValidation('nope! ӂ', {}, 'Ascii field').then(() => {
-        expect(unit.valid).to.be.false;
-        expect(unit.messages).to.deep.equal('Ascii field must use only ASCII characters.');
+    it('fails when the string has more than ascii characters', (done) => {
+      unit.runValidation('nope! ӂ', {}, 'ASCII field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'ASCII field must use only ASCII characters.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isBase64', () => {
+    beforeEach(() => {
+      unit = unit.isBase64();
+    });
+
+    it('passes when the string is base64 encoded', (done) => {
+      unit.runValidation('eWVwIQ==').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done()
+      });
+    });
+
+    it('fails when the string is not base64 encoded', (done) => {
+      unit.runValidation('nope!', {}, 'Base64 field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Base64 field must be base64 encoded.' ]);
+        done();
       });
     });
   });
