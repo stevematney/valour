@@ -133,6 +133,10 @@ export default class ValidationUnit {
   isBase64(message = '{name} must be base64 encoded.') {
     return this.setRequirement(val => validator.isBase64(val), message);
   }
+
+  isBoolean(message = '{name} must be a boolean value.') {
+    return this.setRequirement(val => validator.isBoolean(val), message);
+  }
 }
 
 

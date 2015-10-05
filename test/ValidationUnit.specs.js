@@ -424,4 +424,40 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isBoolean', () => {
+    beforeEach(() => {
+      unit = unit.isBoolean();
+    });
+
+    it('passes when the string is base64 encoded', (done) => {
+      unit.runValidation('true').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done()
+      });
+    });
+
+    it('passes when given a true boolean value', (done) => {
+      unit.runValidation(true).then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done()
+      });
+    });
+
+    it('passes when given a false boolean value', (done) => {
+      unit.runValidation(false).then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the string is not base64 encoded', (done) => {
+      unit.runValidation('nope!', {}, 'Boolean field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Boolean field must be a boolean value.' ]);
+        done();
+      });
+    });
+  });
 });
