@@ -345,7 +345,7 @@ describe('ValidationUnit', () => {
     it('passes when the value is only alphabetical', (done) => {
       unit.runValidation('abc').then(() => {
         expect(unit.getState().valid).to.be.true;
-        done()
+        done();
       });
     });
 
@@ -411,7 +411,7 @@ describe('ValidationUnit', () => {
     it('passes when the string is base64 encoded', (done) => {
       unit.runValidation('eWVwIQ==').then(() => {
         expect(unit.getState().valid).to.be.true;
-        done()
+        done();
       });
     });
 
@@ -433,14 +433,14 @@ describe('ValidationUnit', () => {
     it('passes when the string is base64 encoded', (done) => {
       unit.runValidation('true').then(() => {
         expect(unit.getState().valid).to.be.true;
-        done()
+        done();
       });
     });
 
     it('passes when given a true boolean value', (done) => {
       unit.runValidation(true).then(() => {
         expect(unit.getState().valid).to.be.true;
-        done()
+        done();
       });
     });
 
@@ -456,6 +456,28 @@ describe('ValidationUnit', () => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([ 'Boolean field must be a boolean value.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isByteLength', () => {
+    beforeEach(() => {
+      unit = unit.isByteLength(3);
+    });
+
+    it('passes when the string is the correct byte length', (done) => {
+      unit.runValidation('foo').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the string is the incorrect byte length', (done) => {
+      unit.runValidation('o', {}, 'Bytelength field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal(['Bytelength field must have a minimum byte length of 3.']);
         done();
       });
     });

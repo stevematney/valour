@@ -137,12 +137,15 @@ export default class ValidationUnit {
   isBoolean(message = '{name} must be a boolean value.') {
     return this.setRequirement(val => validator.isBoolean(val), message);
   }
+
+  isByteLength(min, max, message = '{name} must have a minimum byte length of {min}.') {
+    return this.setRequirement(val => validator.isByteLength(val, min, max),
+                               formatValidationMessage(message, {min, max}));
+  }
 }
 
 
 /*
-isBoolean(str)
-isByteLength(str, min [, max])
 isCreditCard(str)
 isCurrency(str, options)
 isDate(str)
