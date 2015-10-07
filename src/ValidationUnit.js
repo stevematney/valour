@@ -170,25 +170,25 @@ export default class ValidationUnit {
       ...defaultCurrencyOptions,
       ...options
     };
-    console.log(computedOptions);
     let symbol = computedOptions.require_symbol ? computedOptions.symbol : '';
     let symbolStart = computedOptions.symbol_after_digits ? '' : symbol;
     let symbolEnd = computedOptions.symbol_after_digits ? symbol : '';
-    let formattedExtra = formatValidationMessage(extraInfoMessage, {
-      ...computedOptions,
-      notOrIs: (computedOptions.require_symbol) ? 'is' : 'not'
-    });
+    let notOrIs = (computedOptions.require_symbol) ? 'is' : 'not';
+    let formattedExtra = formatValidationMessage(extraInfoMessage, { ...computedOptions, notOrIs });
     let extraInfo = computedOptions.include_extra_info ? formattedExtra : '';
     let {thousands_separator, decimal_separator} = computedOptions;
     let format = `${symbolStart}1${thousands_separator}000${decimal_separator}00${symbolEnd}`;
-    let messageWithForm = formatValidationMessage(message, {format, extraInfo, ...computedOptions});
-    return this.setRequirement(val => validator.isCurrency(val, computedOptions), messageWithForm);
+    let messageWithFormat = formatValidationMessage(message, {format, extraInfo, ...computedOptions});
+    return this.setRequirement(val => validator.isCurrency(val, computedOptions), messageWithFormat);
+  }
+
+  isDate(message = '{name} must be a date.') {
+    return this.setRequirement(val => validator.isDate(val), message);
   }
 }
 
 
 /*
-isDate(str)
 isDecimal(str)
 isDivisibleBy(str, number)
 isEmail(str [, options])

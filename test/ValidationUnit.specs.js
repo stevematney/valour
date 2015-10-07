@@ -587,4 +587,26 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isDate', () => {
+    beforeEach(() => {
+      unit = unit.isDate();
+    });
+
+    it('passes when the given value is a date', (done) => {
+      unit.runValidation('1/1/2015').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a date', (done) => {
+      unit.runValidation('not a date', {}, 'Date field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal(['Date field must be a date.']);
+        done();
+      });
+    });
+  });
 });
