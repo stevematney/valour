@@ -482,4 +482,41 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isCreditCard', () => {
+    beforeEach(() => {
+      unit = unit.isCreditCard();
+    });
+
+    it('passes when the number is a credit card', (done) => {
+      unit.runValidation('4024007171444473').then(()=>{
+        console.log(unit.getState());
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('passes when the number is a credit card with spaces', (done) => {
+      unit.runValidation('4024 0071 7144 4473').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('passes when the number is a credit card with spaces', (done) => {
+      unit.runValidation('4024-0071-7144-4473').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the number is not a credit card number', (done) => {
+      unit.runValidation('4024-0071-7144-473', {}, 'CC field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal(['CC field must be a credit card number.']);
+        done();
+      });
+    })
+  });
 });

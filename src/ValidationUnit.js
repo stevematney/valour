@@ -142,6 +142,10 @@ export default class ValidationUnit {
     return this.setRequirement(val => validator.isByteLength(val, min, max),
                                formatValidationMessage(message, {min, max}));
   }
+
+  isCreditCard(message = '{name} must be a credit card number.') {
+    return this.setRequirement(val => validator.isCreditCard(val), message);
+  }
 }
 
 
