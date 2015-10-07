@@ -8,6 +8,22 @@ function getDates(beforeIn, afterIn) {
   return { before, after };
 }
 
+let defaultCurrencyOptions = {
+  symbol: '$',
+  require_symbol: false,
+  allow_space_after_symbol: false,
+  symbol_after_digits: false,
+  allow_negatives: true,
+  parens_for_negatives: false,
+  negative_sign_before_digits: false,
+  negative_sign_after_digits: false,
+  allow_negative_sign_placeholder: false,
+  thousands_separator: ',',
+  decimal_separator: '.',
+  allow_space_after_digits: false,
+  include_extra_info: true
+};
+
 export default class ValidationUnit {
   constructor(...existing) {
     this.rules = existing
@@ -146,12 +162,32 @@ export default class ValidationUnit {
   isCreditCard(message = '{name} must be a credit card number.') {
     return this.setRequirement(val => validator.isCreditCard(val), message);
   }
+
+  isCurrency(options = defaultCurrencyOptions,
+             message = '{name} must be in the format "{format}"{extraInfo}.',
+             extraInfoMessage = ' (currency symbol ({symbol}) {notOrIs} required)') {
+    let computedOptions = {
+      ...defaultCurrencyOptions,
+      ...options
+    };
+    console.log(computedOptions);
+    let symbol = computedOptions.require_symbol ? computedOptions.symbol : '';
+    let symbolStart = computedOptions.symbol_after_digits ? '' : symbol;
+    let symbolEnd = computedOptions.symbol_after_digits ? symbol : '';
+    let formattedExtra = formatValidationMessage(extraInfoMessage, {
+      ...computedOptions,
+      notOrIs: (computedOptions.require_symbol) ? 'is' : 'not'
+    });
+    let extraInfo = computedOptions.include_extra_info ? formattedExtra : '';
+    let {thousands_separator, decimal_separator} = computedOptions;
+    let format = `${symbolStart}1${thousands_separator}000${decimal_separator}00${symbolEnd}`;
+    let messageWithForm = formatValidationMessage(message, {format, extraInfo, ...computedOptions});
+    return this.setRequirement(val => validator.isCurrency(val, computedOptions), messageWithForm);
+  }
 }
 
 
 /*
-isCreditCard(str)
-isCurrency(str, options)
 isDate(str)
 isDecimal(str)
 isDivisibleBy(str, number)

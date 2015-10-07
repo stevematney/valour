@@ -519,4 +519,72 @@ describe('ValidationUnit', () => {
       });
     })
   });
+
+  describe('isCurrency', () => {
+    beforeEach(() => {
+      unit = unit.isCurrency({
+        symbol: '€',
+        require_symbol: true,
+        include_extra_info: false
+      });
+    });
+
+    it('passes when the value is currency in the proper format', (done) => {
+      unit.runValidation('€1,000').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    describe('the failure message', () => {
+      it('fails with a correct validation message, symbol first by default, when required', (done) => {
+        unit.runValidation('$100', {}, 'Currency field').then(() => {
+          let result = unit.getState();
+          expect(result.valid).to.be.false;
+          expect(result.messages).to.deep.equal(['Currency field must be in the format "€1,000.00".']);
+          done();
+        });
+      });
+
+      it('fails with a correct validation message, symbol after when configured that way and required', (done) => {
+        unit = new ValidationUnit().isCurrency({
+          symbol: '€',
+          require_symbol: true,
+          symbol_after_digits: true,
+          include_extra_info: false
+        });
+        unit.runValidation('$100', {}, 'Currency field').then(() => {
+          let result = unit.getState();
+          expect(result.valid).to.be.false;
+          expect(result.messages).to.deep.equal(['Currency field must be in the format "1,000.00€".']);
+          done();
+        });
+      });
+
+      it('fails with a correct validation message when the symbol is not required', (done) => {
+        unit = new ValidationUnit().isCurrency({
+          symbol: '€',
+        });
+        unit.runValidation('$100', {}, 'Currency field').then(() => {
+          let result = unit.getState();
+          expect(result.valid).to.be.false;
+          expect(result.messages).to.deep.equal(['Currency field must be in the format "1,000.00" (currency symbol (€) not required).']);
+          done();
+        });
+      });
+
+      it('formats the default extra info depending on whether the symbol is required', (done) => {
+        unit = new ValidationUnit().isCurrency({
+          symbol: '€',
+          require_symbol: true
+        });
+        unit.runValidation('$100', {}, 'Currency field').then(() => {
+          let result = unit.getState();
+          expect(result.valid).to.be.false;
+          expect(result.messages).to.deep.equal(['Currency field must be in the format "€1,000.00" (currency symbol (€) is required).']);
+          done();
+        });
+      });
+    });
+  });
 });
