@@ -224,11 +224,18 @@ export default class ValidationUnit {
   isVariableWidth(message = '{name} must contain fullwidth and halfwidth characters.') {
     return this.setValidatorRequirement('isVariableWidth', message);
   }
+
+  isHexColor(message = '{name} must be a hex color.') {
+    return this.setValidatorRequirement('isHexColor', message);
+  }
+
+  isHexadecimal(message = '{name} must be a hexadecimal number.') {
+    return this.setValidatorRequirement('isHexadecimal', message);
+  }
 }
 
 
 /*
-isHexColor(str)
 isHexadecimal(str)
 isIP(str [, version])
 isISBN(str [, version])

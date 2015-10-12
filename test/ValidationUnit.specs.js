@@ -771,4 +771,48 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isHexColor', () => {
+    beforeEach(() => {
+      unit = unit.isHexColor();
+    });
+
+    it('passes when the given value is a hexadecimal color', (done) => {
+      unit.runValidation('#fff').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value does not contain fullwidth characters', (done) => {
+      unit.runValidation('nope', {}, 'Hex Color field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Hex Color field must be a hex color.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isHexadecimal', () => {
+    beforeEach(() => {
+      unit = unit.isHexadecimal();
+    });
+
+    it('passes when the given value is a hexadecimal color', (done) => {
+      unit.runValidation('fff0abab').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value does not contain fullwidth characters', (done) => {
+      unit.runValidation('hihihi', {}, 'Hexadecimal field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Hexadecimal field must be a hexadecimal number.' ]);
+        done();
+      });
+    });
+  });
 });
