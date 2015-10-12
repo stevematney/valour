@@ -1,0 +1,9 @@
+{
+  "globals": {
+    "it": true,
+    "define": true,
+    "beforeEach": true,
+    "afterEach": true,
+    "describe": true
+  }
+}

@@ -47,7 +47,7 @@ export default class ValidationUnit {
       if (func(val, allValues)) {
         return resolve();
       }
-      messageList.push(formatValidationMessage(message, { name }))
+      messageList.push(formatValidationMessage(message, { name }));
       return reject();
     });
   }
@@ -88,6 +88,10 @@ export default class ValidationUnit {
     return this.forceRequirement(func, failureMessage, undefined, false);
   }
 
+  setValidatorRequirement(funcName, message, ...extraValues) {
+    return this.setRequirement(val => validator[funcName](val, ...extraValues), message);
+  }
+
   isValidatedBy(func, message) {
     return this.forceRequirement((val, allValues) => func(val, allValues), message);
   }
@@ -101,19 +105,19 @@ export default class ValidationUnit {
   }
 
   isRequired(message = '{name} is required.') {
-    return this.setRequirement(val => !!val, '{name} is required.')
+    return this.setRequirement(val => !!val, '{name} is required.', message);
   }
 
   isEmail(message = '{name} must be a valid email address.') {
-    return this.setRequirement(val => validator.isEmail(val), message);
+    return this.setValidatorRequirement('isEmail', message);
   }
 
   contains(needle, message = '{name} must contain "{needle}."') {
-    return this.setRequirement(val => validator.contains(val, needle), formatValidationMessage(message, {needle}));
+    return this.setValidatorRequirement('contains', formatValidationMessage(message, {needle}), needle);
   }
 
   equals(comparison, message = '{name} must equal "{comparison}."') {
-    return this.setRequirement(val => validator.equals(val, comparison), formatValidationMessage(message, {comparison}));
+    return this.setValidatorRequirement('equals', formatValidationMessage(message, {comparison}), comparison);
   }
 
   equalsOther(other, message = '{name} must be equal to {other}.') {
@@ -135,37 +139,38 @@ export default class ValidationUnit {
   }
 
   isAlpha(message = '{name} must use only alphabetical characters.') {
-    return this.setRequirement(val => validator.isAlpha(val), message);
+    return this.setValidatorRequirement('isAlpha', message);
   }
 
   isAlphanumeric(message = '{name} must use only alphanumeric characters.') {
-    return this.setRequirement(val => validator.isAlphanumeric(val), message);
+    return this.setValidatorRequirement('isAlphanumeric', message);
   }
 
   isAscii(message = '{name} must use only ASCII characters.') {
-    return this.setRequirement(val => validator.isAscii(val), message);
+    return this.setValidatorRequirement('isAscii', message);
   }
 
   isBase64(message = '{name} must be base64 encoded.') {
-    return this.setRequirement(val => validator.isBase64(val), message);
+    return this.setValidatorRequirement('isBase64', message);
   }
 
   isBoolean(message = '{name} must be a boolean value.') {
-    return this.setRequirement(val => validator.isBoolean(val), message);
+    return this.setValidatorRequirement('isBoolean', message);
   }
 
   isByteLength(min, max, message = '{name} must have a minimum byte length of {min}.') {
-    return this.setRequirement(val => validator.isByteLength(val, min, max),
-                               formatValidationMessage(message, {min, max}));
+    return this.setValidatorRequirement('isByteLength',
+                                        formatValidationMessage(message, {min, max}),
+                                        min, max);
   }
 
   isCreditCard(message = '{name} must be a credit card number.') {
-    return this.setRequirement(val => validator.isCreditCard(val), message);
+    return this.setValidatorRequirement('isCreditCard', message);
   }
 
   isCurrency(options = defaultCurrencyOptions,
-             message = '{name} must be in the format "{format}"{extraInfo}.',
-             extraInfoMessage = ' (currency symbol ({symbol}) {notOrIs} required)') {
+             message = '{name} must be in the format "{format}". {extraInfo}',
+             extraInfoMessage = '(Currency symbol ({symbol}) {notOrIs} required.)') {
     let computedOptions = {
       ...defaultCurrencyOptions,
       ...options
@@ -178,19 +183,25 @@ export default class ValidationUnit {
     let extraInfo = computedOptions.include_extra_info ? formattedExtra : '';
     let {thousands_separator, decimal_separator} = computedOptions;
     let format = `${symbolStart}1${thousands_separator}000${decimal_separator}00${symbolEnd}`;
-    let messageWithFormat = formatValidationMessage(message, {format, extraInfo, ...computedOptions});
-    return this.setRequirement(val => validator.isCurrency(val, computedOptions), messageWithFormat);
+    let messageWithFormat = formatValidationMessage(message, {format, extraInfo, ...computedOptions}).trim();
+    return this.setValidatorRequirement('isCurrency', messageWithFormat, computedOptions);
   }
 
   isDate(message = '{name} must be a date.') {
-    return this.setRequirement(val => validator.isDate(val), message);
+    return this.setValidatorRequirement('isDate', message);
+  }
+
+  isDecimal(message = '{name} must represent a decimal number.') {
+    return this.setValidatorRequirement('isDecimal', message);
+  }
+
+  isDivisibleBy(number, message = '{name} must be divisible by {number}.') {
+    return this.setValidatorRequirement('isDivisibleBy', formatValidationMessage(message, {number}), number);
   }
 }
 
 
 /*
-isDecimal(str)
-isDivisibleBy(str, number)
 isEmail(str [, options])
 isFQDN(str [, options])
 isFloat(str [, options])

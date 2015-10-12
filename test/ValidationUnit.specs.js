@@ -5,7 +5,7 @@ describe('ValidationUnit', () => {
   let unit;
   beforeEach(() => {
     unit = new ValidationUnit();
-  })
+  });
 
   describe('initialization', () => {
     it('creates an empty list without given generators', () => {
@@ -83,7 +83,7 @@ describe('ValidationUnit', () => {
     let matches = ['foo', 'bar'];
     beforeEach(() => {
       unit = unit.isValidatedBy((value) => !!matches.filter((match) => value.includes(match)).length,
-                         'Value should contain "foo" or "bar".')
+                         'Value should contain "foo" or "bar".');
     });
 
     it('will pass a custom validator', (done) => {
@@ -104,10 +104,9 @@ describe('ValidationUnit', () => {
     describe('checking against other values', () => {
       beforeEach(() => {
         unit = unit.isValidatedBy((value, allValues) => {
-          console.log(value, allValues);
-          return value === allValues.dependent
+          return value === allValues.dependent;
         }, 'Value must be equal to "dependent."');
-      })
+      });
 
       it('passes when its dependent values are correct', (done) => {
         unit.runValidation('foo', { dependent: 'foo' }).then(() => {
@@ -130,8 +129,8 @@ describe('ValidationUnit', () => {
           expect(unit.getState().messages).to.deep.equal(['Value should contain "foo" or "bar".', 'Value must be equal to "dependent."']);
           done();
         });
-      })
-    })
+      });
+    });
   });
 
   describe('isEventuallyValidatedBy', () => {
@@ -166,7 +165,7 @@ describe('ValidationUnit', () => {
   describe('isRequired', () => {
     beforeEach(() => {
       unit = unit.isRequired();
-    })
+    });
 
     it('fails when value not present and formats message with the name', (done) => {
       unit.runValidation(null, {}, 'required input').then(() => {
@@ -181,7 +180,7 @@ describe('ValidationUnit', () => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
-    })
+    });
 
     it('passes when value is present', (done) => {
       unit.runValidation('I\'m here!').then(() => {
@@ -226,10 +225,10 @@ describe('ValidationUnit', () => {
 
     it('passes when the value is not contained', (done) => {
       unit.runValidation('eat', {}, 'Foo input').then(() => {
-        expect(unit.getState().valid).to.be.false
+        expect(unit.getState().valid).to.be.false;
         expect(unit.getState().messages).to.deep.equal(['Foo input must contain "foo."']);
         done();
-      })
+      });
     });
   });
 
@@ -284,7 +283,7 @@ describe('ValidationUnit', () => {
     describe('isAfter', () => {
     beforeEach(() => {
       unit = unit.isAfter('1/1/2014');
-    })
+    });
     it('passes when the value is after the given date', (done) => {
       unit.runValidation('1/1/2015').then(() => {
         expect(unit.getState().valid).to.be.true;
@@ -312,7 +311,8 @@ describe('ValidationUnit', () => {
   describe('isBefore', () => {
     beforeEach(() => {
       unit = unit.isBefore('1/1/2016');
-    })
+    });
+
     it('passes when the value is before the given date', (done) => {
       unit.runValidation('1/1/2015').then(() => {
         expect(unit.getState().valid).to.be.true;
@@ -490,7 +490,6 @@ describe('ValidationUnit', () => {
 
     it('passes when the number is a credit card', (done) => {
       unit.runValidation('4024007171444473').then(()=>{
-        console.log(unit.getState());
         expect(unit.getState().valid).to.be.true;
         done();
       });
@@ -517,7 +516,7 @@ describe('ValidationUnit', () => {
         expect(result.messages).to.deep.equal(['CC field must be a credit card number.']);
         done();
       });
-    })
+    });
   });
 
   describe('isCurrency', () => {
@@ -563,12 +562,12 @@ describe('ValidationUnit', () => {
 
       it('fails with a correct validation message when the symbol is not required', (done) => {
         unit = new ValidationUnit().isCurrency({
-          symbol: '€',
+          symbol: '€'
         });
         unit.runValidation('$100', {}, 'Currency field').then(() => {
           let result = unit.getState();
           expect(result.valid).to.be.false;
-          expect(result.messages).to.deep.equal(['Currency field must be in the format "1,000.00" (currency symbol (€) not required).']);
+          expect(result.messages).to.deep.equal(['Currency field must be in the format "1,000.00". (Currency symbol (€) not required.)']);
           done();
         });
       });
@@ -581,7 +580,7 @@ describe('ValidationUnit', () => {
         unit.runValidation('$100', {}, 'Currency field').then(() => {
           let result = unit.getState();
           expect(result.valid).to.be.false;
-          expect(result.messages).to.deep.equal(['Currency field must be in the format "€1,000.00" (currency symbol (€) is required).']);
+          expect(result.messages).to.deep.equal(['Currency field must be in the format "€1,000.00". (Currency symbol (€) is required.)']);
           done();
         });
       });
@@ -605,6 +604,50 @@ describe('ValidationUnit', () => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal(['Date field must be a date.']);
+        done();
+      });
+    });
+  });
+
+  describe('isDecimal', () => {
+    beforeEach(() => {
+      unit = unit.isDecimal();
+    });
+
+    it('passes when the given value is a decimal number', (done) => {
+      unit.runValidation('1.01').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a decimal number', (done) => {
+      unit.runValidation('Hola', {}, 'Decimal field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Decimal field must represent a decimal number.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isDivisibleBy', () => {
+    beforeEach(() => {
+      unit = unit.isDivisibleBy(2);
+    });
+
+    it('passes when the given value is a decimal number', (done) => {
+      unit.runValidation('4').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a decimal number', (done) => {
+      unit.runValidation('3', {}, 'Divisible field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Divisible field must be divisible by 2.' ]);
         done();
       });
     });
