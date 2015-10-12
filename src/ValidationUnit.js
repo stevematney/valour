@@ -24,6 +24,12 @@ let defaultCurrencyOptions = {
   include_extra_info: true
 };
 
+let defaultFqdnOptions = {
+  require_tld: true,
+  allow_underscores: false,
+  allow_trailing_dot: false
+};
+
 export default class ValidationUnit {
   constructor(...existing) {
     this.rules = existing
@@ -198,12 +204,14 @@ export default class ValidationUnit {
   isDivisibleBy(number, message = '{name} must be divisible by {number}.') {
     return this.setValidatorRequirement('isDivisibleBy', formatValidationMessage(message, {number}), number);
   }
+
+  isFQDN(options = defaultFqdnOptions, message = '{name} must be a fully qualified domain name.') {
+    return this.setValidatorRequirement('isFQDN', message, options);
+  }
 }
 
 
 /*
-isEmail(str [, options])
-isFQDN(str [, options])
 isFloat(str [, options])
 isFullWidth(str)
 isHalfWidth(str)

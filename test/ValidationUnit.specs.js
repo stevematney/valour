@@ -652,4 +652,26 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isFQDN', () => {
+    beforeEach(() => {
+      unit = unit.isFQDN();
+    });
+
+    it('passes when the given value is a decimal number', (done) => {
+      unit.runValidation('www.domain.com').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a decimal number', (done) => {
+      unit.runValidation('nope', {}, 'Domain name field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Domain name field must be a fully qualified domain name.' ]);
+        done();
+      });
+    });
+  });
 });
