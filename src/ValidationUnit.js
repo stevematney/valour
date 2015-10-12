@@ -244,18 +244,36 @@ export default class ValidationUnit {
   isISIN(message = '{name} must be an ISIN.') {
     return this.setValidatorRequirement('isISIN', message);
   }
+
+  isISO8601(message = '{name} must be an ISO6801 date.') {
+    return this.setValidatorRequirement('isISO8601', message);
+  }
+
+  isIn(values, message = '{name} must be contained in {values}.') {
+    let formattedMessage = formatValidationMessage(message, { values: JSON.stringify(values) });
+    return this.setValidatorRequirement('isIn', formattedMessage, values);
+  }
+
+  isInt(options, message = '{name} must be an integer.') {
+    return this.setValidatorRequirement('isInt', message, options);
+  }
+
+  isJSON(message = '{name} must be JSON.') {
+    return this.setValidatorRequirement('isJSON', message);
+  }
+
+  isLength(min, max, message = '{name} must be at least {min} characters.') {
+    var formattedMessage = formatValidationMessage(message, {min, max});
+    return this.setValidatorRequirement('isLength', formattedMessage, min, max);
+  }
+
+  isLowercase(message = '{name} must be lowercase.') {
+    return this.setValidatorRequirement('isLowercase', message);
+  }
 }
 
 
 /*
-isISBN(str [, version])
-isISIN(str)
-isISO8601(str)
-isIn(str, values)
-isInt(str [, options])
-isJSON(str)
-isLength(str, min [, max])
-isLowercase(str)
 isMobilePhone(str, locale)
 isMongoId(str)
 isMultibyte(str)

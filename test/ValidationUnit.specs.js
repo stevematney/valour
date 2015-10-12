@@ -881,4 +881,136 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isISO8601', () => {
+    beforeEach(() => {
+      unit = unit.isISO8601();
+    });
+
+    it('passes when the given value is an ISO6801 date', (done) => {
+      unit.runValidation('2015-10-11').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not an ISO6801', (done) => {
+      unit.runValidation('nope', {}, 'ISO6801 field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'ISO6801 field must be an ISO6801 date.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isIn', () => {
+    beforeEach(() => {
+      unit = unit.isIn(['1', '2', '3', '4', '5']);
+    });
+
+    it('passes when the given value is in the given list', (done) => {
+      unit.runValidation('1').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not in the given list', (done) => {
+      unit.runValidation('nope', {}, 'Listed field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Listed field must be contained in ["1","2","3","4","5"].' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isInt', () => {
+    beforeEach(() => {
+      unit = unit.isInt();
+    });
+
+    it('passes when the given value is an integer', (done) => {
+      unit.runValidation('1').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not an integer', (done) => {
+      unit.runValidation('1.01', {}, 'Integer field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Integer field must be an integer.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isJSON', () => {
+    beforeEach(() => {
+      unit = unit.isJSON();
+    });
+
+    it('passes when the given value is JSON', (done) => {
+      unit.runValidation('{"number": 1}').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not an integer', (done) => {
+      unit.runValidation('nope', {}, 'JSON field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'JSON field must be JSON.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isLength', () => {
+    beforeEach(() => {
+      unit = unit.isLength(4);
+    });
+
+    it('passes when the given value is at least the given length', (done) => {
+      unit.runValidation('four').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not at lest the given length', (done) => {
+      unit.runValidation('no', {}, 'Length field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Length field must be at least 4 characters.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isLowercase', () => {
+    beforeEach(() => {
+      unit = unit.isLowercase();
+    });
+
+    it('passes when the given value is lowercase', (done) => {
+      unit.runValidation('lowercase').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not lowercase', (done) => {
+      unit.runValidation('NOPE', {}, 'Lowercase field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Lowercase field must be lowercase.' ]);
+        done();
+      });
+    });
+  });
 });
