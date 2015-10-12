@@ -636,14 +636,14 @@ describe('ValidationUnit', () => {
       unit = unit.isDivisibleBy(2);
     });
 
-    it('passes when the given value is a decimal number', (done) => {
+    it('passes when the given value a divisble by the number', (done) => {
       unit.runValidation('4').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a decimal number', (done) => {
+    it('fails when the given value is not divisble by the number', (done) => {
       unit.runValidation('3', {}, 'Divisible field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
@@ -658,18 +658,115 @@ describe('ValidationUnit', () => {
       unit = unit.isFQDN();
     });
 
-    it('passes when the given value is a decimal number', (done) => {
+    it('passes when the given value is a fully qualified domain name', (done) => {
       unit.runValidation('www.domain.com').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a decimal number', (done) => {
+    it('fails when the given value is not an FQDN', (done) => {
       unit.runValidation('nope', {}, 'Domain name field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([ 'Domain name field must be a fully qualified domain name.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isFloat', () => {
+    beforeEach(() => {
+      unit = unit.isFloat();
+    });
+
+    it('passes when the given value is a float', (done) => {
+      unit.runValidation('1.01').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a float', (done) => {
+      unit.runValidation('nope', {}, 'Float field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Float field must be a float.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isFullWidth', () => {
+    beforeEach(() => {
+      unit = unit.isFullWidth();
+    });
+
+    it('passes when the given value contains any full width characters', (done) => {
+      unit.runValidation('Ｙｅｓ').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value does not contain full width characters', (done) => {
+      unit.runValidation('nope', {}, 'Fullwidth field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Fullwidth field must contain fullwidth characters.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isHalfWidth', () => {
+    beforeEach(() => {
+      unit = unit.isHalfWidth();
+    });
+
+    it('passes when the given value contains any halfwidth characters', (done) => {
+      unit.runValidation('yes').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value does not contain halfwidth characters', (done) => {
+      unit.runValidation('Ｎｏｐｅ', {}, 'Halfwidth field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Halfwidth field must contain halfwidth characters.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isVariableWidth', () => {
+    beforeEach(() => {
+      unit = unit.isVariableWidth();
+    });
+
+    it('passes when the given value contains both halfwidth and fullwidth characters', (done) => {
+      unit.runValidation('yes and Ｙｅｓ').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value does not contain halfwidth characters', (done) => {
+      unit.runValidation('Ｎｏｐｅ', {}, 'Variable width field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Variable width field must contain fullwidth and halfwidth characters.' ]);
+        done();
+      });
+    });
+
+    it('fails when the given value does not contain fullwidth characters', (done) => {
+      unit.runValidation('nope', {}, 'Variable width field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Variable width field must contain fullwidth and halfwidth characters.' ]);
         done();
       });
     });

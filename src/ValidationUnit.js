@@ -208,13 +208,26 @@ export default class ValidationUnit {
   isFQDN(options = defaultFqdnOptions, message = '{name} must be a fully qualified domain name.') {
     return this.setValidatorRequirement('isFQDN', message, options);
   }
+
+  isFloat(options, message = '{name} must be a float.') {
+    return this.setValidatorRequirement('isFloat', message, options);
+  }
+
+  isFullWidth(message = '{name} must contain fullwidth characters.') {
+    return this.setValidatorRequirement('isFullWidth', message);
+  }
+
+  isHalfWidth(message = '{name} must contain halfwidth characters.') {
+    return this.setValidatorRequirement('isHalfWidth', message);
+  }
+
+  isVariableWidth(message = '{name} must contain fullwidth and halfwidth characters.') {
+    return this.setValidatorRequirement('isVariableWidth', message);
+  }
 }
 
 
 /*
-isFloat(str [, options])
-isFullWidth(str)
-isHalfWidth(str)
 isHexColor(str)
 isHexadecimal(str)
 isIP(str [, version])
@@ -235,6 +248,5 @@ isSurrogatePair(str)
 isURL(str [, options])
 isUUID(str [, version])
 isUppercase(str)
-isVariableWidth(str)
 matches(str, pattern [, modifiers])
  */
