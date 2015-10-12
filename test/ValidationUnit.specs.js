@@ -784,7 +784,7 @@ describe('ValidationUnit', () => {
       });
     });
 
-    it('fails when the given value does not contain fullwidth characters', (done) => {
+    it('fails when the given value is not a hex color', (done) => {
       unit.runValidation('nope', {}, 'Hex Color field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
@@ -799,18 +799,84 @@ describe('ValidationUnit', () => {
       unit = unit.isHexadecimal();
     });
 
-    it('passes when the given value is a hexadecimal color', (done) => {
+    it('passes when the given value is a hexadecimal number', (done) => {
       unit.runValidation('fff0abab').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value does not contain fullwidth characters', (done) => {
+    it('fails when the given value is not a hex number', (done) => {
       unit.runValidation('hihihi', {}, 'Hexadecimal field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([ 'Hexadecimal field must be a hexadecimal number.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isIP', () => {
+    beforeEach(() => {
+      unit = unit.isIP();
+    });
+
+    it('passes when the given value is an IP address', (done) => {
+      unit.runValidation('10.0.0.1').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not an IP address', (done) => {
+      unit.runValidation('nope', {}, 'IP field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'IP field must be an IP address.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isISBN', () => {
+    beforeEach(() => {
+      unit = unit.isISBN();
+    });
+
+    it('passes when the given value is an ISBN', (done) => {
+      unit.runValidation('978-0765350381').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not an ISBN', (done) => {
+      unit.runValidation('nope', {}, 'ISBN field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'ISBN field must be an ISBN.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isISIN', () => {
+    beforeEach(() => {
+      unit = unit.isISIN();
+    });
+
+    it('passes when the given value is an ISIN', (done) => {
+      unit.runValidation('US0378331005').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not an ISIN', (done) => {
+      unit.runValidation('nope', {}, 'ISIN field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'ISIN field must be an ISIN.' ]);
         done();
       });
     });

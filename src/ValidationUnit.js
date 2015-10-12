@@ -232,12 +232,22 @@ export default class ValidationUnit {
   isHexadecimal(message = '{name} must be a hexadecimal number.') {
     return this.setValidatorRequirement('isHexadecimal', message);
   }
+
+  isIP(version, message = '{name} must be an IP address.') {
+    return this.setValidatorRequirement('isIP', message, version);
+  }
+
+  isISBN(version, message = '{name} must be an ISBN.') {
+    return this.setValidatorRequirement('isISBN', message, version);
+  }
+
+  isISIN(message = '{name} must be an ISIN.') {
+    return this.setValidatorRequirement('isISIN', message);
+  }
 }
 
 
 /*
-isHexadecimal(str)
-isIP(str [, version])
 isISBN(str [, version])
 isISIN(str)
 isISO8601(str)
