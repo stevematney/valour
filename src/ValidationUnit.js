@@ -271,6 +271,10 @@ export default class ValidationUnit {
     return this.setValidatorRequirement('isLowercase', message);
   }
 
+  isUppercase(message = '{name} must be uppercase.') {
+    return this.setValidatorRequirement('isUppercase', message);
+  }
+
   isMobilePhone(locale = 'en-US', message = '{name} must be a phone number.') {
     return this.setValidatorRequirement('isMobilePhone', message, locale);
   }
@@ -290,13 +294,21 @@ export default class ValidationUnit {
   isNumeric(message = '{name} must be numeric.') {
     return this.setValidatorRequirement('isNumeric', message);
   }
+
+  isSurrogatePair(message = '{name} must be a surrogate pair.') {
+    return this.setValidatorRequirement('isSurrogatePair', message);
+  }
+
+  isURL(options, message = '{name} must be a url.') {
+    return this.setValidatorRequirement('isURL', message, options);
+  }
+
+  isUUID(version, message = '{name} must be a UUID.') {
+    return this.setValidatorRequirement('isUUID', message, version);
+  }
+
+  matches(pattern, modifiers, message = '{name} must match {pattern}.') {
+    let formattedMessage = formatValidationMessage(message, {pattern});
+    return this.setValidatorRequirement('matches', formattedMessage, pattern, modifiers);
+  }
 }
-
-
-/*
-isSurrogatePair(str)
-isURL(str [, options])
-isUUID(str [, version])
-isUppercase(str)
-matches(str, pattern [, modifiers])
- */

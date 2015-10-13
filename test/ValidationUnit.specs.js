@@ -1014,6 +1014,28 @@ describe('ValidationUnit', () => {
     });
   });
 
+  describe('isUppercase', () => {
+    beforeEach(() => {
+      unit = unit.isUppercase();
+    });
+
+    it('passes when the given value is uppercase', (done) => {
+      unit.runValidation('UPPERCASE').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not lowercase', (done) => {
+      unit.runValidation('nope', {}, 'Uppercase field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Uppercase field must be uppercase.' ]);
+        done();
+      });
+    });
+  });
+
   describe('isMobilePhone', () => {
     beforeEach(() => {
       unit = unit.isMobilePhone();
@@ -1114,11 +1136,98 @@ describe('ValidationUnit', () => {
       });
     });
 
-    it('fails when the given value is not null', (done) => {
+    it('fails when the given value is not numeric', (done) => {
       unit.runValidation('nope', {}, 'Numeric field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([ 'Numeric field must be numeric.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isSurrogatePair', () => {
+    beforeEach(() => {
+      unit = unit.isSurrogatePair();
+    });
+
+    it('passes when the given value is a surrogate pair', (done) => {
+      unit.runValidation('\uD800\uDC00').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a surrogate pair', (done) => {
+      unit.runValidation('nope', {}, 'Surrogate pair field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Surrogate pair field must be a surrogate pair.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isUrl', () => {
+    beforeEach(() => {
+      unit = unit.isURL();
+    });
+
+    it('passes when the given value is a url', (done) => {
+      unit.runValidation('http://yes.it/is').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a url', (done) => {
+      unit.runValidation('nope', {}, 'Url field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Url field must be a url.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isUUID', () => {
+    beforeEach(() => {
+      unit = unit.isUUID();
+    });
+
+    it('passes when the given value is a UUID', (done) => {
+      unit.runValidation('de305d54-75b4-431b-adb2-eb6b9e546014').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a UUID', (done) => {
+      unit.runValidation('nope', {}, 'UUID field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'UUID field must be a UUID.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('matches', () => {
+    beforeEach(() => {
+      unit = unit.matches(/^Yes$/);
+    });
+    it('passes when the value given matches', (done) => {
+      unit.runValidation('Yes').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value does not match', (done) => {
+      unit.runValidation('nope', {}, 'Yes field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Yes field must match /^Yes$/.' ]);
         done();
       });
     });
