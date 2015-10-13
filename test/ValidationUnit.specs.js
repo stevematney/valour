@@ -1013,4 +1013,114 @@ describe('ValidationUnit', () => {
       });
     });
   });
+
+  describe('isMobilePhone', () => {
+    beforeEach(() => {
+      unit = unit.isMobilePhone();
+    });
+
+    it('passes when the given value is a phone number', (done) => {
+      unit.runValidation('8018858458').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a phone number', (done) => {
+      unit.runValidation('nope', {}, 'Phone number field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Phone number field must be a phone number.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isMongoId', () => {
+    beforeEach(() => {
+      unit = unit.isMongoId();
+    });
+
+    it('passes when the given value is a mongo id', (done) => {
+      unit.runValidation('507f1f77bcf86cd799439011').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not a mongo id', (done) => {
+      unit.runValidation('nope', {}, 'Mongo id field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Mongo id field must be a MongoDB id.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isMultibyte', () => {
+    beforeEach(() => {
+      unit = unit.isMultibyte();
+    });
+
+    it('passes when the given value contains multibyte characters', (done) => {
+      unit.runValidation('𝌆').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value does not contain multibyte characters', (done) => {
+      unit.runValidation(' ', {}, 'Multibyte field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Multibyte field must contain multibyte characters.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isNull', () => {
+    beforeEach(() => {
+      unit = unit.isNull();
+    });
+
+    it('passes when the given value is null', (done) => {
+      unit.runValidation(null).then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not null', (done) => {
+      unit.runValidation('nope', {}, 'Null field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Null field must be null.' ]);
+        done();
+      });
+    });
+  });
+
+  describe('isNumeric', () => {
+    beforeEach(() => {
+      unit = unit.isNumeric();
+    });
+
+    it('passes when the given value is numeric', (done) => {
+      unit.runValidation('1234').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails when the given value is not null', (done) => {
+      unit.runValidation('nope', {}, 'Numeric field').then(() => {
+        let result = unit.getState();
+        expect(result.valid).to.be.false;
+        expect(result.messages).to.deep.equal([ 'Numeric field must be numeric.' ]);
+        done();
+      });
+    });
+  });
 });

@@ -270,15 +270,30 @@ export default class ValidationUnit {
   isLowercase(message = '{name} must be lowercase.') {
     return this.setValidatorRequirement('isLowercase', message);
   }
+
+  isMobilePhone(locale = 'en-US', message = '{name} must be a phone number.') {
+    return this.setValidatorRequirement('isMobilePhone', message, locale);
+  }
+
+  isMongoId(message = '{name} must be a MongoDB id.') {
+    return this.setValidatorRequirement('isMongoId', message);
+  }
+
+  isMultibyte(message = '{name} must contain multibyte characters.') {
+    return this.setValidatorRequirement('isMultibyte', message);
+  }
+
+  isNull(message = '{name} must be null.') {
+    return this.setValidatorRequirement('isNull', message);
+  }
+
+  isNumeric(message = '{name} must be numeric.') {
+    return this.setValidatorRequirement('isNumeric', message);
+  }
 }
 
 
 /*
-isMobilePhone(str, locale)
-isMongoId(str)
-isMultibyte(str)
-isNull(str)
-isNumeric(str)
 isSurrogatePair(str)
 isURL(str [, options])
 isUUID(str [, version])
