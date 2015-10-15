@@ -2,6 +2,8 @@ Valour
 ===
 ## Simple javascript validation for any app.
 
+![Travis CI Build](https://travis-ci.org/stevematney/valour.svg?branch=master)
+
 Usage
 --
 
