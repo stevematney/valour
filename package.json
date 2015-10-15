@@ -2,9 +2,11 @@
   "name": "valour",
   "version": "0.0.1",
   "description": "Simple javascript validation for any application",
-  "main": "index.js",
+  "main": "lib/valour.js",
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha"
+    "test": "./node_modules/mocha/bin/mocha",
+    "compile": "node ./node_modules/babel/bin/babel -d lib/ src/",
+    "prepublish": "npm run compile"
   },
   "keywords": [
     "validation",
@@ -13,6 +15,11 @@
   ],
   "author": "Steve Matney",
   "license": "MIT",
+  "repository": "stevematney/valour",
+  "dependencies": {
+    "validator": "^4.0.5",
+    "lodash": "^3.10.1"
+  },
   "devDependencies": {
     "babel": "^5.8.21",
     "chai": "^3.2.0",
