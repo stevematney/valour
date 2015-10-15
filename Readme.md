@@ -1,4 +1,4 @@
-Validation
+Valour
 ===
 ## Simple javascript validation for any app.
 
@@ -7,11 +7,11 @@ Usage
 
 ### Self-managed
 ```javascript
-var validation = require('validation');
+var valour = require('valour');
 var result;
 
-validation.register('formName', {
-  'email': validation.rule.isRequired()
+valour.register('formName', {
+  'email': valour.rule.isRequired()
                      .isEmail()
                      .isValidatedBy(function (value) {
                        var disallowedNames = ['joe@notallowed.com', 'steve@isnotavailable.com', 'donotallow@anything.com'];
@@ -25,16 +25,16 @@ validation.register('formName', {
   result = res;
  });
 
-validation.runValidation('formName', { email: 'myemail@emailtown.com' });
+valour.runValidation('formName', { email: 'myemail@emailtown.com' });
 // result === { 'email': {valid: true} }
 
-validation.forceValidation('formName', {});
+valour.forceValidation('formName', {});
 // result === {'email': {valid: false, messages: ['email is required.']}}
-validation.runValidation('formName', { email: 'notanemail' });
+valour.runValidation('formName', { email: 'notanemail' });
 // result === { 'email': {valid: false, messages: ['email must be a valid email address']} }
-validation.runValidation('formName', { email: 'joe@notallowed.com' });
+valour.runValidation('formName', { email: 'joe@notallowed.com' });
 // result === { 'email': {valid: false, messages: ['This email is not allowed']} }
-validation.runValidation('formName', { email: 'joe@isallowed.com', confirmEmail: 'joe@notallowed.com' });
+valour.runValidation('formName', { email: 'joe@isallowed.com', confirmEmail: 'joe@notallowed.com' });
 // result === { 'email': {valid: false, messages: ['The email field cannot be in your other addresses.']} }
 ```
 
@@ -55,8 +55,8 @@ function rejectResult() {
   resolve();
 }
 
-validation.register('formName', {
-  'email': validation.rule.isEventuallyValidatedBy(
+valour.register('formName', {
+  'email': valour.rule.isEventuallyValidatedBy(
     function (value, allValues, resolve, reject) {
       resolve = resolve;
       reject = reject;
@@ -65,16 +65,16 @@ validation.register('formName', {
     result = res;
   });
 
-validation.runValidation('formName', { email: 'myemail@emailtown.com' });
+valour.runValidation('formName', { email: 'myemail@emailtown.com' });
 // result === { 'email': { waiting: true }}
 
 resolveResult();
 // result === { 'email': { valid: true }}
 
-validationResult = validation.runValidation('formName', { email: 'myemail@emailtown.com' });
+valour.runValidation('formName', { email: 'myemail@emailtown.com' });
 // result === { 'email': { waiting: true }}
 
 rejectResult();
-validationResult = validation.getResult('formName');
+valour.runValidation('formName', { email: 'myemail@emailtown.com' });
 // result === { 'email': { valid: false }}
 ```

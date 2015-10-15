@@ -1,13 +1,15 @@
 {
-  "name": "validation",
+  "name": "valour",
   "version": "0.0.1",
-  "description": "Simple validation for any application",
+  "description": "Simple javascript validation for any application",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha"
   },
   "keywords": [
-    "validation"
+    "validation",
+    "valour",
+    "validator"
   ],
   "author": "Steve Matney",
   "license": "MIT",

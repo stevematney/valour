@@ -1,16 +1,16 @@
 import {expect} from 'chai';
-import validation from '../src/validation';
+import valour from '../src/valour';
 import ValidationUnit from "../src/ValidationUnit";
 
 describe('validation', () => {
   afterEach(() => {
-    validation.forms = {};
-    validation.callbacks = {};
+    valour.forms = {};
+    valour.callbacks = {};
   });
 
   describe('rule', () => {
     it('returns a ValidationUnit', () => {
-      expect(validation.rule.isEmail()).not.to.be.null;
+      expect(valour.rule.isEmail()).not.to.be.null;
     });
   });
 
@@ -20,13 +20,13 @@ describe('validation', () => {
         let validated = 'we did it!';
         return validated;
       };
-      validation.onUpdated('newForm', validatedFunc);
-      expect(validation.callbacks['newForm']).to.contain(validatedFunc);
+      valour.onUpdated('newForm', validatedFunc);
+      expect(valour.callbacks['newForm']).to.contain(validatedFunc);
     });
 
     it('does not add a callback when the given callback is falsey', () => {
-      validation.onUpdated('newForm', null);
-      expect(validation.callbacks['newForm']).to.be.falsey;
+      valour.onUpdated('newForm', null);
+      expect(valour.callbacks['newForm']).to.be.falsey;
     });
   });
 
@@ -36,16 +36,16 @@ describe('validation', () => {
       formResult;
 
     beforeEach(() => {
-      emailValidation = validation.rule.isEmail().isRequired();
-      phoneValidation = validation.rule.isMobilePhone();
-      validation.register('newForm', {
+      emailValidation = valour.rule.isEmail().isRequired();
+      phoneValidation = valour.rule.isMobilePhone();
+      valour.register('newForm', {
         email: emailValidation,
         phone: phoneValidation
       }, (results) => {
         return results;
       });
 
-      formResult = validation.getForm('newForm');
+      formResult = valour.getForm('newForm');
     });
     
     it('registers a form', () => {
@@ -59,7 +59,7 @@ describe('validation', () => {
     });
 
     it('adds a callback if given', () => {
-      expect(validation.callbacks['newForm'].length).to.equal(1);
+      expect(valour.callbacks['newForm'].length).to.equal(1);
     });
   });
 
@@ -70,23 +70,23 @@ describe('validation', () => {
       formResult;
 
     beforeEach(() => {
-      emailValidation = validation.rule.isEmail().isRequired();
-      phoneValidation = validation.rule.isMobilePhone();
+      emailValidation = valour.rule.isEmail().isRequired();
+      phoneValidation = valour.rule.isMobilePhone();
       postEmailValidation = new ValidationUnit(emailValidation).matches(/\./);
-      validation.register('newForm', {
+      valour.register('newForm', {
         email: emailValidation,
         phone: phoneValidation
       }, (results) => {
         return results;
       });
 
-      validation.update('newForm', {
-        email: validation.rule.matches(/\./)
+      valour.update('newForm', {
+        email: valour.rule.matches(/\./)
       }, (res) => {
         return res && true;
       });
 
-      formResult = validation.getForm('newForm');
+      formResult = valour.getForm('newForm');
     });
     
     it('registers a form', () => {
@@ -99,7 +99,7 @@ describe('validation', () => {
     });
 
     it('adds a callback if given', () => {
-      expect(validation.callbacks['newForm'].length).to.equal(2);
+      expect(valour.callbacks['newForm'].length).to.equal(2);
     });
   });
 
@@ -108,7 +108,7 @@ describe('validation', () => {
       phoneValidation,
       requiredValidation,
       register = (callback) => {
-        validation.register('newForm', {
+        valour.register('newForm', {
           email: emailValidation,
           phone: phoneValidation,
           required: requiredValidation
@@ -116,9 +116,9 @@ describe('validation', () => {
       };
 
     beforeEach(() => {
-      emailValidation = validation.rule.isEmail().isRequired();
-      phoneValidation = validation.rule.isMobilePhone();
-      requiredValidation = validation.rule.isRequired();
+      emailValidation = valour.rule.isEmail().isRequired();
+      phoneValidation = valour.rule.isMobilePhone();
+      requiredValidation = valour.rule.isRequired();
     });
 
     describe('runValidation', () => {
@@ -130,7 +130,7 @@ describe('validation', () => {
           done();
         });
 
-        validation.runValidation('newForm', {
+        valour.runValidation('newForm', {
           email: 'notanemail',
           phone: 'notanumber'
         });
@@ -146,7 +146,7 @@ describe('validation', () => {
           done();
         });
 
-        validation.forceValidation('newForm', {
+        valour.forceValidation('newForm', {
           email: 'notanemail',
           phone: 'notanumber'
         });

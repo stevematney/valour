@@ -1,7 +1,7 @@
 import ValidationUnit from './ValidationUnit';
 import throttle from 'lodash/function/throttle';
 
-class Validation {
+class Valour {
   constructor() {
     this.forms = {};
     this.callbacks = {};
@@ -79,4 +79,4 @@ class Validation {
   }
 }
 
-export default new Validation();
+export default new Valour();
