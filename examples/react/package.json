@@ -5,16 +5,21 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "babel -d ./view/content/scripts ./view/content/src && webpack"
+    "compile": "webpack",
+    "server": "node ./server/app.js",
+    "ww": "webpack --progress --colors -w"
   },
   "author": "Steve Matney",
   "license": "MIT",
   "dependencies": {
     "express": "^4.13.3",
     "react": "^0.14.0",
+    "react-dom": "^0.14.0",
     "valour": "0.0.1"
   },
   "devDependencies": {
+    "babel-core": "^5.8.25",
+    "babel-loader": "^5.3.2",
     "webpack": "^1.12.2"
   }
 }
