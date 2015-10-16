@@ -1,0 +1,20 @@
+{
+  "name": "valour-react-example",
+  "version": "0.0.1",
+  "description": "A react example using valour.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "babel -d ./view/content/scripts ./view/content/src && webpack"
+  },
+  "author": "Steve Matney",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.3",
+    "react": "^0.14.0",
+    "valour": "0.0.1"
+  },
+  "devDependencies": {
+    "webpack": "^1.12.2"
+  }
+}
