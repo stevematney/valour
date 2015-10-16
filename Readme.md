@@ -46,7 +46,7 @@ An important distinction here is the difference between `runValidation` and `for
 ### Async validation
 
 ```javascript
-var validation = require('validation');
+var valour = require('valour');
 var resolve, reject, result;
 
 function resolveResult() {
