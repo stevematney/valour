@@ -12,6 +12,9 @@
     "jsx": true
   },
   "rules" : {
-    "semi": [2, "always"]
-  }
+    "semi": [2, "always"],
+    "react/jsx-uses-react": 1,
+    "react/jsx-uses-vars": 1
+  },
+  "plugins": [ "react" ]
 }
