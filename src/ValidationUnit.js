@@ -1,6 +1,8 @@
 import validator from 'validator';
 import functionsEqual from './util/functions-equal';
 import formatValidationMessage from './util/format-validation-message';
+import isUndefined from 'lodash/lang/isUndefined';
+import isNull from 'lodash/lang/isNull';
 
 function getDates(beforeIn, afterIn) {
   let before = new Date(beforeIn.toString());
@@ -30,6 +32,10 @@ let defaultFqdnOptions = {
   allow_trailing_dot: false
 };
 
+let requiredFunc = val => !!val;
+
+let isCheckable = val => !isUndefined(val) && !isNull(val) && val.toString().length;
+
 export default class ValidationUnit {
   constructor(...existing) {
     this.rules = existing
@@ -44,8 +50,12 @@ export default class ValidationUnit {
                    }, []);
   }
 
+  hasIsRequired() {
+    return this.rules.some(x => functionsEqual(x.func, requiredFunc));
+  }
+
   createCustomPromiseGenerator(func) {
-    return (val, allValues, messageList, name) => new Promise((resolve, reject) => func(val, allValues, messageList, name, resolve, reject));
+    return (val, allValues, messageList, name) => new Promise((resolve, reject) => (!this.hasIsRequired() && !isCheckable(val)) || func(val, allValues, messageList, name, resolve, reject));
   }
 
   createPromiseGenerator(func, message) {
@@ -111,7 +121,7 @@ export default class ValidationUnit {
   }
 
   isRequired(message = '{name} is required.') {
-    return this.setRequirement(val => !!val, '{name} is required.', message);
+    return this.setRequirement(requiredFunc, '{name} is required.', message);
   }
 
   isEmail(message = '{name} must be a valid email address.') {
@@ -285,10 +295,6 @@ export default class ValidationUnit {
 
   isMultibyte(message = '{name} must contain multibyte characters.') {
     return this.setValidatorRequirement('isMultibyte', message);
-  }
-
-  isNull(message = '{name} must be null.') {
-    return this.setValidatorRequirement('isNull', message);
   }
 
   isNumeric(message = '{name} must be numeric.') {

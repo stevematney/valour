@@ -1102,28 +1102,6 @@ describe('ValidationUnit', () => {
     });
   });
 
-  describe('isNull', () => {
-    beforeEach(() => {
-      unit = unit.isNull();
-    });
-
-    it('passes when the given value is null', (done) => {
-      unit.runValidation(null).then(() => {
-        expect(unit.getState().valid).to.be.true;
-        done();
-      });
-    });
-
-    it('fails when the given value is not null', (done) => {
-      unit.runValidation('nope', {}, 'Null field').then(() => {
-        let result = unit.getState();
-        expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Null field must be null.' ]);
-        done();
-      });
-    });
-  });
-
   describe('isNumeric', () => {
     beforeEach(() => {
       unit = unit.isNumeric();
@@ -1230,6 +1208,17 @@ describe('ValidationUnit', () => {
         expect(result.messages).to.deep.equal([ 'Yes field must match /^Yes$/.' ]);
         done();
       });
+    });
+  });
+
+  describe('hasIsRequired', () => {
+    it('returns true when the unit is required', () => {
+      unit = unit.isRequired();
+      expect(unit.hasIsRequired()).to.be.true;
+    });
+
+    it('returns false when the unit is not required', () => {
+      expect(unit.hasIsRequired()).to.be.false;
     });
   });
 });
