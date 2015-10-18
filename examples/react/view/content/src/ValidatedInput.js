@@ -4,7 +4,16 @@ import props from './input-props';
 import valour from 'valour';
 
 export default class ValidatedInput extends React.Component {
-  static propTypes = props;
+  static propTypes = {
+    ...props,
+    getSanitizedValue: React.PropTypes.func,
+    getValidation: React.PropTypes.func
+  }
+
+  static defaultProps = {
+    getSanitizedValue: val => val,
+    getValidation: () => valour.rule
+  }
 
   constructor() {
     super();
@@ -19,7 +28,8 @@ export default class ValidatedInput extends React.Component {
   }
 
   render() {
-    let {name, id, labelValue, valid} = this.props;
+    let {name, id, labelValue, required} = this.props;
+    let {valid} = this.state;
     id = id || name;
     let containerClasses = classNames('form-group', {
       'has-error': valid === false,
@@ -29,11 +39,30 @@ export default class ValidatedInput extends React.Component {
       <div className={containerClasses}>
         <br />
         <label htmlFor={id}>
-          { labelValue }
+          { labelValue }{ required ? '*' : '' }
         </label>
         <input type='text' className='form-control' name={name} id={id} onChange={this.handleChange} />
         <br />
       </div>
     );
+  }
+
+  setRequired(name, existingConfig) {
+    if (!this.props.required) {
+      return existingConfig;
+    }
+    return existingConfig.isRequired();
+  }
+
+  componentDidMount() {
+    let formValidation = {};
+    let { name } = this.props;
+    formValidation[name] = this.props.getValidation();
+    formValidation[name] = this.setRequired(name, formValidation[name]);
+    valour.update(this.props.formName, formValidation, (result) => {
+      this.setState({
+        valid: result[this.props.name].valid
+      });
+    });
   }
 }

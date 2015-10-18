@@ -5,5 +5,6 @@ export default {
   id: props.string,
   labelValue: props.string.isRequired,
   valid: props.bool,
-  formName: props.string.isRequired
+  formName: props.string.isRequired,
+  required: props.bool
 };
