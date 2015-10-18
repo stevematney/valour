@@ -77,6 +77,11 @@ class Valour {
   forceValidation(name, data) {
     this.runValidation(name, data, true);
   }
+
+  isValid(name) {
+    let result = this.getResult(name);
+    return !Object.keys(result).some((key) => result[key].valid === false);
+  }
 }
 
 export default new Valour();

@@ -153,4 +153,37 @@ describe('validation', () => {
       });
     });
   });
+
+  describe('isValid', () => {
+    let register = (callback) => {
+      valour.register('newForm', {
+        email: valour.rule.isEmail(),
+        phone: valour.rule.isMobilePhone()
+      }, callback);
+    };
+
+    it('returns true when all fields are valid', (done) => {
+      register(() => {
+        expect(valour.isValid('newForm')).to.be.true;
+        done();
+      });
+
+      valour.runValidation('newForm', {
+        email: 'anemail@mail.com',
+        phone: '5544554554'
+      });
+    });
+
+    it('returns false when any fields are invalid', (done) => {
+      register(() => {
+        expect(valour.isValid('newForm')).to.be.false;
+        done();
+      });
+
+      valour.runValidation('newForm', {
+        email: 'notanemail',
+        phone: '5544554554'
+      });
+    });
+  });
 });
