@@ -55,7 +55,7 @@ export default class ValidationUnit {
   }
 
   createCustomPromiseGenerator(func) {
-    return (val, allValues, messageList, name) => new Promise((resolve, reject) => (!this.hasIsRequired() && !isCheckable(val)) || func(val, allValues, messageList, name, resolve, reject));
+    return (val, allValues, messageList, name) => new Promise((resolve, reject) =>  func(val, allValues, messageList, name, resolve, reject));
   }
 
   createPromiseGenerator(func, message) {
@@ -72,6 +72,9 @@ export default class ValidationUnit {
     this.valid = undefined;
     this.messages = [];
     let generators = this.rules.map((rule) => rule.generator);
+    if (!this.hasIsRequired() && !isCheckable(value)) {
+      return Promise.resolve(true).then(() => this.valid = true);
+    }
     return Promise.all(generators.map((gen) => gen(value, allValues, this.messages, name)))
                   .then(() => this.valid = true,
                         () => this.valid = false);

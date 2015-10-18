@@ -79,6 +79,19 @@ describe('ValidationUnit', () => {
     });
   });
 
+  describe('non-required rules', () => {
+    beforeEach(() => {
+      unit = unit.isEmail();
+    });
+
+    it('is valid if the value is not checkable', (done) => {
+      unit.runValidation(null).then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+  });
+
   describe('isValidatedBy', () => {
     let matches = ['foo', 'bar'];
     beforeEach(() => {
