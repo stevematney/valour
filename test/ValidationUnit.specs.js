@@ -15,8 +15,8 @@ describe('ValidationUnit', () => {
     it('will take a ValidationUnit with existing rules', () => {
       let fakeUnit = new ValidationUnit();
       fakeUnit.rules = [
-        {forced: true, func: () => 'hello!', generator: () => {}},
-        {forced: false, func: () => 'hola señor!', generator: () => {}}
+        {forced: true, func: () => 'hello!', generator: () => {}, name: 'hello'},
+        {forced: false, func: () => 'hola señor!', generator: () => {}, name: 'hola'}
       ];
       expect(new ValidationUnit(fakeUnit).rules).to.deep.equal(fakeUnit.rules);
     });
@@ -24,9 +24,9 @@ describe('ValidationUnit', () => {
     it('will take multiple units with multiple rules and reduce them to a list of rules without duplicates (other than forced funcs)', () => {
       let forcedRule = {forced: true, func: () => 'yo', generator: () => {}};
       let finalList = [
-        {forced: false, func: () => 'hello!', generator: () => {}},
-        {forced: false, func: () => 'hola señor!', generator: () => {}},
-        {forced: false, func: () => 'holler!', generator: () => {}},
+        {forced: false, func: () => 'hello!', generator: () => {}, name: 'hello'},
+        {forced: false, func: () => 'hola señor!', generator: () => {}, name: 'hola'},
+        {forced: false, func: () => 'holler!', generator: () => {}, name: 'holler'},
         forcedRule,
         forcedRule
       ];

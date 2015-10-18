@@ -90,12 +90,8 @@ describe('validation', () => {
     });
     
     it('registers a form', () => {
-      expect(formResult).to.deep.equal({
-        email: postEmailValidation,
-        phone: phoneValidation
-      });
-
-      expect(formResult.email).to.deep.equal(postEmailValidation);
+      expect(formResult.email.rules.map(rule => rule.name)).to.deep.equal(['isEmail', 'isRequired', 'matches']);
+      expect(formResult.phone.rules.map(rule => rule.name)).to.deep.equal(['isMobilePhone']);
     });
 
     it('adds a callback if given', () => {

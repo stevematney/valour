@@ -1,5 +1,4 @@
 import validator from 'validator';
-import functionsEqual from './util/functions-equal';
 import formatValidationMessage from './util/format-validation-message';
 import isUndefined from 'lodash/lang/isUndefined';
 import isNull from 'lodash/lang/isNull';
@@ -42,7 +41,7 @@ export default class ValidationUnit {
                    .map(ex => ex.rules)
                    .reduce((list, existingRuleList) => [...list, ...existingRuleList], [])
                    .reduce((finalRules, rule) => {
-                     let hasEquivalent = finalRules.some(existingRule => functionsEqual(existingRule.func, rule.func));
+                     let hasEquivalent = finalRules.some(existingRule => existingRule.name === rule.name);
                      if (!rule.forced && hasEquivalent){
                        return finalRules;
                      }
@@ -51,7 +50,7 @@ export default class ValidationUnit {
   }
 
   hasIsRequired() {
-    return this.rules.some(x => functionsEqual(x.func, requiredFunc));
+    return this.rules.some(x => x.name === 'isRequired');
   }
 
   createCustomPromiseGenerator(func) {
@@ -92,23 +91,24 @@ export default class ValidationUnit {
   forceRequirement(func,
                    failureMessage,
                    generator = this.createPromiseGenerator(func, failureMessage),
+                   name,
                    forced = true) {
-    this.rules = [...this.rules, { func, forced, generator }];
+    this.rules = [...this.rules, { forced, generator, name }];
     return new ValidationUnit(this);
   }
 
-  setRequirement(func, failureMessage) {
+  setRequirement(func, failureMessage, name) {
     let matchingFuncs = this.rules.filter((rule) => !rule.forced)
-                                  .map((rule) => rule.func)
-                                  .filter((testFunc) => functionsEqual(testFunc, func));
+                                  .map((rule) => rule.name)
+                                  .filter((testName) => testName === name);
     if (matchingFuncs.length) {
       return this;
     }
-    return this.forceRequirement(func, failureMessage, undefined, false);
+    return this.forceRequirement(func, failureMessage, undefined, name, false);
   }
 
-  setValidatorRequirement(funcName, message, ...extraValues) {
-    return this.setRequirement(val => validator[funcName](val, ...extraValues), message);
+  setValidatorRequirement(funcName, message, ...extraParams) {
+    return this.setRequirement(val => validator[funcName](val, ...extraParams), message, funcName);
   }
 
   isValidatedBy(func, message) {
@@ -124,7 +124,7 @@ export default class ValidationUnit {
   }
 
   isRequired(message = '{name} is required.') {
-    return this.setRequirement(requiredFunc, '{name} is required.', message);
+    return this.setRequirement(requiredFunc, message, 'isRequired');
   }
 
   isEmail(message = '{name} must be a valid email address.') {
@@ -140,21 +140,21 @@ export default class ValidationUnit {
   }
 
   equalsOther(other, message = '{name} must be equal to {other}.') {
-    return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}));
+    return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}), 'equalsOther');
   }
 
   isAfter(date, message = '{name} must be after {date}.') {
     return this.setRequirement((val) => {
       let dates = getDates(date, val);
       return validator.isAfter(dates.after, dates.before);
-    }, formatValidationMessage(message, { date }));
+    }, formatValidationMessage(message, { date }), 'isAfter');
   }
 
   isBefore(date, message = '{name} must be before {date}.') {
     return this.setRequirement((val) => {
       let dates = getDates(val, date);
       return validator.isBefore(dates.before, dates.after);
-    }, formatValidationMessage(message, { date }));
+    }, formatValidationMessage(message, { date }), 'isBefore');
   }
 
   isAlpha(message = '{name} must use only alphabetical characters.') {
@@ -318,6 +318,6 @@ export default class ValidationUnit {
 
   matches(pattern, modifiers, message = '{name} must match {pattern}.') {
     let formattedMessage = formatValidationMessage(message, {pattern});
-    return this.setValidatorRequirement('matches', formattedMessage, pattern, modifiers);
+    return this.forceRequirement(val => validator.matches(val, pattern), formattedMessage, undefined, 'matches');
   }
 }
