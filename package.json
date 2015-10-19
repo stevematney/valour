@@ -1,11 +1,11 @@
 {
   "name": "valour",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Simple javascript validation for any application",
   "main": "lib/valour.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha",
-    "compile": "node ./node_modules/babel/bin/babel -d lib/ src/",
+    "compile": "node ./node_modules/babel/bin/babel --optional runtime -d lib/ src/",
     "prepublish": "npm run compile"
   },
   "keywords": [
@@ -18,7 +18,8 @@
   "repository": "stevematney/valour",
   "dependencies": {
     "lodash": "^3.10.1",
-    "validator": "^4.0.5"
+    "validator": "^4.0.5",
+    "babel-runtime": "^5.8.25"
   },
   "devDependencies": {
     "babel": "^5.8.23",
