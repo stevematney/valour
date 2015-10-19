@@ -1,6 +1,5 @@
 import {expect} from 'chai';
 import valour from '../src/valour';
-import ValidationUnit from "../src/ValidationUnit";
 
 describe('validation', () => {
   afterEach(() => {
@@ -49,13 +48,8 @@ describe('validation', () => {
     });
     
     it('registers a form', () => {
-      expect(formResult).to.deep.equal({
-        email: emailValidation,
-        phone: phoneValidation
-      });
-
-      expect(formResult.email).to.deep.equal(emailValidation);
-      expect(formResult.phone).to.deep.equal(phoneValidation);
+      expect(formResult.email.rules.map(rule => rule.name)).to.deep.equal(['isEmail', 'isRequired']);
+      expect(formResult.phone.rules.map(rule => rule.name)).to.deep.equal(['isMobilePhone']);
     });
 
     it('adds a callback if given', () => {
@@ -66,13 +60,11 @@ describe('validation', () => {
   describe('update', () => {
     let emailValidation,
       phoneValidation,
-      postEmailValidation,
       formResult;
 
     beforeEach(() => {
       emailValidation = valour.rule.isEmail().isRequired();
       phoneValidation = valour.rule.isMobilePhone();
-      postEmailValidation = new ValidationUnit(emailValidation).matches(/\./);
       valour.register('newForm', {
         email: emailValidation,
         phone: phoneValidation
@@ -90,7 +82,7 @@ describe('validation', () => {
     });
     
     it('registers a form', () => {
-      expect(formResult.email.rules.map(rule => rule.name)).to.deep.equal(['isEmail', 'isRequired', 'matches']);
+      expect(formResult.email.rules.map(rule => rule.name)).to.deep.equal(['isEmail', 'isRequired', 'matches /\\./']);
       expect(formResult.phone.rules.map(rule => rule.name)).to.deep.equal(['isMobilePhone']);
     });
 

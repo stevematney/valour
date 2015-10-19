@@ -35,6 +35,11 @@ describe('ValidationUnit', () => {
       let finalUnit = new ValidationUnit(unitOne, unitTwo);
       expect(finalUnit.rules).to.deep.equal(finalList);
     });
+
+    it('makes "isNot" rules for each "is" function', () => {
+      expect(unit.removeIsEmail).to.be.truthy;
+      expect(unit.removeIsMobilePhone).to.be.truthy;
+    });
   });
 
   describe('duplicate validation requirements', () => {
@@ -1232,6 +1237,17 @@ describe('ValidationUnit', () => {
 
     it('returns false when the unit is not required', () => {
       expect(unit.hasIsRequired()).to.be.false;
+    });
+  });
+
+  describe('remove', () => {
+    beforeEach(() => {
+      unit = unit.isEmail();
+    });
+
+    it('removes a rule', () => {
+      unit.remove('isEmail');
+      expect(unit.rules.length).to.equal(0);
     });
   });
 });

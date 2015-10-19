@@ -47,6 +47,19 @@ export default class ValidationUnit {
                      }
                      return [...finalRules, rule];
                    }, []);
+
+    this.rules.filter(rule => /^is[A-Z]/.test(rule.name))
+              .forEach(rule => {
+                var ruleType = rule.name.replace(/^i/, '');
+                this[`removeI${ruleType}`] = () => {
+                  return this.remove(rule.name);
+                };
+              });
+  }
+
+  remove(name) {
+    this.rules = this.rules.filter(rule => rule.name !== name);
+    return new ValidationUnit(this);
   }
 
   hasIsRequired() {
@@ -132,15 +145,27 @@ export default class ValidationUnit {
   }
 
   contains(needle, message = '{name} must contain "{needle}."') {
-    return this.setValidatorRequirement('contains', formatValidationMessage(message, {needle}), needle);
+    return this.setRequirement((val) => validator.contains(val, needle), formatValidationMessage(message, {needle}), `contains ${needle}`);
+  }
+
+  removeContains(needle) {
+    return this.remove(`contains ${needle}`);
   }
 
   equals(comparison, message = '{name} must equal "{comparison}."') {
-    return this.setValidatorRequirement('equals', formatValidationMessage(message, {comparison}), comparison);
+    return this.setRequirement((val) => validator.equals(val, comparison), formatValidationMessage(message, {comparison}), `equals ${comparison}`);
+  }
+
+  removeEquals(comparison) {
+    return this.remove(`equals ${comparison}`);
   }
 
   equalsOther(other, message = '{name} must be equal to {other}.') {
-    return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}), 'equalsOther');
+    return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}), `equalsOther ${other}`);
+  }
+
+  removeEqualsOther(other, message = '{name} must be equal to {other}.') {
+    return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}), `equalsOther ${other}`);
   }
 
   isAfter(date, message = '{name} must be after {date}.') {
@@ -318,6 +343,10 @@ export default class ValidationUnit {
 
   matches(pattern, modifiers, message = '{name} must match {pattern}.') {
     let formattedMessage = formatValidationMessage(message, {pattern});
-    return this.forceRequirement(val => validator.matches(val, pattern), formattedMessage, undefined, 'matches');
+    return this.setRequirement(val => validator.matches(val, pattern), formattedMessage, `matches ${pattern.toString()}`);
+  }
+
+  removeMatches(pattern) {
+    return this.remove(`matches ${pattern.toString()}`);
   }
 }
