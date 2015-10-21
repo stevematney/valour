@@ -6,5 +6,6 @@ export default {
   labelValue: props.string.isRequired,
   valid: props.bool,
   formName: props.string.isRequired,
-  required: props.bool
+  required: props.bool,
+  addValueFunc: props.func
 };

@@ -6,29 +6,50 @@ import valour from 'valour';
 export default class ValidatedInput extends React.Component {
   static propTypes = {
     ...props,
-    getSanitizedValue: React.PropTypes.func,
-    getValidation: React.PropTypes.func
+    type: React.PropTypes.string,
+    getSanitizedValue: React.PropTypes.func
   }
 
   static defaultProps = {
     getSanitizedValue: val => val,
-    getValidation: () => valour.rule
+    getValidation: () => valour.rule,
+    type: 'text'
   }
 
   constructor() {
     super();
     this.state = {};
-    this.handleChange = this.handleChange.bind(this);
   }
 
-  handleChange(ev) {
-    let validationObj = {};
-    validationObj[this.props.name] = this.props.getSanitizedValue(ev.target.value);
-    valour.runValidation(this.props.formName, validationObj);
+  setRequired(name, existingConfig) {
+    if (!this.props.required) {
+      return existingConfig;
+    }
+    return existingConfig.isRequired();
+  }
+
+  addValueFunc() {
+    this.props.addValueFunc(() => {
+      let values = {};
+      values[this.props.name] = this.props.getSanitizedValue(this.refs.input.value) || undefined;
+      return values;
+    });
+  }
+
+  addValidation() {
+    let formValidation = {};
+    let { name } = this.props;
+    formValidation[name] = this.props.getValidation();
+    formValidation[name] = this.setRequired(name, formValidation[name]);
+    valour.update(this.props.formName, formValidation, (result) => {
+      this.setState({
+        valid: result[this.props.name].valid
+      });
+    });
   }
 
   render() {
-    let {name, id, labelValue, required} = this.props;
+    let {name, id, labelValue, required, onChange, type} = this.props;
     let {valid} = this.state;
     id = id || name;
     let containerClasses = classNames('form-group', {
@@ -41,28 +62,14 @@ export default class ValidatedInput extends React.Component {
         <label htmlFor={id}>
           { labelValue }{ required ? '*' : '' }
         </label>
-        <input type='text' className='form-control' name={name} id={id} onChange={this.handleChange} />
+        <input type={ type } className='form-control' ref='input' name={name} id={id} onChange={onChange} />
         <br />
       </div>
     );
   }
 
-  setRequired(name, existingConfig) {
-    if (!this.props.required) {
-      return existingConfig;
-    }
-    return existingConfig.isRequired();
-  }
-
   componentDidMount() {
-    let formValidation = {};
-    let { name } = this.props;
-    formValidation[name] = this.props.getValidation();
-    formValidation[name] = this.setRequired(name, formValidation[name]);
-    valour.update(this.props.formName, formValidation, (result) => {
-      this.setState({
-        valid: result[this.props.name].valid
-      });
-    });
+    this.addValidation();
+    this.addValueFunc();
   }
 }
