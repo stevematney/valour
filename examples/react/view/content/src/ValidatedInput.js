@@ -23,7 +23,7 @@ export default class ValidatedInput extends React.Component {
 
   handleChange(ev) {
     let validationObj = {};
-    validationObj[this.props.name] = ev.target.value;
+    validationObj[this.props.name] = this.props.getSanitizedValue(ev.target.value);
     valour.runValidation(this.props.formName, validationObj);
   }
 
