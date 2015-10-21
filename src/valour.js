@@ -70,7 +70,7 @@ class Valour {
       if (data[key] === undefined && !force) {
         return;
       }
-      form[key].runValidation(data[key], form, key).then(runCallback);
+      form[key].runValidation(data[key], data, key).then(runCallback);
     });
   }
 
