@@ -3,7 +3,7 @@ import ValidatedInput from './ValidatedInput';
 import inputProps from './input-props';
 import valour from 'valour';
 
-export default class SsnInput extends React.Component {
+export default class EmailInput extends React.Component {
   static propTypes = inputProps;
   constructor() {
     super();
@@ -15,7 +15,7 @@ export default class SsnInput extends React.Component {
   }
 
   getValidation() {
-    return valour.rule.matches(/^\d{3}-?\d{2}-?\d{4}$/);
+    return valour.rule.isEmail();
   }
 
   render() {

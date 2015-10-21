@@ -5,6 +5,7 @@ import ValidatedForm from './ValidatedForm';
 import ValidatedInput from './ValidatedInput';
 import RequiredInput from './RequiredInput';
 import SsnInput from './SsnInput';
+import EmailInput from './EmailInput';
 
 export default function render() {
   let formName = 'CreateAccount';
@@ -22,7 +23,7 @@ export default function render() {
           <RequiredInput formName={formName} labelValue='First Name' name='FirstName'/>
           <RequiredInput formName={formName} labelValue='Last Name' name='LastName'/>
           <SsnInput      formName={formName} labelValue='Social Security Number' name='Ssn'/>
-          <ValidatedInput formName={formName} labelValue='Email' name='Email'/>
+          <EmailInput    formName={formName} labelValue='Email' name='Email'/>
           <ValidatedInput formName={formName} labelValue='Confirm Email' name='ConfirmEmail'/>
           <ValidatedInput formName={formName} labelValue='Password' name='Password'/>
           <ValidatedInput formName={formName} labelValue='Confirm Password' name='ConfirmPassword'/>
