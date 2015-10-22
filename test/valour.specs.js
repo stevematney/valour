@@ -46,7 +46,7 @@ describe('validation', () => {
 
       formResult = valour.getForm('newForm');
     });
-    
+
     it('registers a form', () => {
       expect(formResult.email.rules.map(rule => rule.name)).to.deep.equal(['isEmail', 'isRequired']);
       expect(formResult.phone.rules.map(rule => rule.name)).to.deep.equal(['isMobilePhone']);
@@ -80,7 +80,7 @@ describe('validation', () => {
 
       formResult = valour.getForm('newForm');
     });
-    
+
     it('registers a form', () => {
       expect(formResult.email.rules.map(rule => rule.name)).to.deep.equal(['isEmail', 'isRequired', 'matches /\\./']);
       expect(formResult.phone.rules.map(rule => rule.name)).to.deep.equal(['isMobilePhone']);
@@ -121,6 +121,21 @@ describe('validation', () => {
         valour.runValidation('newForm', {
           email: 'notanemail',
           phone: 'notanumber'
+        });
+      });
+
+      it('does a small wait to ensure each "synchronous" callback gets in', (done) => {
+        let time = (new Date()).getTime();
+        register(() => {
+          let newTime = (new Date()).getTime();
+          expect(newTime - time).to.be.greaterThan(100);
+          done();
+        });
+
+        valour.runValidation('newForm', {
+          email: 'notanemail',
+          phone: 'notanumber',
+          required: 'it is here!'
         });
       });
     });

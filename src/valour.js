@@ -1,5 +1,4 @@
 import ValidationUnit from './ValidationUnit';
-import throttle from 'lodash/function/throttle';
 
 class Valour {
   constructor() {
@@ -58,13 +57,16 @@ class Valour {
   }
 
   runValidation(name, data, force = false) {
-    let runCallback = throttle(() => {
-      let callbacks = this.getCallbacks(name);
-      let result = this.getResult(name);
-      callbacks.forEach((callback) => {
-        callback(result);
-      });
-    }, 100);
+    var callbackTimeout;
+    let runCallback = () => {
+      clearTimeout(callbackTimeout);
+      callbackTimeout = setTimeout(() => {
+        let result = this.getResult(name);
+        this.getCallbacks(name).forEach((callback) => {
+          callback(result);
+        });
+      }, 100);
+    };
     let form = this.getForm(name);
     Object.keys(form).forEach((key) => {
       if (data[key] === undefined && !force) {
