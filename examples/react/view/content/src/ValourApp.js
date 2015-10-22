@@ -14,8 +14,11 @@ export default class ValourApp extends React.Component {
     super();
     this.handleChange = this.handleChange.bind(this);
     this.addValueFunc = this.addValueFunc.bind(this);
+    this.focusEmail = this.focusEmail.bind(this);
+    this.focusWasGained = this.focusWasGained.bind(this);
     this.formName = 'CreateAccount';
     this.valueFuncs = [];
+    this.state = {};
   }
 
   getValidationValues() {
@@ -28,6 +31,18 @@ export default class ValourApp extends React.Component {
 
   handleChange() {
     valour.runValidation(this.formName, this.getValidationValues());
+  }
+
+  focusEmail() {
+    this.setState({
+      shouldFocusEmail: true
+    });
+  }
+
+  focusWasGained() {
+    this.setState({
+      shouldFocusEmail: false
+    });
   }
 
   render() {
@@ -61,6 +76,7 @@ export default class ValourApp extends React.Component {
               addValueFunc={this.addValueFunc}
               required={true}
               labelValue='Social Security Number'
+              onFocusLost={this.focusEmail}
               name='Ssn'/>
             <EmailInput
               formName={formName}
@@ -68,6 +84,8 @@ export default class ValourApp extends React.Component {
               addValueFunc={this.addValueFunc}
               required={true}
               labelValue='Email'
+              shouldFocus={this.state.shouldFocusEmail}
+              focusWasGained={this.focusWasGained}
               name='Email'/>
             <ConfirmEmailInput
               formName={formName}

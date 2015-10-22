@@ -7,5 +7,7 @@ export default {
   valid: props.bool,
   formName: props.string.isRequired,
   required: props.bool,
-  addValueFunc: props.func
+  addValueFunc: props.func.isRequired,
+  onFoucsLost: props.func,
+  shouldFocus: props.bool
 };

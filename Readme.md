@@ -41,7 +41,7 @@ valour.runValidation('formName', { email: 'joe@notallowed.com' });
 valour.runValidation('formName', { email: 'joe@isallowed.com', spouseEmail: 'joe@istallowed.com' });
 // result === { 'email': {valid: false, messages: ['The email field must be different from the spouse email.']} }
 valour.runValidation('formName', { email: 'joe@isallowed.com', confirmEmail: 'joe@isnotallowed.com' });
-// result === { 'email': {valid: false, messages: ['The confirmEmail field must be equal to email.']} }
+// result === { 'confirmEmail': {valid: false, messages: ['The confirmEmail field must be equal to email.']} }
 valour.runValidation('formName', { email: 'myemail@emailtown.com' });
 // result === { 'email': {valid: true} }
 ```

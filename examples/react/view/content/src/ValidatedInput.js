@@ -23,7 +23,8 @@ export default class ValidatedInput extends React.Component {
           { current.state.messages.map((message) => <li key={message}>{message}</li>) }
         </ul>
       );
-    }
+    },
+    onFocusLost: () => {}
   }
 
   constructor() {
@@ -32,6 +33,7 @@ export default class ValidatedInput extends React.Component {
       messages: []
     };
     this.handleChange = this.handleChange.bind(this);
+    this.changed = false;
   }
 
   setRequired(name, existingConfig) {
@@ -56,6 +58,7 @@ export default class ValidatedInput extends React.Component {
     formValidation[name] = this.setRequired(name, formValidation[name]);
     valour.update(this.props.formName, formValidation, (result) => {
       let theResult = result[this.props.name];
+      this.changed = false;
       this.setState({
         ...theResult
       });
@@ -63,11 +66,15 @@ export default class ValidatedInput extends React.Component {
   }
 
   handleChange(ev) {
-    if (this.currentValue === ev.target.value && this.state.waiting) {
-      return;
-    }
+    this.changed = true;
     this.currentValue = ev.target.value;
     this.props.onChange();
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    if (!this.state.waiting && nextState.waiting) {
+      this.props.onFocusLost();
+    }
   }
 
   render() {
@@ -102,5 +109,11 @@ export default class ValidatedInput extends React.Component {
   componentDidMount() {
     this.addValidation();
     this.addValueFunc();
+  }
+
+  componentDidUpdate() {
+    if (this.props.shouldFocus) {
+      this.refs.input.focus();
+    }
   }
 }
