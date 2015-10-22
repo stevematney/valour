@@ -13,12 +13,14 @@ export default class ValidatedInput extends React.Component {
   static defaultProps = {
     getSanitizedValue: val => val,
     getValidation: () => valour.rule,
+    onChange: () => {},
     type: 'text'
   }
 
   constructor() {
     super();
     this.state = {};
+    this.handleChange = this.handleChange.bind(this);
   }
 
   setRequired(name, existingConfig) {
@@ -31,7 +33,7 @@ export default class ValidatedInput extends React.Component {
   addValueFunc() {
     this.props.addValueFunc(() => {
       let values = {};
-      values[this.props.name] = this.props.getSanitizedValue(this.refs.input.value) || undefined;
+      values[this.props.name] = this.currentValue && this.props.getSanitizedValue(this.currentValue);
       return values;
     });
   }
@@ -48,6 +50,11 @@ export default class ValidatedInput extends React.Component {
     });
   }
 
+  handleChange(ev) {
+    this.currentValue = ev.target.value;
+    this.props.onChange();
+  }
+
   render() {
     let {name, id, labelValue, required, onChange, type} = this.props;
     let {valid} = this.state;
@@ -62,7 +69,7 @@ export default class ValidatedInput extends React.Component {
         <label htmlFor={id}>
           { labelValue }{ required ? '*' : '' }
         </label>
-        <input type={ type } className='form-control' ref='input' name={name} id={id} onChange={onChange} />
+        <input type={ type } className='form-control' ref='input' name={name} id={id} onChange={this.handleChange} onBlur={this.handleChange} />
         <br />
       </div>
     );

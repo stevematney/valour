@@ -6,7 +6,7 @@ import valour from 'valour';
 export default class ConfirmEmailInput extends React.Component {
   static propTypes = {
     ...inputProps,
-    matches: React.PropTypes.string
+    matches: React.PropTypes.string.isRequired
   };
 
   constructor() {

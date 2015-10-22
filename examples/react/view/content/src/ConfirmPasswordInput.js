@@ -3,10 +3,10 @@ import ValidatedInput from './ValidatedInput';
 import inputProps from './input-props';
 import valour from 'valour';
 
-export default class EmailInput extends React.Component {
+export default class ConfirmPasswordInput extends React.Component {
   static propTypes = {
     ...inputProps,
-    matches: React.PropTypes.string.required
+    matches: React.PropTypes.string.isRequired
   }
   constructor() {
     super();
