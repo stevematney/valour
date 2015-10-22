@@ -15,7 +15,7 @@ export default class SsnInput extends React.Component {
   }
 
   getValidation() {
-    return valour.rule.matches(/^\d{3}-?\d{2}-?\d{4}$/);
+    return valour.rule.matches(/^\d{3}-?\d{2}-?\d{4}$/, undefined, '{name} must be a valid Social Security Number (555-55-5555)');
   }
 
   render() {

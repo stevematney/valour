@@ -1,8 +1,6 @@
-import 'expose?$!expose?jQuery!jquery';
-import 'bootstrap-webpack';
+import 'bootstrap-webpack!../../../bootstrap.config.js';
 import React from 'react';
 import ValidatedForm from './ValidatedForm';
-import ValidatedInput from './ValidatedInput';
 import RequiredInput from './RequiredInput';
 import SsnInput from './SsnInput';
 import EmailInput from './EmailInput';

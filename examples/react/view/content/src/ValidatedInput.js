@@ -14,12 +14,21 @@ export default class ValidatedInput extends React.Component {
     getSanitizedValue: val => val,
     getValidation: () => valour.rule,
     onChange: () => {},
-    type: 'text'
+    type: 'text',
+    getHelpText: (current) => {
+      return current.state.valid === false && (
+        <ul className='list-unstyled help-block'>
+          { current.state.messages.map((message) => <li>{message}</li>) }
+        </ul>
+      );
+    }
   }
 
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      messages: []
+    };
     this.handleChange = this.handleChange.bind(this);
   }
 
@@ -44,8 +53,10 @@ export default class ValidatedInput extends React.Component {
     formValidation[name] = this.props.getValidation();
     formValidation[name] = this.setRequired(name, formValidation[name]);
     valour.update(this.props.formName, formValidation, (result) => {
+      let theResult = result[this.props.name];
       this.setState({
-        valid: result[this.props.name].valid
+        valid: theResult.valid,
+        messages: theResult.messages
       });
     });
   }
@@ -64,12 +75,13 @@ export default class ValidatedInput extends React.Component {
       'has-success': valid === true
     });
     return (
-      <div className={containerClasses}>
+      <div className={containerClasses} style={{position: 'relative'}}>
         <br />
         <label htmlFor={id}>
           { labelValue }{ required ? '*' : '' }
         </label>
         <input type={ type } className='form-control' ref='input' name={name} id={id} onChange={this.handleChange} onBlur={this.handleChange} />
+        {this.props.getHelpText(this)}
         <br />
       </div>
     );
