@@ -83,19 +83,21 @@ export default class ValidationUnit {
   runValidation(value, allValues, name) {
     this.valid = undefined;
     this.messages = [];
+    this.waiting = true;
     let generators = this.rules.map((rule) => rule.generator);
     if (!this.hasIsRequired() && !isCheckable(value)) {
       return Promise.resolve(true).then(() => this.valid = true);
     }
     return Promise.all(generators.map((gen) => gen(value, allValues, this.messages, name)))
                   .then(() => this.valid = true,
-                        () => this.valid = false);
+                        () => this.valid = false)
+                  .then(() => this.waiting = false);
   }
 
   getState() {
-    let {valid, messages} = this;
+    let {valid, messages, waiting} = this;
     return {
-      waiting: valid === undefined,
+      waiting,
       valid,
       messages
     };
