@@ -90,7 +90,7 @@ export default class ValidatedInput extends React.Component {
           { labelValue }{ required ? '*' : '' }
         </label>
         <div className='input-group col-sm-12'>
-          <input type={ type } className='form-control' ref='input' name={name} id={id} onChange={this.handleChange} value={this.currentValue} />
+          <input type={ type } className='form-control' ref='input' name={name} id={id} onChange={this.handleChange} disabled={waiting} onBlur={this.props.onBlur} onFocus={this.props.onFocus} />
           {addOn}
         </div>
         {this.props.getHelpText(this)}

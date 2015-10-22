@@ -14,17 +14,28 @@ export default class SsnInput extends React.Component {
     this.previousResult = false;
     this.testSsn = (val, all, resolve, reject) => {
       if (!this.ssnRegex.test(val)) {
-        reject();
-        return;
-      }
-      if (this.previousTest === val && this.previousResult) {
         resolve();
         return;
       }
+
+      if (this.previousTest === val) {
+        if (this.previousResult) {
+          resolve();
+        } else {
+          reject();
+        }
+        return;
+      }
+      this.props.onChange();
       this.previousTest = val;
       this.previousResult = false;
       window.fetch('/test-ssn', {
-        method: 'post'
+        method: 'post',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ssn: val })
       }).then((response) => response.json())
         .then((json) => this.previousResult = json.valid)
         .then((result) => (result) ? resolve() : reject());
@@ -40,7 +51,7 @@ export default class SsnInput extends React.Component {
   getValidation() {
     return valour.rule
                  .matches(this.ssnRegex, undefined, '{name} must be a valid Social Security Number (555-55-5555)')
-                 .isEventuallyValidatedBy(this.testSsn);
+                 .isEventuallyValidatedBy(this.testSsn, '{name} is not valid with this system.');
   }
 
   render() {

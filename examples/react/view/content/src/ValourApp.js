@@ -19,9 +19,7 @@ export default class ValourApp extends React.Component {
   }
 
   getValidationValues() {
-    return this.valueFuncs.reduce((validationObj, func) => {
-      return {...validationObj, ...func()};
-    }, {});
+    return Object.assign({}, ...this.valueFuncs.map(func => func()));
   }
 
   addValueFunc(newFunc) {

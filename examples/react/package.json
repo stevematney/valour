@@ -12,14 +12,16 @@
   "author": "Steve Matney",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.14.1",
     "bootstrap": "^3.3.5",
     "classnames": "^2.1.5",
     "express": "^4.13.3",
     "jquery": "^2.1.4",
+    "multer": "^1.0.6",
     "react": "^0.14.0",
     "react-bootstrap": "^0.27.2",
     "react-dom": "^0.14.0",
-    "valour": "0.0.10",
+    "valour": "0.0.12",
     "whatwg-fetch": "^0.10.0"
   },
   "devDependencies": {
