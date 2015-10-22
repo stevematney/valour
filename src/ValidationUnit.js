@@ -55,6 +55,7 @@ export default class ValidationUnit {
                   return this.remove(rule.name);
                 };
               });
+    this.waiting = 0;
   }
 
   remove(name) {
@@ -84,24 +85,28 @@ export default class ValidationUnit {
     if (this.waiting && this.value === value) {
       return Promise.resolve(true);
     }
+
     this.value = value;
     this.valid = undefined;
     this.messages = [];
-    this.waiting = true;
-    let generators = this.rules.map((rule) => rule.generator);
     if (!this.hasIsRequired() && !isCheckable(value)) {
       return Promise.resolve(true).then(() => this.valid = true);
     }
+
+    this.waiting = this.waiting + 1;
+    let generators = this.rules.map((rule) => rule.generator);
     return Promise.all(generators.map((gen) => gen(value, allValues, this.messages, name)))
                   .then(() => this.valid = true,
                         () => this.valid = false)
-                  .then(() => this.waiting = false);
+                  .then(() => this.waiting -= 1);
   }
 
   getState() {
     let {valid, messages, waiting} = this;
+    valid = (valid === undefined) ? valid :
+      (waiting) ? undefined : valid;
     return {
-      waiting,
+      waiting: !!waiting,
       valid,
       messages
     };

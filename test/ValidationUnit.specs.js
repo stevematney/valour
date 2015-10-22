@@ -152,9 +152,23 @@ describe('ValidationUnit', () => {
   });
 
   describe('isEventuallyValidatedBy', () => {
+    let resolves = [], rejects = [];
+    let callResolve = () => {
+      rejects.shift();
+      resolves.shift()();
+    };
+
+    let callReject = () => {
+      resolves.shift();
+      rejects.shift()();
+    };
+
     beforeEach(() => {
+      resolves = [];
+      rejects = [];
       unit = unit.isEventuallyValidatedBy((val, allValues, resolve, reject) => {
-        setTimeout(() => (val.length === 4) ? resolve() : reject(), 20);
+        resolves = [...resolves, resolve];
+        rejects = [...rejects, reject];
       }, 'the length should be 4');
     });
 
@@ -164,7 +178,9 @@ describe('ValidationUnit', () => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
+      callResolve();
 
+      expect(unit.getState().valid).to.be.undefined;
       expect(unit.getState().waiting).to.be.true;
     });
 
@@ -176,7 +192,53 @@ describe('ValidationUnit', () => {
         done();
       });
 
+      expect(unit.getState().valid).to.be.undefined;
       expect(unit.getState().waiting).to.be.true;
+      callReject();
+    });
+
+    it('will eventually fail validation', (done) => {
+      unit.runValidation('hello').then(() => {
+        expect(unit.getState().waiting).to.be.false;
+        expect(unit.getState().valid).to.be.false;
+        expect(unit.getState().messages).to.deep.equal(['the length should be 4']);
+        done();
+      });
+      callReject();
+
+      expect(unit.getState().waiting).to.be.true;
+    });
+
+    it('will only fail on the most recent value', (done) => {
+      unit.runValidation('hello').then(() => {
+        expect(unit.getState().valid).to.be.undefined;
+        expect(unit.getState().waiting).to.be.true;
+        callReject();
+      });
+
+      unit.runValidation('hola').then(() => {
+        expect(unit.getState().waiting).to.be.false;
+        expect(unit.getState().valid).to.be.false;
+        done();
+      });
+
+      callResolve();
+    });
+
+    it('will only pass on the most recent value', (done) => {
+      unit.runValidation('hello').then(() => {
+        expect(unit.getState().valid).to.be.undefined;
+        expect(unit.getState().waiting).to.be.true;
+        callResolve();
+      });
+
+      unit.runValidation('hola').then(() => {
+        expect(unit.getState().waiting).to.be.false;
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+
+      callReject();
     });
   });
 

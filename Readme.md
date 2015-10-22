@@ -19,25 +19,31 @@ valour.register('formName', {
                        var disallowedNames = ['joe@notallowed.com', 'steve@isnotavailable.com', 'donotallow@anything.com'];
                        return disallowedNames.indexOf(value) === -1;
                      }, 'This email is not allowed')
-                     .equalsOther('confirmEmail')
                      .isValidatedBy(function (value, allValues) {
-                       return allValues.otherAddresses.indexOf(value) === -1;
-                     }, 'The {name} field cannot be in your other addresses.')
+                       return allValues.spouseEmail.indexOf(value) === -1;
+                     }, 'The {name} field must be different from the spouse email.')
  }, function (res) {
   result = res;
  });
 
+valour.update('formName', {
+  'confirmEmail': valour.rule.equalsOther('confirmEmail')
+})
+
 valour.runValidation('formName', { email: 'myemail@emailtown.com' });
 // result === { 'email': {valid: true} }
-
 valour.forceValidation('formName', {});
 // result === {'email': {valid: false, messages: ['email is required.']}}
 valour.runValidation('formName', { email: 'notanemail' });
 // result === { 'email': {valid: false, messages: ['email must be a valid email address']} }
 valour.runValidation('formName', { email: 'joe@notallowed.com' });
 // result === { 'email': {valid: false, messages: ['This email is not allowed']} }
-valour.runValidation('formName', { email: 'joe@isallowed.com', confirmEmail: 'joe@notallowed.com' });
-// result === { 'email': {valid: false, messages: ['The email field cannot be in your other addresses.']} }
+valour.runValidation('formName', { email: 'joe@isallowed.com', spouseEmail: 'joe@istallowed.com' });
+// result === { 'email': {valid: false, messages: ['The email field must be different from the spouse email.']} }
+valour.runValidation('formName', { email: 'joe@isallowed.com', confirmEmail: 'joe@isnotallowed.com' });
+// result === { 'email': {valid: false, messages: ['The confirmEmail field must be equal to email.']} }
+valour.runValidation('formName', { email: 'myemail@emailtown.com' });
+// result === { 'email': {valid: true} }
 ```
 
 #### NOTE:
