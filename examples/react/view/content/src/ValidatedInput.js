@@ -2,6 +2,8 @@ import React from 'react';
 import classNames from 'classnames';
 import props from './input-props';
 import valour from 'valour';
+import Input from 'react-bootstrap/lib/Input';
+import Glyphicon from 'react-bootstrap/lib/Glyphicon';
 
 export default class ValidatedInput extends React.Component {
   static propTypes = {
@@ -18,7 +20,7 @@ export default class ValidatedInput extends React.Component {
     getHelpText: (current) => {
       return current.state.valid === false && (
         <ul className='list-unstyled help-block'>
-          { current.state.messages.map((message) => <li>{message}</li>) }
+          { current.state.messages.map((message) => <li key={message}>{message}</li>) }
         </ul>
       );
     }
@@ -55,20 +57,27 @@ export default class ValidatedInput extends React.Component {
     valour.update(this.props.formName, formValidation, (result) => {
       let theResult = result[this.props.name];
       this.setState({
-        valid: theResult.valid,
-        messages: theResult.messages
+        ...theResult
       });
     });
   }
 
   handleChange(ev) {
+    if (this.currentValue === ev.target.value && this.state.waiting) {
+      return;
+    }
     this.currentValue = ev.target.value;
     this.props.onChange();
   }
 
   render() {
     let {name, id, labelValue, required, onChange, type} = this.props;
-    let {valid} = this.state;
+    let {valid, waiting} = this.state;
+    let addOn = waiting && (
+      <span className="input-group-addon">
+        <Glyphicon glyph='hourglass' />
+      </span>
+    );
     id = id || name;
     let containerClasses = classNames('form-group', {
       'has-error': valid === false,
@@ -80,7 +89,10 @@ export default class ValidatedInput extends React.Component {
         <label htmlFor={id}>
           { labelValue }{ required ? '*' : '' }
         </label>
-        <input type={ type } className='form-control' ref='input' name={name} id={id} onChange={this.handleChange} onBlur={this.handleChange} />
+        <div className='input-group col-sm-12'>
+          <input type={ type } className='form-control' ref='input' name={name} id={id} onChange={this.handleChange} value={this.currentValue} />
+          {addOn}
+        </div>
         {this.props.getHelpText(this)}
         <br />
       </div>

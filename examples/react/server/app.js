@@ -8,6 +8,7 @@ app.get('/', function (req, res) {
 });
 
 app.post('/test-ssn', function (req, res) {
+  console.log('testing ssn!');
   setTimeout(function () {
     res.send(JSON.stringify({ valid: true }));
   }, 5000);
