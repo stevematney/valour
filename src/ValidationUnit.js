@@ -81,6 +81,10 @@ export default class ValidationUnit {
   }
 
   runValidation(value, allValues, name) {
+    if (this.waiting && this.value === value) {
+      return Promise.resolve(true);
+    }
+    this.value = value;
     this.valid = undefined;
     this.messages = [];
     this.waiting = true;

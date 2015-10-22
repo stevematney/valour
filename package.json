@@ -1,6 +1,6 @@
 {
   "name": "valour",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "description": "Simple javascript validation for any application",
   "main": "lib/valour.js",
   "scripts": {
