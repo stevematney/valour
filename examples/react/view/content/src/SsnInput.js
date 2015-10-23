@@ -26,7 +26,6 @@ export default class SsnInput extends React.Component {
         }
         return;
       }
-      this.props.onChange();
       this.previousTest = val;
       this.previousResult = false;
       window.fetch('/test-ssn', {
@@ -57,6 +56,6 @@ export default class SsnInput extends React.Component {
   render() {
     const {getValidation, getSanitizedValue} = this;
     let props = {...this.props, getValidation, getSanitizedValue};
-    return <ValidatedInput { ...props } getValidation={this.getValidation} />;
+    return <ValidatedInput { ...props } />;
   }
 }

@@ -24,6 +24,6 @@ export default class EmailInput extends React.Component {
   render() {
     const {getValidation, getSanitizedValue} = this;
     let props = {...this.props, getValidation, getSanitizedValue};
-    return <ValidatedInput { ...props } onFocus={this.props.focusWasGained} getValidation={this.getValidation} />;
+    return <ValidatedInput { ...props } onFocus={this.props.focusWasGained} />;
   }
 }

@@ -36,7 +36,7 @@ export default class ValidatedInput extends React.Component {
     this.changed = false;
   }
 
-  setRequired(name, existingConfig) {
+  setRequired(existingConfig) {
     if (!this.props.required) {
       return existingConfig;
     }
@@ -55,7 +55,8 @@ export default class ValidatedInput extends React.Component {
     let formValidation = {};
     let { name } = this.props;
     formValidation[name] = this.props.getValidation();
-    formValidation[name] = this.setRequired(name, formValidation[name]);
+    formValidation[name] = this.setRequired(formValidation[name]);
+
     valour.update(this.props.formName, formValidation, (result) => {
       let theResult = result[this.props.name];
       this.changed = false;

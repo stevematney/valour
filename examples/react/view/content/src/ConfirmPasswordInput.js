@@ -25,6 +25,6 @@ export default class ConfirmPasswordInput extends React.Component {
   render() {
     const {getValidation, getSanitizedValue} = this;
     let props = {...this.props, getValidation, getSanitizedValue};
-    return <ValidatedInput { ...props } type='password' getValidation={this.getValidation} />;
+    return <ValidatedInput { ...props } type='password' />;
   }
 }

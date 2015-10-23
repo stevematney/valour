@@ -1,5 +1,4 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import ValidatedInput from './ValidatedInput';
 import inputProps from './input-props';
 import valour from 'valour';
@@ -44,7 +43,7 @@ export default class EmailInput extends React.Component {
     return (
       <Overlay
         show={current.state.valid === false}
-        target={() => ReactDOM.findDOMNode(this.refs.input)}
+        target={() => this.refs.input}
         placement='right'
       >
         <Popover placement='right' id='password-popover'>
@@ -60,8 +59,8 @@ export default class EmailInput extends React.Component {
   }
 
   render() {
-    const {getValidation, getSanitizedValue} = this;
-    let props = {...this.props, getValidation, getSanitizedValue};
-    return <ValidatedInput { ...props } type='password' ref='input' getValidation={this.getValidation} getHelpText={this.getHelpText} />;
+    const {getValidation, getSanitizedValue, getHelpText} = this;
+    let props = {...this.props, getValidation, getSanitizedValue, getHelpText};
+    return <ValidatedInput { ...props } type='password' ref='input' />;
   }
 }
