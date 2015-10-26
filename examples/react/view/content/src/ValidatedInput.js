@@ -33,7 +33,6 @@ export default class ValidatedInput extends React.Component {
       messages: []
     };
     this.handleChange = this.handleChange.bind(this);
-    this.changed = false;
   }
 
   setRequired(existingConfig) {
@@ -59,7 +58,6 @@ export default class ValidatedInput extends React.Component {
 
     valour.update(this.props.formName, formValidation, (result) => {
       let theResult = result[this.props.name];
-      this.changed = false;
       this.setState({
         ...theResult
       });
@@ -67,7 +65,6 @@ export default class ValidatedInput extends React.Component {
   }
 
   handleChange(ev) {
-    this.changed = true;
     this.currentValue = ev.target.value;
     this.props.onChange();
   }

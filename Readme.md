@@ -27,7 +27,7 @@ valour.register('formName', {
  });
 
 valour.update('formName', {
-  'confirmEmail': valour.rule.equalsOther('confirmEmail')
+  'confirmEmail': valour.rule.equalsOther('email')
 })
 
 valour.runValidation('formName', { email: 'myemail@emailtown.com' });
@@ -65,9 +65,9 @@ function rejectResult() {
 
 valour.register('formName', {
   'email': valour.rule.isEventuallyValidatedBy(
-    function (value, allValues, resolve, reject) {
-      resolve = resolve;
-      reject = reject;
+    function (value, allValues, res, rej) {
+      resolve = res;
+      reject = rej;
     });
   }, function (res) {
     result = res;
