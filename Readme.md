@@ -1,4 +1,4 @@
-Valour
+Valour.js
 ===
 ## Simple javascript validation for any app.
 
