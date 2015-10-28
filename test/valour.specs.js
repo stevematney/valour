@@ -128,7 +128,7 @@ describe('validation', () => {
         let time = (new Date()).getTime();
         register(() => {
           let newTime = (new Date()).getTime();
-          expect(newTime - time).to.be.greaterThan(100);
+          expect(newTime - time).to.be.least(100);
           done();
         });
 
