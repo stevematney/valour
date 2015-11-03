@@ -94,11 +94,23 @@ export default class ValidationUnit {
     }
 
     this.waiting = this.waiting + 1;
-    let generators = this.rules.map((rule) => rule.generator);
-    return Promise.all(generators.map((gen) => gen(value, allValues, this.messages, name)))
-                  .then(() => this.valid = true,
-                        () => this.valid = false)
-                  .then(() => this.waiting -= 1);
+
+    let syncRules = this.rules.filter((rule) => !rule.isAsync);
+    let asyncRules = this.rules.filter((rule) => rule.isAsync);
+    let getGenerators = (rules) => rules.map((rule) => rule.generator);
+    let syncGenerators = getGenerators(syncRules);
+    let asyncGenerators = getGenerators(asyncRules);
+    let getPromises = (generators) => generators.map((gen) => gen(value, allValues, this.messages, name));
+    let removeWaiting = () => this.waiting -= 1;
+    let passFunc = () => this.valid = true;
+    let failFunc = () => this.valid = false;
+    let runSync = () => Promise.all(getPromises(syncGenerators));
+    let runAsync = () => Promise.all(getPromises(asyncGenerators));
+    return runSync()
+             .then(runAsync)
+             .then(passFunc)
+             .catch(failFunc)
+             .then(removeWaiting);
   }
 
   getState() {
@@ -116,8 +128,10 @@ export default class ValidationUnit {
                    failureMessage,
                    generator = this.createPromiseGenerator(func, failureMessage),
                    name,
-                   forced = true) {
-    this.rules = [...this.rules, { forced, generator, name }];
+                   forced = true,
+                   isAsync = false
+                  ) {
+    this.rules = [...this.rules, { forced, generator, name, isAsync }];
     return new ValidationUnit(this);
   }
 
@@ -140,11 +154,13 @@ export default class ValidationUnit {
   }
 
   isEventuallyValidatedBy(func, message) {
-    let generator = this.createCustomPromiseGenerator((val, allValues, messageList, name, resolve, reject) => func(val, allValues, resolve, () => {
-      messageList.push(formatValidationMessage(message, { name }));
-      reject();
-    }));
-    return this.forceRequirement(func, message, generator);
+    let generator = this.createCustomPromiseGenerator((val, allValues, messageList, name, resolve, reject) => {
+      func(val, allValues, resolve, () => {
+        messageList.push(formatValidationMessage(message, { name }));
+        reject();
+      });
+    });
+    return this.forceRequirement(func, message, generator, 'isEventuallyValidatedBy', true, true);
   }
 
   isRequired(message = '{name} is required.') {

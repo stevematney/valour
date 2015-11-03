@@ -153,14 +153,28 @@ describe('ValidationUnit', () => {
 
   describe('isEventuallyValidatedBy', () => {
     let resolves = [], rejects = [];
+    let waitForNonEmpty = (setFunc) => new Promise((res) => {
+      let check = () => setTimeout(() => {
+        if (setFunc().length) {
+          res();
+          return;
+        }
+        check();
+      }, 10);
+      check();
+    });
     let callResolve = () => {
-      rejects.shift();
-      resolves.shift()();
+      waitForNonEmpty(() => resolves).then(() => {
+        rejects.shift();
+        resolves.shift()();
+      });
     };
 
     let callReject = () => {
-      resolves.shift();
-      rejects.shift()();
+      waitForNonEmpty(() => rejects).then(() => {
+        resolves.shift();
+        rejects.shift()();
+      });
     };
 
     beforeEach(() => {
@@ -173,11 +187,13 @@ describe('ValidationUnit', () => {
     });
 
     it('will eventually pass validation', (done) => {
-      unit.runValidation('hola').then(() => {
-        expect(unit.getState().waiting).to.be.false;
-        expect(unit.getState().valid).to.be.true;
-        done();
-      });
+      unit.runValidation('hola')
+        .then(() => {
+          expect(unit.getState().waiting).to.be.false;
+          expect(unit.getState().valid).to.be.true;
+          done();
+        });
+
       callResolve();
 
       expect(unit.getState().valid).to.be.undefined;
@@ -195,18 +211,6 @@ describe('ValidationUnit', () => {
       expect(unit.getState().valid).to.be.undefined;
       expect(unit.getState().waiting).to.be.true;
       callReject();
-    });
-
-    it('will eventually fail validation', (done) => {
-      unit.runValidation('hello').then(() => {
-        expect(unit.getState().waiting).to.be.false;
-        expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['the length should be 4']);
-        done();
-      });
-      callReject();
-
-      expect(unit.getState().waiting).to.be.true;
     });
 
     it('will only fail on the most recent value', (done) => {
@@ -239,6 +243,35 @@ describe('ValidationUnit', () => {
       });
 
       callReject();
+    });
+
+    describe('running validation with mixed sync and async', () => {
+      let hasRunAsync = false;
+      beforeEach(() => {
+        hasRunAsync = false;
+        unit = new ValidationUnit().isEmail().isEventuallyValidatedBy((val, allVals, resolve) => {
+          hasRunAsync = true;
+          resolve();
+        });
+      });
+
+      it('does not run async rules if sync rules fail', (done) => {
+        unit.runValidation('hello').then(() => {
+          expect(hasRunAsync).to.be.false;
+          expect(unit.getState().waiting).to.be.false;
+          expect(unit.getState().valid).to.be.false;
+          done();
+        });
+      });
+
+      it('does run async rules if sync rules pass', (done) => {
+        unit.runValidation('hello@mail.com').then(() => {
+          expect(hasRunAsync).to.be.true;
+          expect(unit.getState().waiting).to.be.false;
+          expect(unit.getState().valid).to.be.true;
+          done();
+        });
+      });
     });
   });
 
