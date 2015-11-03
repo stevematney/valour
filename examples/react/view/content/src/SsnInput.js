@@ -13,11 +13,6 @@ export default class SsnInput extends React.Component {
     this.previousTest = '';
     this.previousResult = false;
     this.testSsn = (val, all, resolve, reject) => {
-      if (!this.ssnRegex.test(val)) {
-        resolve();
-        return;
-      }
-
       if (this.previousTest === val) {
         if (this.previousResult) {
           resolve();
@@ -26,6 +21,7 @@ export default class SsnInput extends React.Component {
         }
         return;
       }
+      setTimeout(() => this.forceUpdate(), 0);
       this.previousTest = val;
       this.previousResult = false;
       window.fetch('/test-ssn', {
