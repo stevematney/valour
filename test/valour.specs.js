@@ -29,6 +29,33 @@ describe('validation', () => {
     });
   });
 
+  describe('removingUpdatedFuncs', () => {
+    let updatedFunc;
+    beforeEach(() => {
+      updatedFunc = () => { /*update func*/ };
+      valour.onUpdated('newform', updatedFunc);
+      valour.onUpdated('newform', () => {});
+    });
+
+    describe('removeOnUpdated', () => {
+      it('removes a callback', () => {
+        expect(valour.callbacks['newform'].length).to.equal(2);
+        valour.removeOnUpdated('newform', updatedFunc);
+        expect(valour.callbacks['newform'].length).to.equal(1);
+        expect(valour.callbacks['newform'].includes(updatedFunc)).to.be.false;
+      });
+    });
+
+    describe('clearOnUpdated', () => {
+      it('removes all callbacsk for a form', () => {
+        expect(valour.callbacks['newform'].length).to.equal(2);
+        valour.clearOnUpdated('newform');
+        expect(valour.callbacks['newform'].length).to.equal(0);
+      });
+    });
+  });
+
+
   describe('register', () => {
     let emailValidation,
       phoneValidation,

@@ -24,6 +24,17 @@ class Valour {
     this.callbacks[name] = [...callbacks, callback];
   }
 
+  removeOnUpdated(name, callback) {
+    if (!callback) {
+      return;
+    }
+    this.callbacks[name] = this.getCallbacks(name).filter((cb) => cb !== callback);
+  }
+
+  clearOnUpdated(name) {
+    this.callbacks[name] = [];
+  }
+
   getRuleByName(form, ruleName) {
     return form[ruleName] || this.rule;
   }
