@@ -55,7 +55,6 @@ describe('validation', () => {
     });
   });
 
-
   describe('register', () => {
     let emailValidation,
       phoneValidation,
