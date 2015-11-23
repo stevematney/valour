@@ -67,15 +67,19 @@ class Valour {
     }, {});
   }
 
+  runCallbacks(name) {
+    let result = this.getResult(name);
+    this.getCallbacks(name).forEach((callback) => {
+      callback(result);
+    });
+  }
+
   runValidation(name, data, force = false) {
     var callbackTimeout;
     let runCallback = () => {
       clearTimeout(callbackTimeout);
       callbackTimeout = setTimeout(() => {
-        let result = this.getResult(name);
-        this.getCallbacks(name).forEach((callback) => {
-          callback(result);
-        });
+        this.runCallbacks(name);
       }, 100);
     };
     let form = this.getForm(name);
@@ -94,6 +98,18 @@ class Valour {
   isValid(name) {
     let result = this.getResult(name);
     return !Object.keys(result).some((key) => !result[key].valid);
+  }
+
+  setValidationState(name, data) {
+    let form = this.getForm(name);
+    Object.keys(form).forEach((key) => {
+      if (data[key] === undefined) {
+        return;
+      }
+      let { valid, messages } = data[key];
+      form[key].setState(valid, messages);
+    });
+    this.runCallbacks(name);
   }
 }
 

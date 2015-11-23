@@ -86,3 +86,26 @@ rejectResult();
 valour.runValidation('formName', { email: 'myemail@emailtown.com' });
 // result === { 'email': { valid: false }}
 ```
+### Setting the validation state
+There may be times when you want to tell valour about the validity of your form.  This may be on initial page load, or after some server-side validation has occurred.  Whatever the case may be, 'setValidationState' is what you'll need to call.  This little utility function takes 
+in a form name and an object, then updates the form with the information the object holds.  Afterwards, it will run any callbacks you have given it to alert them of the new state.
+
+```javascript
+var valour = require('valour');
+var result;
+
+valour.register('formName', {
+  'email': valour.rule.isEmail()
+ }, function (res) {
+  result = res;
+ });
+
+valour.setValidationState('formName', { email: { valid: false } });
+// result === { 'email': { valid: false } }
+
+valour.setValidationState('formName', { email: { valid: false, messages: ['New error.'] } });
+// result === { 'email': { valid: false, messages: ['New error.'] } }
+
+valour.setValidationState('formName', { email: { valid: true, messages: ['All clear'] } });
+// result === { 'email': { valid: true, messages: ['All clear'] } }
+```

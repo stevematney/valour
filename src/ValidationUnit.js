@@ -124,6 +124,11 @@ export default class ValidationUnit {
     };
   }
 
+  setState(valid, messages) {
+    this.valid = !!valid;
+    this.messages = messages;
+  }
+
   forceRequirement(func,
                    failureMessage,
                    generator = this.createPromiseGenerator(func, failureMessage),

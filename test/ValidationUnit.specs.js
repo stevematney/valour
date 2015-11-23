@@ -1345,4 +1345,37 @@ describe('ValidationUnit', () => {
       expect(unit.rules.length).to.equal(0);
     });
   });
+
+  describe('setState', () => {
+    it('can set the valid property on the unit', () => {
+      expect(unit.valid).to.be.undefined;
+      unit.setState(true);
+      expect(unit.valid).to.be.true;
+    });
+
+    it('sets the valid property on the unit to true if the passed in \'valid\' parameter is truthy', () => {
+      expect(unit.valid).to.be.undefined;
+      unit.setState({});
+      expect(unit.valid).to.be.true;
+      unit.setState('aaa');
+      expect(unit.valid).to.be.true;
+    });
+
+    it('sets the valid property on the unit to false if the passed in \'valid\' parameter is falsey', () => {
+      expect(unit.valid).to.be.undefined;
+      unit.setState(null);
+      expect(unit.valid).to.be.false;
+      unit.setState('');
+      expect(unit.valid).to.be.false;
+    });
+
+    it('sets the messages property on the unit to the passed in \'messages\' parameter', () => {
+      let emptyArray = [];
+      expect(unit.messages).to.be.undefined;
+      unit.setState(null, null);
+      expect(unit.messages).to.be.null;
+      unit.setState(null, emptyArray);
+      expect(unit.messages).to.equal(emptyArray);
+    });
+  });
 });

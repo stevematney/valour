@@ -215,4 +215,37 @@ describe('validation', () => {
       });
     });
   });
+
+  describe('setValidationState', () => {
+    let formName = 'newForm',
+      makeFormValid = () => {
+        valour.setValidationState({
+          email: { valid: true }
+        });
+      };
+
+    beforeEach(() => {
+      valour.register(formName, {
+        email: valour.rule.isEmail()
+      });
+    });
+
+    it('can set the validity of the form to true by setting all form values to true', () => {
+      makeFormValid();
+      expect(valour.isValid()).to.be.true;
+    });    
+
+    it('can set the validity of the form to false by setting a form value to false', () => {
+      makeFormValid();
+      valour.setValidationState({ email: { valid: false } });
+      expect(valour.isValid(formName)).to.be.false;
+    });
+
+    it('callback is called with the new validation result', () => {
+      valour.callbacks[formName] = (result) => {
+        expect(result.email.valid).to.be.true;
+      };
+      valour.setValidationState({ email: { valid: true } });
+    });
+  });
 });
