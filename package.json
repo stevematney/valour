@@ -1,6 +1,6 @@
 {
   "name": "valour",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Simple javascript validation for any application",
   "main": "lib/valour.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "compile": "./node_modules/.bin/eslint src/ test/ && node ./node_modules/babel/bin/babel --optional runtime -d lib/ src/",
     "prepublish": "npm run compile"
   },
+  "files": [ "lib" ],
   "keywords": [
     "validation",
     "valour",

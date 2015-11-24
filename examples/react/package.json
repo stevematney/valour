@@ -21,7 +21,7 @@
     "react": "^0.14.0",
     "react-bootstrap": "^0.27.2",
     "react-dom": "^0.14.0",
-    "valour": "0.0.13",
+    "valour": "0.0.15",
     "whatwg-fetch": "^0.10.0"
   },
   "devDependencies": {
