@@ -37,6 +37,7 @@ let isCheckable = val => !isUndefined(val) && !isNull(val) && val.toString().len
 
 export default class ValidationUnit {
   constructor(...existing) {
+    let validationState = existing.find((object) => object.valid !== undefined || object.messages !== undefined) || {};
     this.rules = existing
                    .map(ex => ex.rules)
                    .reduce((list, existingRuleList) => [...list, ...existingRuleList], [])
@@ -56,6 +57,8 @@ export default class ValidationUnit {
                 };
               });
     this.waiting = 0;
+    this.valid = validationState.valid;
+    this.messages = validationState.messages;
   }
 
   remove(name) {
@@ -122,6 +125,16 @@ export default class ValidationUnit {
       valid,
       messages
     };
+  }
+
+  setState(valid, messages) {
+    this.valid = !!valid;
+    this.messages = messages;
+  }
+
+  initializeState(valid, messages) {
+    this.setState(valid, messages);
+    return this;
   }
 
   forceRequirement(func,
