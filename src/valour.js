@@ -43,12 +43,22 @@ class Valour {
     return new ValidationUnit();
   }
 
+  isValidationStateSet(formName) {
+    let form = this.getForm(formName);
+    return Object.keys(form).some((key) => {
+      return form[key].valid !== undefined;
+    });
+  }
+
   register(name, config = {}, callback) {
     this.forms[name] = Object.keys(config).reduce((dest, ruleKey) => {
       dest[ruleKey] = new ValidationUnit(config[ruleKey]);
       return dest;
     }, {});
     this.onUpdated(name, callback);
+    if (this.isValidationStateSet(name)) {
+      this.runCallbacks(name);
+    }
   }
 
   update(name, config = {}, callback) {

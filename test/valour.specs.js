@@ -81,6 +81,22 @@ describe('validation', () => {
     it('adds a callback if given', () => {
       expect(valour.callbacks['newForm'].length).to.equal(1);
     });
+
+    it('does not call the callback if the validation state is not initialized', () => {
+      let wasCalled = false;
+      valour.register('otherForm', {
+        email: emailValidation
+      }, () => { wasCalled = true; });
+      expect(wasCalled).to.be.false;
+    });
+
+    it('calls the callback if the validation state is initialized', () => {
+      let wasCalled = false;
+      valour.register('otherForm', {
+        email: emailValidation.initializeState({ valid: false })
+      }, () => { wasCalled = true; });
+      expect(wasCalled).to.be.true;
+    });
   });
 
   describe('update', () => {
@@ -246,6 +262,40 @@ describe('validation', () => {
         expect(result.email.valid).to.be.true;
       };
       valour.setValidationState({ email: { valid: true } });
+    });
+  });
+
+  describe('isValidationStateSet', () => {
+    let formName = 'newForm';
+
+    beforeEach(() => {
+      valour.register(formName, {
+        email: valour.rule.isEmail(),
+        otherEmail: valour.rule.isEmail(),
+        phone: valour.rule.isMobilePhone()
+      });
+    });
+
+    it('returns false if none of the validation units on the form have a value for the \'valid\' property', () => {
+      let form = valour.getForm(formName);
+      Object.keys(form).forEach((key) => {
+        form[key].valid = undefined;
+      });
+      expect(valour.isValidationStateSet(formName)).to.be.false;
+    });
+
+    it('returns true if one of the validation units on the form have a value for the \'valid\' property', () => {
+      let form = valour.getForm(formName);
+      form[Object.keys(form)[0]].valid = true;
+      expect(valour.isValidationStateSet(formName)).to.be.true;
+    });
+
+    it('returns true if all of the validation units on the form have a value for the \'valid\' property', () => {
+      let form = valour.getForm(formName);
+      Object.keys(form).forEach((key) => {
+        form[key].valid = false;
+      });
+      expect(valour.isValidationStateSet(formName)).to.be.true;
     });
   });
 });

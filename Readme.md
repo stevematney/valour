@@ -109,3 +109,25 @@ valour.setValidationState('formName', { email: { valid: false, messages: ['New e
 valour.setValidationState('formName', { email: { valid: true, messages: ['All clear'] } });
 // result === { 'email': { valid: true, messages: ['All clear'] } }
 ```
+
+Another way to do this is to initialize the state when registering.  The callback provided will be called immediately, in this case.
+
+```javascript
+var valour = require('valour');
+var result;
+
+valour.register('formName', {
+  'email': valour.rule.isEmail().initializeState({ valid: false })
+ }, function (res) {
+  result = res;
+ });
+// result === { 'email': { valid: false } }
+
+valour.register('anotherForm', {
+  'email': valour.rule.isEmail().initializeState({ valid: true, messages: ['Some message'] })
+ }, function (res) {
+  result = res;
+ });
+// result === { 'email': { valid: true, messages: ['Some message'] } }
+
+```

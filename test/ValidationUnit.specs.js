@@ -40,6 +40,21 @@ describe('ValidationUnit', () => {
       expect(unit.removeIsEmail).to.be.truthy;
       expect(unit.removeIsMobilePhone).to.be.truthy;
     });
+
+    it('will set it\'s valid property to the existing unit\'s valid property', () => {
+      let fakeUnit = new ValidationUnit();
+      fakeUnit.valid = true;
+      expect(new ValidationUnit(fakeUnit).valid).to.be.true;
+    });
+
+    it('will set it\'s messages to the existing unit\'s messages', () => {
+      let fakeUnit = new ValidationUnit();
+      fakeUnit.messages = [
+        'Test Message',
+        'Test Message 2'
+      ];
+      expect(new ValidationUnit(fakeUnit).messages).to.deep.equal(fakeUnit.messages);
+    });
   });
 
   describe('duplicate validation requirements', () => {
