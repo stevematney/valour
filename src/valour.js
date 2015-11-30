@@ -72,6 +72,7 @@ class Valour {
   getResult(name) {
     let form = this.getForm(name);
     return Object.keys(form).reduce((result, key) => {
+      console.log('getting state for', key, form[key]);
       result[key] = form[key].getState();
       return result;
     }, {});
@@ -107,7 +108,7 @@ class Valour {
 
   isValid(name) {
     let result = this.getResult(name);
-    return !Object.keys(result).some((key) => !result[key].valid);
+    return !Object.keys(result).some((key) => (!result[key].valid));
   }
 
   setValidationState(name, data) {

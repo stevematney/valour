@@ -84,6 +84,10 @@ export default class ValidationUnit {
     });
   }
 
+  shouldCheckValue(val) {
+    return this.hasIsRequired() || isCheckable(val);
+  }
+
   runValidation(value, allValues, name) {
     if (this.waiting && this.value === value) {
       return Promise.resolve(true);
@@ -92,7 +96,7 @@ export default class ValidationUnit {
     this.value = value;
     this.valid = undefined;
     this.messages = [];
-    if (!this.hasIsRequired() && !isCheckable(value)) {
+    if (!this.shouldCheckValue(value)) {
       return Promise.resolve(true).then(() => this.valid = true);
     }
 
@@ -118,8 +122,10 @@ export default class ValidationUnit {
 
   getState() {
     let {valid, messages, waiting} = this;
+    valid = (!this.shouldCheckValue(this.value)) ? true : valid;
     valid = (valid === undefined) ? valid :
       (waiting) ? undefined : valid;
+    console.log('returning state for', this);
     return {
       waiting: !!waiting,
       valid,
@@ -128,6 +134,7 @@ export default class ValidationUnit {
   }
 
   setState(valid, messages) {
+    console.log('setting state with', valid, messages);
     this.valid = !!valid;
     this.messages = messages;
   }
