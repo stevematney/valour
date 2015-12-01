@@ -1393,4 +1393,20 @@ describe('ValidationUnit', () => {
       expect(unit.messages).to.equal(emptyArray);
     });
   });
+
+  describe('shouldCheckValue', () => {
+    beforeEach(() => {
+      unit = new ValidationUnit().isEmail();
+    });
+
+    it('returns false if the current ValidationUnit value is undefined, null or zero length', () => {
+      let isCheckable = unit.shouldCheckValue(undefined);
+      expect(isCheckable).to.be.false;
+    });
+
+    it('returns true if the current ValidationUnit should be evaluated', () => {
+      let isCheckable = unit.shouldCheckValue('working@email.com');
+      expect(isCheckable).to.be.true;
+    });
+  });
 });

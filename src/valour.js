@@ -72,7 +72,6 @@ class Valour {
   getResult(name) {
     let form = this.getForm(name);
     return Object.keys(form).reduce((result, key) => {
-      console.log('getting state for', key, form[key]);
       result[key] = form[key].getState();
       return result;
     }, {});

@@ -33,7 +33,7 @@ let defaultFqdnOptions = {
 
 let requiredFunc = val => !!val;
 
-let isCheckable = val => !isUndefined(val) && !isNull(val) && val.toString().length;
+let isCheckable = val => !isUndefined(val) && !isNull(val) && !!val.toString().length;
 
 export default class ValidationUnit {
   constructor(...existing) {
@@ -122,10 +122,9 @@ export default class ValidationUnit {
 
   getState() {
     let {valid, messages, waiting} = this;
-    valid = (!this.shouldCheckValue(this.value)) ? true : valid;
+    valid = (!this.shouldCheckValue(this.value) && this.valid === undefined) ? true : valid;
     valid = (valid === undefined) ? valid :
       (waiting) ? undefined : valid;
-    console.log('returning state for', this);
     return {
       waiting: !!waiting,
       valid,
@@ -134,7 +133,6 @@ export default class ValidationUnit {
   }
 
   setState(valid, messages) {
-    console.log('setting state with', valid, messages);
     this.valid = !!valid;
     this.messages = messages;
   }
