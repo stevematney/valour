@@ -104,11 +104,79 @@ describe('ValidationUnit', () => {
       unit = unit.isEmail();
     });
 
-    it('is valid if the value is not checkable', (done) => {
+    it('is valid if the form value is not checkable', (done) => {
       unit.runValidation(null).then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
+    });
+  });
+
+  describe('shouldCheckValue', () => {
+    beforeEach(() => {
+      unit = new ValidationUnit().isEmail();
+    });
+
+    describe('when the value is not required', () => {
+      it('returns false if the current ValidationUnit value is undefined, null or zero length', () => {
+        let isCheckable = unit.shouldCheckValue(undefined);
+        expect(isCheckable).to.be.false;
+      });
+
+      it('returns true if the current ValidationUnit should be evaluated', () => {
+        let isCheckable = unit.shouldCheckValue('working@email.com');
+        expect(isCheckable).to.be.true;
+      });
+    });
+
+    describe('when the value is required', () => {
+      beforeEach(() => {
+        unit = new ValidationUnit().isEmail().isRequired();
+      });
+
+      it('always returns true', () => {
+        expect(unit.shouldCheckValue(null)).to.be.true;
+        expect(unit.shouldCheckValue('some value')).to.be.true;
+      });
+    });
+  });
+
+  describe('getState', () => {
+    beforeEach(() => {
+      unit = new ValidationUnit().isEmail();
+    });
+
+    it('sets valid to true if the current ValidationUnit is not required, the unit has no current value, and valid has no current value', () => {
+      unit.value = undefined;
+      unit.valid = undefined;
+      expect(unit.getState().valid).to.be.true;
+    });
+
+    it('valid keeps its current value if the unit has a current value', () => {
+      unit.value = 'anycurrentvalue';
+
+      unit.valid = undefined;
+      expect(unit.getState().valid).to.be.undefined;
+
+      unit.valid = false;
+      expect(unit.getState().valid).to.be.false;
+
+      unit.valid = true;
+      expect(unit.getState().valid).to.be.true;
+    });
+
+    it('valid keeps its current value if the ValidationUnit is required and the unit has no current value', () => {
+      unit = new ValidationUnit().isEmail().isRequired();
+      unit.value = undefined;
+
+      unit.valid = undefined;
+      expect(unit.getState().valid).to.be.undefined;
+
+      unit.valid = false;
+      expect(unit.getState().valid).to.be.false;
+
+      unit.valid = true;
+      expect(unit.getState().valid).to.be.true;
     });
   });
 
@@ -1391,22 +1459,6 @@ describe('ValidationUnit', () => {
       expect(unit.messages).to.be.null;
       unit.setState(null, emptyArray);
       expect(unit.messages).to.equal(emptyArray);
-    });
-  });
-
-  describe('shouldCheckValue', () => {
-    beforeEach(() => {
-      unit = new ValidationUnit().isEmail();
-    });
-
-    it('returns false if the current ValidationUnit value is undefined, null or zero length', () => {
-      let isCheckable = unit.shouldCheckValue(undefined);
-      expect(isCheckable).to.be.false;
-    });
-
-    it('returns true if the current ValidationUnit should be evaluated', () => {
-      let isCheckable = unit.shouldCheckValue('working@email.com');
-      expect(isCheckable).to.be.true;
     });
   });
 });

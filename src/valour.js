@@ -107,7 +107,7 @@ class Valour {
 
   isValid(name) {
     let result = this.getResult(name);
-    return !Object.keys(result).some((key) => (!result[key].valid));
+    return !Object.keys(result).some((key) => !result[key].valid);
   }
 
   setValidationState(name, data) {
