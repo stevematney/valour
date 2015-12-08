@@ -33,7 +33,7 @@ let defaultFqdnOptions = {
 
 let requiredFunc = val => !!val;
 
-let isCheckable = val => !isUndefined(val) && !isNull(val) && val.toString().length;
+let isCheckable = val => !isUndefined(val) && !isNull(val) && !!val.toString().length;
 
 export default class ValidationUnit {
   constructor(...existing) {
@@ -84,6 +84,10 @@ export default class ValidationUnit {
     });
   }
 
+  shouldCheckValue(val) {
+    return this.hasIsRequired() || isCheckable(val);
+  }
+
   runValidation(value, allValues, name) {
     if (this.waiting && this.value === value) {
       return Promise.resolve(true);
@@ -92,7 +96,7 @@ export default class ValidationUnit {
     this.value = value;
     this.valid = undefined;
     this.messages = [];
-    if (!this.hasIsRequired() && !isCheckable(value)) {
+    if (!this.shouldCheckValue(value)) {
       return Promise.resolve(true).then(() => this.valid = true);
     }
 
@@ -118,6 +122,7 @@ export default class ValidationUnit {
 
   getState() {
     let {valid, messages, waiting} = this;
+    valid = (!this.shouldCheckValue(this.value) && this.valid === undefined) ? true : valid;
     valid = (valid === undefined) ? valid :
       (waiting) ? undefined : valid;
     return {
