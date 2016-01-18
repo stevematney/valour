@@ -22,7 +22,7 @@
   "dependencies": {
     "lodash": "^4.0.0",
     "validator": "^4.2.1",
-    "babel-runtime": "^5.8.25"
+    "babel-runtime": "^6.2.0"
   },
   "devDependencies": {
     "babel": "^5.8.23",
