@@ -386,6 +386,70 @@ describe('ValidationUnit', () => {
     });
   });
 
+  describe('isRequiredWhen', () => {
+    let shouldBeRequired;
+
+    beforeEach(() => {
+      shouldBeRequired = false;
+      unit = unit.isRequiredWhen(() => shouldBeRequired);
+    });
+
+    it('fails when the value is not present and it is required', (done) => {
+      shouldBeRequired = true;
+
+      unit.runValidation(null, {}, 'required input').then(() => {
+        expect(unit.getState().valid).to.be.false;
+        expect(unit.getState().messages).to.deep.equal(['required input is required.']);
+        done();
+      });
+    });
+
+    it('passes when the value is not present, but it is not required', (done) => {
+      shouldBeRequired = false;
+
+      unit.runValidation(null).then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('fails on empty strings when the value is required', (done) => {
+      shouldBeRequired = true;
+
+      unit.runValidation('').then(() => {
+        expect(unit.getState().valid).to.be.false;
+        done();
+      });
+    });
+
+    it('passes on empty strings when the value is not required', (done) => {
+      shouldBeRequired = false;
+
+      unit.runValidation('').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('passes when value is present and it is required', (done) => {
+      shouldBeRequired = true;
+
+      unit.runValidation('I\'m here!').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+
+    it('passes when value is present and it is not required', (done) => {
+      shouldBeRequired = false;
+
+      unit.runValidation('I\'m here!').then(() => {
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
+    });
+  });
+
   describe('isEmail', () => {
     beforeEach(() => {
       unit = unit.isEmail();
