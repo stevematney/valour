@@ -298,4 +298,46 @@ describe('validation', () => {
       expect(valour.isValidationStateSet(formName)).to.be.true;
     });
   });
+
+  describe('disposeForm', () => {
+    let formName = 'newForm';
+
+    beforeEach(() => {
+      valour.register(formName, {
+        email: valour.rule.isEmail()
+      });
+    });
+
+    it('resets the form back to an empty object', () => {
+      expect(valour.getForm(formName)).to.be.ok;
+
+      valour.disposeForm(formName);
+      expect(valour.getForm(formName)).to.deep.equal({});
+    });    
+  });
+
+  describe('removeField', () => {
+    let formName = 'newForm';
+
+    beforeEach(() => {
+      valour.register(formName, {
+        email: valour.rule.isEmail(),
+        phone: valour.rule.isMobilePhone()
+      });
+    });
+
+    it('removes the validation key from the form', () => {
+      expect(valour.getForm(formName).email).to.be.ok;
+
+      valour.removeField(formName, 'email');
+      expect(valour.getForm(formName).email).to.be.undefined;
+    });
+
+    it('does not remove keys that aren\'t specified', () => {
+      expect(valour.getForm(formName).phone).to.be.ok;
+
+      valour.removeField(formName, 'email');
+      expect(valour.getForm(formName).phone).to.be.ok;
+    });
+  });
 });

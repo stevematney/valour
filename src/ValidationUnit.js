@@ -185,6 +185,10 @@ export default class ValidationUnit {
     return this.setRequirement(requiredFunc, message, 'isRequired');
   }
 
+  isRequiredWhen(func, message = '{name} is required.') {
+    return this.setRequirement((val, allValues) => (func(val, allValues) && requiredFunc(val, allValues)) || !func(val, allValues), message, 'isRequired');
+  }
+
   isEmail(message = '{name} must be a valid email address.') {
     return this.setValidatorRequirement('isEmail', message);
   }

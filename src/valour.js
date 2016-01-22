@@ -121,6 +121,20 @@ class Valour {
     });
     this.runCallbacks(name);
   }
+
+  disposeForm(name) {
+    this.forms[name] = {};
+  }
+
+  removeField(formName, fieldName) {
+    let form = this.getForm(formName);
+    this.forms[formName] = Object.keys(form).reduce((newForm, key) => {
+      if(key !== fieldName) {
+        newForm[key] = form[key];
+      }
+      return newForm;
+    }, {});
+  }
 }
 
 export default new Valour();
