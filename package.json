@@ -21,7 +21,7 @@
   "repository": "stevematney/valour",
   "dependencies": {
     "lodash": "^4.0.0",
-    "validator": "^4.2.1",
+    "validator": "^5.0.0",
     "babel-runtime": "^5.8.25"
   },
   "devDependencies": {
