@@ -1,5 +1,6 @@
 import {expect} from 'chai';
 import valour from '../src/valour';
+import 'babel-polyfill';
 
 describe('validation', () => {
   afterEach(() => {

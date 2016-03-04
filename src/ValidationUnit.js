@@ -1,7 +1,7 @@
 import validator from 'validator';
 import formatValidationMessage from './util/format-validation-message';
-import isUndefined from 'lodash/lang/isUndefined';
-import isNull from 'lodash/lang/isNull';
+import isUndefined from 'lodash/isUndefined';
+import isNull from 'lodash/isNull';
 
 function getDates(beforeIn, afterIn) {
   let before = new Date(beforeIn.toString());

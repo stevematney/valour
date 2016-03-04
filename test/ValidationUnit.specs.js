@@ -1,5 +1,6 @@
-import {expect} from "./support/eventual-chai";
+import { expect } from "./support/eventual-chai";
 import ValidationUnit from "../src/ValidationUnit";
+import 'babel-polyfill';
 
 describe('ValidationUnit', () => {
   let unit;
