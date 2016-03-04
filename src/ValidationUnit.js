@@ -2,6 +2,7 @@ import validator from 'validator';
 import formatValidationMessage from './util/format-validation-message';
 import isUndefined from 'lodash/isUndefined';
 import isNull from 'lodash/isNull';
+import Promise from 'promise';
 
 function getDates(beforeIn, afterIn) {
   let before = new Date(beforeIn.toString());
@@ -37,7 +38,7 @@ let isCheckable = val => !isUndefined(val) && !isNull(val) && !!val.toString().l
 
 export default class ValidationUnit {
   constructor(...existing) {
-    let validationState = existing.find((object) => object.valid !== undefined || object.messages !== undefined) || {};
+    let validationState = existing.filter((object) => object.valid !== undefined || object.messages !== undefined).shift() || {};
     this.rules = existing
                    .map(ex => ex.rules)
                    .reduce((list, existingRuleList) => [...list, ...existingRuleList], [])
