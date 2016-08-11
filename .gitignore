@@ -1,3 +1,4 @@
 node_modules
 .vimrc
 lib
+npm-debug.log

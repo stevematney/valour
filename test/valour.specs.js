@@ -182,6 +182,20 @@ describe('validation', () => {
       });
     });
 
+    describe('runValidationSync', () => {
+      it('allows a result to be checked immediately after', (done) => {
+	valour.register('test', { name: valour.rule.isRequired() });
+	
+	valour.runValidationSync('test', {});
+	expect(valour.isValid('test')).to.be.false;
+	
+	valour.runValidationSync('test', { name: 'test' });
+	expect(valour.isValid('test')).to.be.true;
+	
+	done();
+      });
+    });
+
     describe('forceValidation', () => {
       it('updates with the current validation result. Unset fields are not checked.', (done) => {
         register((result) => {
