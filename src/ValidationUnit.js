@@ -121,6 +121,26 @@ export default class ValidationUnit {
              .then(removeWaiting);
   }
 
+  runValidationSync(value, allValues, name) {
+    this.value = value;
+    this.valid = undefined;
+
+    if (!this.shouldCheckValue(value)) {
+      this.valid = true;
+    }
+
+    const rules = this.rules.filter(rule => !rule.isAsync);
+    rules.forEach(rule => {
+      this.valid = rule.func(this.value);
+
+      if ( !this.valid ) {
+	this.messages.push(formatValidationMessage(rule.failureMessage, { name }));
+      }
+    });
+
+    this.setState(this.valid, this.messages);
+  }
+
   getState() {
     let {valid, messages, waiting} = this;
     valid = (!this.shouldCheckValue(this.value) && this.valid === undefined) ? true : valid;
@@ -150,7 +170,7 @@ export default class ValidationUnit {
                    forced = true,
                    isAsync = false
                   ) {
-    this.rules = [...this.rules, { forced, generator, name, isAsync }];
+    this.rules = [...this.rules, { func, failureMessage, forced, generator, name, isAsync }];
     return new ValidationUnit(this);
   }
 

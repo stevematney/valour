@@ -101,6 +101,16 @@ class Valour {
     });
   }
 
+  runValidationSync(name, data) {
+    let form = this.getForm(name);
+    Object.keys(form).forEach((key) => {
+      if (data[key] === undefined) {
+	return;
+      }
+      form[key].runValidationSync(data[key], data, key);
+    });
+  }
+
   forceValidation(name, data) {
     this.runValidation(name, data, true);
   }
