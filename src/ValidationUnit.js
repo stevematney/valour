@@ -124,6 +124,7 @@ export default class ValidationUnit {
   runValidationSync(value, allValues, name) {
     this.value = value;
     this.valid = undefined;
+    this.messages = [];
 
     if (!this.shouldCheckValue(value)) {
       this.valid = true;
