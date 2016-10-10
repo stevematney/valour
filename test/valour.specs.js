@@ -184,15 +184,34 @@ describe('validation', () => {
 
     describe('runValidationSync', () => {
       it('allows a result to be checked immediately after', (done) => {
-	valour.register('test', { name: valour.rule.isRequired() });
-	
-	valour.runValidationSync('test', {});
-	expect(valour.isValid('test')).to.be.false;
-	
-	valour.runValidationSync('test', { name: 'test' });
-	expect(valour.isValid('test')).to.be.true;
-	
-	done();
+        valour.register('test', { name: valour.rule.isRequired() });
+
+        valour.runValidationSync('test', {});
+        expect(valour.isValid('test')).to.be.false;
+
+        valour.runValidationSync('test', { name: 'test' });
+        expect(valour.isValid('test')).to.be.true;
+
+        done();
+      });
+
+      it('returns false if a single validation fails in validation chain', (done) => {
+	let rule = valour.rule
+                         .isValidatedBy(val => val.length >= 3)
+                         .isValidatedBy(val => val.length <= 50);
+        valour.register('test', {
+          name: rule
+        });
+
+        valour.runValidationSync('test', { name: 'abcdefghijklmnopqrstuvwxyzabcdefghijsdfasdfsdfasdfasdfklmnopqrstuvwxyaldkjfadf' });
+        expect(valour.isValid('test')).to.be.false;
+
+        valour.runValidationSync('test', { name: 'Ip' });
+        expect(valour.isValid('test')).to.be.false;
+
+        valour.runValidationSync('test', { name: 'I work!' });
+        expect(valour.isValid('test')).to.be.true;
+        done();
       });
     });
 
