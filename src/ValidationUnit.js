@@ -131,15 +131,22 @@ export default class ValidationUnit {
     }
 
     const rules = this.rules.filter(rule => !rule.isAsync);
-    rules.forEach(rule => {
-      this.valid = rule.func(this.value);
+    const ruleViolationStatuses = rules.map(rule => {
+      const isValid = rule.func(this.value);
+      return {
+	rule,
+	isValid
+      };
+    });
+    ruleViolationStatuses.forEach(violationStatus => {
+      const { isValid, rule } = violationStatus;
 
-      if ( !this.valid ) {
-	this.messages.push(formatValidationMessage(rule.failureMessage, { name }));
+      if ( !isValid && rule.failureMessage ) {
+        this.messages.push(formatValidationMessage(rule.failureMessage, { name }));
       }
     });
-
-    this.setState(this.valid, this.messages);
+    const allRulesSatisfied = ruleViolationStatuses.every(status => status.isValid);
+    this.setState(allRulesSatisfied, this.messages);
   }
 
   getState() {
