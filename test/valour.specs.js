@@ -232,6 +232,29 @@ describe('validation', () => {
     });
   });
 
+  describe('forceValidationSync', () => {
+    beforeEach(() => {
+      valour.register('forceValidationSyncTest', {
+        name: valour.rule.isRequired()
+      });
+    });
+
+    it('allows unset fields to be checked', () => {
+      valour.forceValidation('forceValidationSyncTest', {});
+      const results = valour.getResult('forceValidationSyncTest');
+
+      expect(results.name.isValid).to.not.be.ok;
+    });
+
+    it('allows a result to be checked immediately after', () => {
+      valour.forceValidationSync('forceValidationSyncTest', {});
+      expect(valour.isValid('forceValidationSyncTest')).to.be.false;
+
+      valour.forceValidationSync('forceValidationSyncTest', { name: 'Billy' });
+      expect(valour.isValid('forceValidationSyncTest')).to.be.true;
+    });
+  });
+
   describe('isValid', () => {
     let register = (callback) => {
       valour.register('newForm', {
