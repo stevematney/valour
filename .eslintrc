@@ -1,13 +1,12 @@
 {
   "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
   "env": {
     "es6": true,
     "node": true
-  },
-  "ecmaFeatures": {
-    "modules": true,
-    "spread": true,
-    "experimentalObjectRestSpread": true
   },
   "rules" : {
     "semi": [2, "always"]
