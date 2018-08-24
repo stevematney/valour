@@ -37,9 +37,10 @@ describe('ValidationUnit', () => {
       expect(finalUnit.rules).to.deep.equal(finalList);
     });
 
-    it('makes "isNot" rules for each "is" function', () => {
-      expect(unit.removeIsEmail).to.be.truthy;
-      expect(unit.removeIsMobilePhone).to.be.truthy;
+    it('makes removal rules for each "is" function', () => {
+      var unit = new ValidationUnit().isEmail().isMobilePhone();
+      expect(unit.removeIsEmail).to.be.ok;
+      expect(unit.removeIsMobilePhone).to.be.ok;
     });
 
     it('will set it\'s valid property to the existing unit\'s valid property', () => {

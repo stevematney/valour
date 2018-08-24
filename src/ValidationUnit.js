@@ -51,6 +51,7 @@ export default class ValidationUnit {
                   return this.remove(rule.name);
                 };
               });
+
     this.waiting = 0;
     this.valid = validationState.valid;
     this.messages = validationState.messages;
