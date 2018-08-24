@@ -1,4 +1,4 @@
-import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import ValidatedForm from './ValidatedForm';
 import RequiredInput from './RequiredInput';

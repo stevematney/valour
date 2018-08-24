@@ -2,11 +2,12 @@ import React from 'react';
 import ValidatedInput from './ValidatedInput';
 import inputProps from './input-props';
 import valour from 'valour';
+import PropTypes from 'prop-types';
 
 export default class ConfirmPasswordInput extends React.Component {
   static propTypes = {
     ...inputProps,
-    matches: React.PropTypes.string.isRequired
+    matches: PropTypes.string.isRequired
   }
   constructor() {
     super();

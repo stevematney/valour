@@ -2,11 +2,12 @@ import React from 'react';
 import ValidatedInput from './ValidatedInput';
 import inputProps from './input-props';
 import valour from 'valour';
+import PropTypes from 'prop-types';
 
 export default class EmailInput extends React.Component {
   static propTypes = {
     ...inputProps,
-    focusWasGained: React.PropTypes.func
+    focusWasGained: PropTypes.func
   }
   constructor() {
     super();

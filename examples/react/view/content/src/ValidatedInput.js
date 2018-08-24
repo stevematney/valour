@@ -2,14 +2,14 @@ import React from 'react';
 import classNames from 'classnames';
 import props from './input-props';
 import valour from 'valour';
-import Input from 'react-bootstrap/lib/Input';
 import Glyphicon from 'react-bootstrap/lib/Glyphicon';
+import PropTypes from 'prop-types';
 
 export default class ValidatedInput extends React.Component {
   static propTypes = {
     ...props,
-    type: React.PropTypes.string,
-    getSanitizedValue: React.PropTypes.func
+    type: PropTypes.string,
+    getSanitizedValue: PropTypes.func
   }
 
   static defaultProps = {
