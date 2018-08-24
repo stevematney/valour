@@ -90,7 +90,7 @@ class Valour {
       clearTimeout(callbackTimeout);
       callbackTimeout = setTimeout(() => {
         this.runCallbacks(name);
-      }, 100);
+      }, 101);
     };
     let form = this.getForm(name);
     Object.keys(form).forEach((key) => {

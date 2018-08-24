@@ -541,10 +541,11 @@ describe('ValidationUnit', () => {
     });
   });
 
-    describe('isAfter', () => {
+  describe('isAfter', () => {
     beforeEach(() => {
       unit = unit.isAfter('1/1/2014');
     });
+
     it('passes when the value is after the given date', (done) => {
       unit.runValidation('1/1/2015').then(() => {
         expect(unit.getState().valid).to.be.true;
