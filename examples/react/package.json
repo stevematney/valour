@@ -23,7 +23,7 @@
     "prop-types": "^15.6.2",
     "react": "^16.4.2",
     "valour": "file:../..",
-    "whatwg-fetch": "^0.10.0"
+    "whatwg-fetch": "^2.0.4"
   },
   "devDependencies": {
     "ajv": "^6.5.3",
