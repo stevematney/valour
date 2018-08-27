@@ -1,11 +1,12 @@
 {
   "name": "valour",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Simple javascript validation for any application",
   "main": "lib/valour.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --require babel-core/register",
-    "compile": "./node_modules/.bin/eslint src/ test/ && node ./node_modules/.bin/babel -d lib/ src/",
+    "test": "mocha --require babel-core/register",
+    "test-watch": "mocha --require babel-core/register -w",
+    "compile": "eslint src/ test/ && babel -d lib/ src/",
     "prepublish": "npm run compile"
   },
   "files": [
@@ -22,21 +23,20 @@
   "dependencies": {
     "babel-runtime": "^6.6.1",
     "lodash": "^4.5.0",
-    "validator": "^4.2.1",
-    "promise": "^7.1.1"
+    "promise": "^8.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.6.4",
     "babel-core": "^6.6.4",
-    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-array-includes": "^2.0.3",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.6.0",
-    "babel-preset-es2015": "^6.6.0",
-    "babel-preset-stage-2": "^6.5.0",
-    "chai": "^3.2.0",
-    "chai-as-promised": "^5.1.0",
-    "eslint": "^1.6.0",
-    "mocha": "^2.2.5",
-    "validator": "^4.0.5"
+    "babel-preset-env": "^1.7.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^5.4.0",
+    "mocha": "^5.2.0",
+    "validator": "^10.7.0"
   }
 }

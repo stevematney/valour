@@ -1,10 +1,11 @@
 import React from 'react';
 import valour from 'valour';
+import PropTypes from 'prop-types';
 
 export default class ValidatedForm extends React.Component{
   static propTypes = {
-    name: React.PropTypes.string.isRequired,
-    children: React.PropTypes.node
+    name: PropTypes.string.isRequired,
+    children: PropTypes.node
   }
 
   constructor() {

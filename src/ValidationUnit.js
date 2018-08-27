@@ -4,12 +4,6 @@ import isUndefined from 'lodash/isUndefined';
 import isNull from 'lodash/isNull';
 import Promise from 'promise';
 
-function getDates(beforeIn, afterIn) {
-  let before = new Date(beforeIn.toString());
-  let after = new Date(afterIn.toString());
-  return { before, after };
-}
-
 let defaultCurrencyOptions = {
   symbol: '$',
   require_symbol: false,
@@ -57,6 +51,7 @@ export default class ValidationUnit {
                   return this.remove(rule.name);
                 };
               });
+
     this.waiting = 0;
     this.valid = validationState.valid;
     this.messages = validationState.messages;
@@ -193,7 +188,7 @@ export default class ValidationUnit {
   }
 
   setValidatorRequirement(funcName, message, ...extraParams) {
-    return this.setRequirement(val => validator[funcName](val, ...extraParams), message, funcName);
+    return this.setRequirement(val => validator[funcName](val.toString(), ...extraParams), message, funcName);
   }
 
   isValidatedBy(func, message) {
@@ -248,15 +243,17 @@ export default class ValidationUnit {
 
   isAfter(date, message = '{name} must be after {date}.') {
     return this.setRequirement((val) => {
-      let dates = getDates(date, val);
-      return validator.isAfter(dates.after, dates.before);
+      let before = date.toString();
+      let after  = val.toString();
+      return validator.isAfter(after, before);
     }, formatValidationMessage(message, { date }), 'isAfter');
   }
 
   isBefore(date, message = '{name} must be before {date}.') {
     return this.setRequirement((val) => {
-      let dates = getDates(val, date);
-      return validator.isBefore(dates.before, dates.after);
+      let before = val.toString();
+      let after = date.toString();
+      return validator.isBefore(before, after);
     }, formatValidationMessage(message, { date }), 'isBefore');
   }
 
@@ -310,7 +307,7 @@ export default class ValidationUnit {
   }
 
   isDate(message = '{name} must be a date.') {
-    return this.setValidatorRequirement('isDate', message);
+    return this.setRequirement(val => validator.toDate(val) !== null, message, 'isDate');
   }
 
   isDecimal(message = '{name} must represent a decimal number.') {

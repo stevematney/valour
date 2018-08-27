@@ -1,4 +1,4 @@
-import 'bootstrap-webpack!../../../bootstrap.config.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import ValidatedForm from './ValidatedForm';
 import RequiredInput from './RequiredInput';

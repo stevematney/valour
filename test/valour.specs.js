@@ -25,7 +25,7 @@ describe('validation', () => {
 
     it('does not add a callback when the given callback is falsey', () => {
       valour.onUpdated('newForm', null);
-      expect(valour.callbacks['newForm']).to.be.falsey;
+      expect(valour.callbacks['newForm']).to.not.be.ok;
     });
   });
 
@@ -369,7 +369,7 @@ describe('validation', () => {
 
       valour.disposeForm(formName);
       expect(valour.getForm(formName)).to.deep.equal({});
-    });    
+    });
   });
 
   describe('removeField', () => {
