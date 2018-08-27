@@ -1,10 +1,10 @@
 Valour.js
 ===
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/stevematney/valour.svg)](https://greenkeeper.io/)
 
 ## Simple javascript validation for any app.
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/stevematney/valour.svg)](https://greenkeeper.io/)
 ![Travis CI Build](https://travis-ci.org/stevematney/valour.svg?branch=master)
 
 Usage
