@@ -15,6 +15,8 @@ Valour.js
 [![Greenkeeper badge](https://badges.greenkeeper.io/stevematney/valour.svg)](https://greenkeeper.io/)
 ![Travis CI Build](https://travis-ci.org/stevematney/valour.svg?branch=master)
 
+If you're curious or if it's helpful, you can [watch a presentation about valour](https://www.youtube.com/watch?v=qDm-qdG0-60).
+
 Usage
 --
 
