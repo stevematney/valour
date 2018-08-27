@@ -7,7 +7,7 @@
     "test": "mocha --require babel-core/register",
     "test-watch": "mocha --require babel-core/register -w",
     "compile": "eslint src/ test/ && babel -d lib/ src/",
-    "prepublish": "npm run compile"
+    "prepare": "npm run compile"
   },
   "files": [
     "lib"
