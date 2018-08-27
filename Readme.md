@@ -1,3 +1,11 @@
+<div align="center">
+  <a href="https://github.com/stevematney/valour">
+    <img width="250" height="206" src="https://s3-us-west-1.amazonaws.com/valour/valour-logo.png">
+  </a>
+  <br>
+</div>
+
+
 Valour.js
 ===
 
