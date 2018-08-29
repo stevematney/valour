@@ -36,7 +36,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "eslint": "^5.4.0",
-    "greenkeeper-lockfile": "^1.15.1",
+    "greenkeeper-lockfile": "^2.5.0",
     "mocha": "^5.2.0",
     "validator": "^10.7.0"
   }
