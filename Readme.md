@@ -17,6 +17,12 @@ Valour.js
 
 If you're curious or if it's helpful, you can [watch a presentation about valour](https://www.youtube.com/watch?v=qDm-qdG0-60).
 
+Installation
+--
+```
+npm i valour
+```
+
 Usage
 --
 
