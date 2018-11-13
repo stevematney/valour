@@ -20,7 +20,7 @@
     "multer": "^1.0.6",
     "popper.js": "^1.14.4",
     "prop-types": "^15.6.2",
-    "react": "^16.4.2",
+    "react": "^16.6.3",
     "valour": "file:../..",
     "whatwg-fetch": "^2.0.4"
   },
