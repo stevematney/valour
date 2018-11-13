@@ -20,7 +20,7 @@
     "multer": "^1.0.6",
     "popper.js": "^1.14.4",
     "prop-types": "^15.6.2",
-    "react": "^16.4.2",
+    "react": "^16.6.3",
     "valour": "file:../..",
     "whatwg-fetch": "^2.0.4"
   },
@@ -45,7 +45,7 @@
     "less-loader": "^4.1.0",
     "mini-css-extract-plugin": "^0.4.2",
     "react-bootstrap": "^0.32.3",
-    "react-dom": "^16.4.2",
+    "react-dom": "^16.6.3",
     "style-loader": "^0.23.1",
     "url-loader": "^1.1.1",
     "webpack": "^4.17.1",
