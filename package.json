@@ -37,7 +37,7 @@
     "chai-as-promised": "^7.1.1",
     "eslint": "^5.4.0",
     "greenkeeper-lockfile": "^2.5.0",
-    "mocha": "^5.2.0",
+    "mocha": "^6.0.2",
     "validator": "10.11.0"
   }
 }
