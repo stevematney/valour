@@ -46,7 +46,7 @@
     "mini-css-extract-plugin": "^0.6.0",
     "react-bootstrap": "^0.32.3",
     "react-dom": "^16.6.3",
-    "style-loader": "^0.23.1",
+    "style-loader": "^1.0.0",
     "url-loader": "^1.1.1",
     "webpack": "^4.29.0",
     "webpack-cli": "^3.1.0"
