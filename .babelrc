@@ -1,4 +1,9 @@
 {
-  "presets": ["env"],
-  "plugins": ["add-module-exports", "array-includes", "transform-runtime", "transform-object-rest-spread"]
+  "presets": ["@babel/env"],
+  "plugins": [
+    "add-module-exports",
+    "array-includes",
+    "@babel/transform-runtime",
+    "@babel/proposal-object-rest-spread"
+  ]
 }
