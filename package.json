@@ -1,11 +1,11 @@
 {
   "name": "valour",
-  "version": "0.0.27",
+  "version": "0.0.29",
   "description": "Simple javascript validation for any application",
   "main": "lib/valour.js",
   "scripts": {
-    "test": "mocha --require babel-core/register",
-    "test-watch": "mocha --require babel-core/register -w",
+    "test": "mocha --require @babel/register",
+    "test-watch": "mocha --require @babel/register -w",
     "compile": "eslint src/ test/ && babel -d lib/ src/",
     "prepare": "npm run compile"
   },
@@ -21,23 +21,24 @@
   "license": "MIT",
   "repository": "stevematney/valour",
   "dependencies": {
-    "babel-runtime": "^6.6.1",
-    "lodash": "^4.5.0",
+    "lodash": "^4.17.15",
     "promise": "^8.0.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.6.4",
-    "babel-core": "^6.6.4",
-    "babel-plugin-add-module-exports": "^1.0.0",
+    "@babel/cli": "^7.8.3",
+    "@babel/core": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.8.3",
+    "@babel/preset-env": "^7.0.0",
+    "@babel/register": "^7.8.3",
+    "@babel/runtime": "^7.8.3",
+    "babel-plugin-add-module-exports": "^1.0.2",
     "babel-plugin-array-includes": "^2.0.3",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-plugin-transform-runtime": "^6.6.0",
-    "babel-preset-env": "^1.7.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^5.4.0",
-    "greenkeeper-lockfile": "^2.5.0",
-    "mocha": "^6.0.2",
-    "validator": "10.11.0"
+    "eslint": "^6.8.0",
+    "greenkeeper-lockfile": "^1.15.1",
+    "mocha": "^7.0.1",
+    "validator": "^12.2.0"
   }
 }
