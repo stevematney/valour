@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import valour from 'valour';
+import valour from '../src/valour';
 
 describe('validation', () => {
   afterEach(() => {
