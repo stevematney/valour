@@ -1,112 +1,148 @@
-import { expect } from "./support/eventual-chai";
-import ValidationUnit from "../src/ValidationUnit";
+import { expect } from './support/eventual-chai';
+import ValidationUnit from '../src/ValidationUnit';
 import Promise from 'promise';
 
-describe('ValidationUnit', () => {
+describe('ValidationUnit', function() {
   let unit;
-  beforeEach(() => {
+  beforeEach(function() {
     unit = new ValidationUnit();
   });
 
-  describe('initialization', () => {
-    it('creates an empty list without given generators', () => {
-      expect((new ValidationUnit()).rules.length).to.eql(0);
+  describe('initialization', function() {
+    it('creates an empty list without given generators', function() {
+      expect(new ValidationUnit().rules.length).to.eql(0);
     });
 
-    it('will take a ValidationUnit with existing rules', () => {
+    it('will take a ValidationUnit with existing rules', function() {
       let fakeUnit = new ValidationUnit();
       fakeUnit.rules = [
-        {forced: true, func: () => 'hello!', generator: () => {}, name: 'hello'},
-        {forced: false, func: () => 'hola señor!', generator: () => {}, name: 'hola'}
+        {
+          forced: true,
+          func: () => 'hello!',
+          generator: () => {},
+          name: 'hello'
+        },
+        {
+          forced: false,
+          func: () => 'hola señor!',
+          generator: () => {},
+          name: 'hola'
+        }
       ];
       expect(new ValidationUnit(fakeUnit).rules).to.deep.equal(fakeUnit.rules);
     });
 
-    it('will take multiple units with multiple rules and reduce them to a list of rules without duplicates (other than forced funcs)', () => {
-      let forcedRule = {forced: true, func: () => 'yo', generator: () => {}};
+    it('will take multiple units with multiple rules and reduce them to a list of rules without duplicates (other than forced funcs)', function() {
+      let forcedRule = { forced: true, func: () => 'yo', generator: () => {} };
       let finalList = [
-        {forced: false, func: () => 'hello!', generator: () => {}, name: 'hello'},
-        {forced: false, func: () => 'hola señor!', generator: () => {}, name: 'hola'},
-        {forced: false, func: () => 'holler!', generator: () => {}, name: 'holler'},
+        {
+          forced: false,
+          func: () => 'hello!',
+          generator: () => {},
+          name: 'hello'
+        },
+        {
+          forced: false,
+          func: () => 'hola señor!',
+          generator: () => {},
+          name: 'hola'
+        },
+        {
+          forced: false,
+          func: () => 'holler!',
+          generator: () => {},
+          name: 'holler'
+        },
         forcedRule,
         forcedRule
       ];
-      let unitOne = new ValidationUnit({ rules: [finalList[0], finalList[1], finalList[2], finalList[3]] });
-      let unitTwo = new ValidationUnit({ rules: [finalList[1], finalList[2], finalList[3], finalList[1]] });
+      let unitOne = new ValidationUnit({
+        rules: [finalList[0], finalList[1], finalList[2], finalList[3]]
+      });
+      let unitTwo = new ValidationUnit({
+        rules: [finalList[1], finalList[2], finalList[3], finalList[1]]
+      });
       let finalUnit = new ValidationUnit(unitOne, unitTwo);
       expect(finalUnit.rules).to.deep.equal(finalList);
     });
 
-    it('makes removal rules for each "is" function', () => {
+    it('makes removal rules for each "is" function', function() {
       var unit = new ValidationUnit().isEmail().isMobilePhone();
       expect(unit.removeIsEmail).to.be.ok;
       expect(unit.removeIsMobilePhone).to.be.ok;
     });
 
-    it('will set it\'s valid property to the existing unit\'s valid property', () => {
+    it("will set it's valid property to the existing unit's valid property", function() {
       let fakeUnit = new ValidationUnit();
       fakeUnit.valid = true;
       expect(new ValidationUnit(fakeUnit).valid).to.be.true;
     });
 
-    it('will set it\'s messages to the existing unit\'s messages', () => {
+    it("will set it's messages to the existing unit's messages", function() {
       let fakeUnit = new ValidationUnit();
-      fakeUnit.messages = [
-        'Test Message',
-        'Test Message 2'
-      ];
-      expect(new ValidationUnit(fakeUnit).messages).to.deep.equal(fakeUnit.messages);
+      fakeUnit.messages = ['Test Message', 'Test Message 2'];
+      expect(new ValidationUnit(fakeUnit).messages).to.deep.equal(
+        fakeUnit.messages
+      );
     });
   });
 
-  describe('duplicate validation requirements', () => {
-    it('does not duplicate requirements', () => {
+  describe('duplicate validation requirements', function() {
+    it('does not duplicate requirements', function() {
       unit = unit.isRequired().isRequired();
       expect(unit.rules.length).to.equal(1);
     });
   });
 
-  describe('requirement chaining', () => {
+  describe('requirement chaining', function() {
     let matches = ['foo', 'bar'];
-    beforeEach(() => {
-      unit = unit.isEmail()
-          .isValidatedBy((value) => !!matches.filter((match) => value.includes(match)).length,
-                         'Value should contain "foo" or "bar".');
+    beforeEach(function() {
+      unit = unit
+        .isEmail()
+        .isValidatedBy(
+          value => !!matches.filter(match => value.includes(match)).length,
+          'Value should contain "foo" or "bar".'
+        );
     });
 
-    it('provides multiple invalid messages', (done) => {
+    it('provides multiple invalid messages', function(done) {
       unit.runValidation('nope', {}, 'Email field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.contain('Email field must be a valid email address.');
-        expect(result.messages).to.contain('Value should contain "foo" or "bar".');
+        expect(result.messages).to.contain(
+          'Email field must be a valid email address.'
+        );
+        expect(result.messages).to.contain(
+          'Value should contain "foo" or "bar".'
+        );
         done();
       });
     });
 
-    it('will fail only one rule', (done) => {
+    it('will fail only one rule', function(done) {
       unit.runValidation('foo', {}, 'Email field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Email field must be a valid email address.' ]);
+        expect(result.messages).to.deep.equal([
+          'Email field must be a valid email address.'
+        ]);
       });
 
       unit.runValidation('nope@email.com').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Value should contain "foo" or "bar".' ]);
+        expect(result.messages).to.deep.equal([
+          'Value should contain "foo" or "bar".'
+        ]);
       });
 
       setTimeout(() => done(), 20);
     });
   });
 
-  describe('non-required rules', () => {
-    beforeEach(() => {
+  describe('non-required rules', function() {
+    it('is valid if the form value is not checkable', function(done) {
       unit = unit.isEmail();
-    });
-
-    it('is valid if the form value is not checkable', (done) => {
       unit.runValidation(null).then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
@@ -114,47 +150,44 @@ describe('ValidationUnit', () => {
     });
   });
 
-  describe('shouldCheckValue', () => {
-    beforeEach(() => {
+  describe('shouldCheckValue', function() {
+    beforeEach(function() {
       unit = new ValidationUnit().isEmail();
     });
 
-    describe('when the value is not required', () => {
-      it('returns false if the current ValidationUnit value is undefined, null or zero length', () => {
+    describe('when the value is not required', function() {
+      it('returns false if the current ValidationUnit value is undefined, null or zero length', function() {
         let isCheckable = unit.shouldCheckValue(undefined);
         expect(isCheckable).to.be.false;
       });
 
-      it('returns true if the current ValidationUnit should be evaluated', () => {
+      it('returns true if the current ValidationUnit should be evaluated', function() {
         let isCheckable = unit.shouldCheckValue('working@email.com');
         expect(isCheckable).to.be.true;
       });
     });
 
-    describe('when the value is required', () => {
-      beforeEach(() => {
+    describe('when the value is required', function() {
+      it('always returns true', function() {
         unit = new ValidationUnit().isEmail().isRequired();
-      });
-
-      it('always returns true', () => {
         expect(unit.shouldCheckValue(null)).to.be.true;
         expect(unit.shouldCheckValue('some value')).to.be.true;
       });
     });
   });
 
-  describe('getState', () => {
-    beforeEach(() => {
+  describe('getState', function() {
+    beforeEach(function() {
       unit = new ValidationUnit().isEmail();
     });
 
-    it('sets valid to true if the current ValidationUnit is not required, the unit has no current value, and valid has no current value', () => {
+    it('sets valid to true if the current ValidationUnit is not required, the unit has no current value, and valid has no current value', function() {
       unit.value = undefined;
       unit.valid = undefined;
       expect(unit.getState().valid).to.be.true;
     });
 
-    it('valid keeps its current value if the unit has a current value', () => {
+    it('valid keeps its current value if the unit has a current value', function() {
       unit.value = 'anycurrentvalue';
 
       unit.valid = undefined;
@@ -167,7 +200,7 @@ describe('ValidationUnit', () => {
       expect(unit.getState().valid).to.be.true;
     });
 
-    it('valid keeps its current value if the ValidationUnit is required and the unit has no current value', () => {
+    it('valid keeps its current value if the ValidationUnit is required and the unit has no current value', function() {
       unit = new ValidationUnit().isEmail().isRequired();
       unit.value = undefined;
 
@@ -182,72 +215,84 @@ describe('ValidationUnit', () => {
     });
   });
 
-  describe('isValidatedBy', () => {
+  describe('isValidatedBy', function() {
     let matches = ['foo', 'bar'];
-    beforeEach(() => {
-      unit = unit.isValidatedBy((value) => !!matches.filter((match) => value.includes(match)).length,
-                         'Value should contain "foo" or "bar".');
+    beforeEach(function() {
+      unit = unit.isValidatedBy(
+        value => !!matches.filter(match => value.includes(match)).length,
+        'Value should contain "foo" or "bar".'
+      );
     });
 
-    it('will pass a custom validator', (done) => {
+    it('will pass a custom validator', function(done) {
       unit.runValidation('foo').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('will fail a custom validator', (done) => {
+    it('will fail a custom validator', function(done) {
       unit.runValidation('blah').then(() => {
         expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['Value should contain "foo" or "bar".']);
+        expect(unit.getState().messages).to.deep.equal([
+          'Value should contain "foo" or "bar".'
+        ]);
         done();
       });
     });
 
-    describe('checking against other values', () => {
-      beforeEach(() => {
+    describe('checking against other values', function() {
+      beforeEach(function() {
         unit = unit.isValidatedBy((value, allValues) => {
           return value === allValues.dependent;
         }, 'Value must be equal to "dependent."');
       });
 
-      it('passes when its dependent values are correct', (done) => {
+      it('passes when its dependent values are correct', function(done) {
         unit.runValidation('foo', { dependent: 'foo' }).then(() => {
           expect(unit.getState().valid).to.be.true;
           done();
         });
       });
 
-      it('fails when its dependent values are not correct', (done) => {
+      it('fails when its dependent values are not correct', function(done) {
         unit.runValidation('foo', { dependent: 'bar' }).then(() => {
           expect(unit.getState().valid).to.be.false;
-          expect(unit.getState().messages).to.deep.equal(['Value must be equal to "dependent."']);
+          expect(unit.getState().messages).to.deep.equal([
+            'Value must be equal to "dependent."'
+          ]);
           done();
         });
       });
 
-      it('will fail with multiple validation messages', (done) => {
+      it('will fail with multiple validation messages', function(done) {
         unit.runValidation('doo', { dependent: 'bar' }).then(() => {
           expect(unit.getState().valid).to.be.false;
-          expect(unit.getState().messages).to.deep.equal(['Value should contain "foo" or "bar".', 'Value must be equal to "dependent."']);
+          expect(unit.getState().messages).to.deep.equal([
+            'Value should contain "foo" or "bar".',
+            'Value must be equal to "dependent."'
+          ]);
           done();
         });
       });
     });
   });
 
-  describe('isEventuallyValidatedBy', () => {
-    let resolves = [], rejects = [];
-    let waitForNonEmpty = (setFunc) => new Promise((res) => {
-      let check = () => setTimeout(() => {
-        if (setFunc().length) {
-          res();
-          return;
-        }
+  describe('isEventuallyValidatedBy', function() {
+    let resolves = [],
+      rejects = [];
+    let waitForNonEmpty = setFunc =>
+      new Promise(res => {
+        let check = () =>
+          setTimeout(() => {
+            if (setFunc().length) {
+              res();
+              return;
+            }
+            check();
+          }, 10);
         check();
-      }, 10);
-      check();
-    });
+      });
     let callResolve = () => {
       waitForNonEmpty(() => resolves).then(() => {
         rejects.shift();
@@ -262,7 +307,7 @@ describe('ValidationUnit', () => {
       });
     };
 
-    beforeEach(() => {
+    beforeEach(function() {
       resolves = [];
       rejects = [];
       unit = unit.isEventuallyValidatedBy((val, allValues, resolve, reject) => {
@@ -271,13 +316,12 @@ describe('ValidationUnit', () => {
       }, 'the length should be 4');
     });
 
-    it('will eventually pass validation', (done) => {
-      unit.runValidation('hola')
-        .then(() => {
-          expect(unit.getState().waiting).to.be.false;
-          expect(unit.getState().valid).to.be.true;
-          done();
-        });
+    it('will eventually pass validation', function(done) {
+      unit.runValidation('hola').then(() => {
+        expect(unit.getState().waiting).to.be.false;
+        expect(unit.getState().valid).to.be.true;
+        done();
+      });
 
       callResolve();
 
@@ -285,11 +329,13 @@ describe('ValidationUnit', () => {
       expect(unit.getState().waiting).to.be.true;
     });
 
-    it('will eventually fail validation', (done) => {
+    it('will eventually fail validation', function(done) {
       unit.runValidation('hello').then(() => {
         expect(unit.getState().waiting).to.be.false;
         expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['the length should be 4']);
+        expect(unit.getState().messages).to.deep.equal([
+          'the length should be 4'
+        ]);
         done();
       });
 
@@ -298,7 +344,7 @@ describe('ValidationUnit', () => {
       callReject();
     });
 
-    it('will only fail on the most recent value', (done) => {
+    it('will only fail on the most recent value', function(done) {
       unit.runValidation('hello').then(() => {
         expect(unit.getState().valid).to.be.undefined;
         expect(unit.getState().waiting).to.be.true;
@@ -314,7 +360,7 @@ describe('ValidationUnit', () => {
       callResolve();
     });
 
-    it('will only pass on the most recent value', (done) => {
+    it('will only pass on the most recent value', function(done) {
       unit.runValidation('hello').then(() => {
         expect(unit.getState().valid).to.be.undefined;
         expect(unit.getState().waiting).to.be.true;
@@ -330,17 +376,19 @@ describe('ValidationUnit', () => {
       callReject();
     });
 
-    describe('running validation with mixed sync and async', () => {
+    describe('running validation with mixed sync and async', function() {
       let hasRunAsync = false;
-      beforeEach(() => {
+      beforeEach(function() {
         hasRunAsync = false;
-        unit = new ValidationUnit().isEmail().isEventuallyValidatedBy((val, allVals, resolve) => {
-          hasRunAsync = true;
-          resolve();
-        });
+        unit = new ValidationUnit()
+          .isEmail()
+          .isEventuallyValidatedBy((val, allVals, resolve) => {
+            hasRunAsync = true;
+            resolve();
+          });
       });
 
-      it('does not run async rules if sync rules fail', (done) => {
+      it('does not run async rules if sync rules fail', function(done) {
         unit.runValidation('hello').then(() => {
           expect(hasRunAsync).to.be.false;
           expect(unit.getState().waiting).to.be.false;
@@ -349,7 +397,7 @@ describe('ValidationUnit', () => {
         });
       });
 
-      it('does run async rules if sync rules pass', (done) => {
+      it('does run async rules if sync rules pass', function(done) {
         unit.runValidation('hello@mail.com').then(() => {
           expect(hasRunAsync).to.be.true;
           expect(unit.getState().waiting).to.be.false;
@@ -360,53 +408,57 @@ describe('ValidationUnit', () => {
     });
   });
 
-  describe('isRequired', () => {
-    beforeEach(() => {
+  describe('isRequired', function() {
+    beforeEach(function() {
       unit = unit.isRequired();
     });
 
-    it('fails when value not present and formats message with the name', (done) => {
+    it('fails when value not present and formats message with the name', function(done) {
       unit.runValidation(null, {}, 'required input').then(() => {
         expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['required input is required.']);
+        expect(unit.getState().messages).to.deep.equal([
+          'required input is required.'
+        ]);
         done();
       });
     });
 
-    it('fails on empty strings', (done) => {
-      unit.runValidation('I\'m here!').then(() => {
+    it('fails on empty strings', function(done) {
+      unit.runValidation("I'm here!").then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when value is present', (done) => {
-      unit.runValidation('I\'m here!').then(() => {
+    it('passes when value is present', function(done) {
+      unit.runValidation("I'm here!").then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
   });
 
-  describe('isRequiredWhen', () => {
+  describe('isRequiredWhen', function() {
     let shouldBeRequired;
 
-    beforeEach(() => {
+    beforeEach(function() {
       shouldBeRequired = false;
       unit = unit.isRequiredWhen(() => shouldBeRequired);
     });
 
-    it('fails when the value is not present and it is required', (done) => {
+    it('fails when the value is not present and it is required', function(done) {
       shouldBeRequired = true;
 
       unit.runValidation(null, {}, 'required input').then(() => {
         expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['required input is required.']);
+        expect(unit.getState().messages).to.deep.equal([
+          'required input is required.'
+        ]);
         done();
       });
     });
 
-    it('passes when the value is not present, but it is not required', (done) => {
+    it('passes when the value is not present, but it is not required', function(done) {
       shouldBeRequired = false;
 
       unit.runValidation(null).then(() => {
@@ -415,7 +467,7 @@ describe('ValidationUnit', () => {
       });
     });
 
-    it('fails on empty strings when the value is required', (done) => {
+    it('fails on empty strings when the value is required', function(done) {
       shouldBeRequired = true;
 
       unit.runValidation('').then(() => {
@@ -424,7 +476,7 @@ describe('ValidationUnit', () => {
       });
     });
 
-    it('passes on empty strings when the value is not required', (done) => {
+    it('passes on empty strings when the value is not required', function(done) {
       shouldBeRequired = false;
 
       unit.runValidation('').then(() => {
@@ -433,39 +485,41 @@ describe('ValidationUnit', () => {
       });
     });
 
-    it('passes when value is present and it is required', (done) => {
+    it('passes when value is present and it is required', function(done) {
       shouldBeRequired = true;
 
-      unit.runValidation('I\'m here!').then(() => {
+      unit.runValidation("I'm here!").then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when value is present and it is not required', (done) => {
+    it('passes when value is present and it is not required', function(done) {
       shouldBeRequired = false;
 
-      unit.runValidation('I\'m here!').then(() => {
+      unit.runValidation("I'm here!").then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
   });
 
-  describe('isEmail', () => {
-    beforeEach(() => {
+  describe('isEmail', function() {
+    beforeEach(function() {
       unit = unit.isEmail();
     });
 
-    it('fails when value not an email address', (done) => {
+    it('fails when value not an email address', function(done) {
       unit.runValidation('notemail', {}, 'Email field').then(() => {
         expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['Email field must be a valid email address.']);
+        expect(unit.getState().messages).to.deep.equal([
+          'Email field must be a valid email address.'
+        ]);
         done();
       });
     });
 
-    it('passes when value is an email address', (done) => {
+    it('passes when value is an email address', function(done) {
       unit.runValidation('real@mail.com').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
@@ -473,317 +527,351 @@ describe('ValidationUnit', () => {
     });
   });
 
-  describe('contains', () => {
-    beforeEach(() => {
+  describe('contains', function() {
+    beforeEach(function() {
       unit = unit.contains('foo');
     });
 
-    it('passes when the value is contained', (done) => {
+    it('passes when the value is contained', function(done) {
       unit.runValidation('food').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when the value is not contained', (done) => {
+    it('passes when the value is not contained', function(done) {
       unit.runValidation('eat', {}, 'Foo input').then(() => {
         expect(unit.getState().valid).to.be.false;
-        expect(unit.getState().messages).to.deep.equal(['Foo input must contain "foo."']);
+        expect(unit.getState().messages).to.deep.equal([
+          'Foo input must contain "foo."'
+        ]);
         done();
       });
     });
   });
 
-  describe('equals', () => {
-    beforeEach(() => {
+  describe('equals', function() {
+    beforeEach(function() {
       unit = unit.equals('one');
     });
 
-    it('passes when the value is equal', (done) => {
+    it('passes when the value is equal', function(done) {
       unit.runValidation('one').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the value is not equal', (done) => {
+    it('fails when the value is not equal', function(done) {
       unit.runValidation('onex', {}, '"One" input').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ '"One" input must equal "one."' ]);
+        expect(result.messages).to.deep.equal([
+          '"One" input must equal "one."'
+        ]);
         done();
       });
     });
   });
 
-  describe('equalsOther', () => {
-    beforeEach(() => {
+  describe('equalsOther', function() {
+    beforeEach(function() {
       unit = unit.equalsOther('confirmation');
     });
 
-    it('passes when the value is equal with the given other', (done) => {
-      unit.runValidation('yep', {
-        confirmation: 'yep'
-      }).then(() => {
-        expect(unit.getState().valid).to.be.true;
-        done();
-      });
+    it('passes when the value is equal with the given other', function(done) {
+      unit
+        .runValidation('yep', {
+          confirmation: 'yep'
+        })
+        .then(() => {
+          expect(unit.getState().valid).to.be.true;
+          done();
+        });
     });
 
-    it('fails when the value is not equal with the given other', (done) => {
-      unit.runValidation('nope', {
-        confirmation: 'yep'
-      }, 'This guy').then(() => {
-        let result = unit.getState();
-        expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal(['This guy must be equal to confirmation.']);
-        done();
-      });
+    it('fails when the value is not equal with the given other', function(done) {
+      unit
+        .runValidation(
+          'nope',
+          {
+            confirmation: 'yep'
+          },
+          'This guy'
+        )
+        .then(() => {
+          let result = unit.getState();
+          expect(result.valid).to.be.false;
+          expect(result.messages).to.deep.equal([
+            'This guy must be equal to confirmation.'
+          ]);
+          done();
+        });
     });
   });
 
-  describe('isAfter', () => {
-    beforeEach(() => {
+  describe('isAfter', function() {
+    beforeEach(function() {
       unit = unit.isAfter('1/1/2014');
     });
 
-    it('passes when the value is after the given date', (done) => {
+    it('passes when the value is after the given date', function(done) {
       unit.runValidation('1/1/2015').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when the given value is a date and after the given date', (done) => {
+    it('passes when the given value is a date and after the given date', function(done) {
       unit.runValidation(new Date('1/1/2015')).then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is before the given date', (done) => {
+    it('fails when the given value is before the given date', function(done) {
       unit.runValidation('1/1/2013', {}, 'Date input').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal(['Date input must be after 1/1/2014.']);
+        expect(result.messages).to.deep.equal([
+          'Date input must be after 1/1/2014.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isBefore', () => {
-    beforeEach(() => {
+  describe('isBefore', function() {
+    beforeEach(function() {
       unit = unit.isBefore('1/1/2016');
     });
 
-    it('passes when the value is before the given date', (done) => {
+    it('passes when the value is before the given date', function(done) {
       unit.runValidation('1/1/2015').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when the given value is a date and before the given date', (done) => {
+    it('passes when the given value is a date and before the given date', function(done) {
       unit.runValidation(new Date('1/1/2015')).then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is after the given date', (done) => {
+    it('fails when the given value is after the given date', function(done) {
       unit.runValidation('1/2/2016', {}, 'Date input').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal(['Date input must be before 1/1/2016.']);
+        expect(result.messages).to.deep.equal([
+          'Date input must be before 1/1/2016.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isAlpha', () => {
-    beforeEach(() => {
+  describe('isAlpha', function() {
+    beforeEach(function() {
       unit = unit.isAlpha();
     });
 
-    it('passes when the value is only alphabetical', (done) => {
+    it('passes when the value is only alphabetical', function(done) {
       unit.runValidation('abc').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the value is not only alphabetical', (done) => {
+    it('fails when the value is not only alphabetical', function(done) {
       unit.runValidation('abc123', {}, 'Alpha input').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal(['Alpha input must use only alphabetical characters.']);
+        expect(result.messages).to.deep.equal([
+          'Alpha input must use only alphabetical characters.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isAlphanumeric', () => {
-    beforeEach(() => {
+  describe('isAlphanumeric', function() {
+    beforeEach(function() {
       unit = unit.isAlphanumeric();
     });
 
-    it('passes when the unit is alphanumeric', (done) => {
+    it('passes when the unit is alphanumeric', function(done) {
       unit.runValidation('abc123').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the unit is not alphanumeric', (done) => {
-      unit.runValidation('abc123, and you', {}, 'Alphanumeric input').then(() => {
-        let result = unit.getState();
-        expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal(['Alphanumeric input must use only alphanumeric characters.']);
-        done();
-      });
+    it('fails when the unit is not alphanumeric', function(done) {
+      unit
+        .runValidation('abc123, and you', {}, 'Alphanumeric input')
+        .then(() => {
+          let result = unit.getState();
+          expect(result.valid).to.be.false;
+          expect(result.messages).to.deep.equal([
+            'Alphanumeric input must use only alphanumeric characters.'
+          ]);
+          done();
+        });
     });
   });
 
-  describe('isAscii', () => {
-    beforeEach(() => {
+  describe('isAscii', function() {
+    beforeEach(function() {
       unit = unit.isAscii();
     });
 
-    it('passes when the string contains only ascii characters.', (done) => {
+    it('passes when the string contains only ascii characters.', function(done) {
       unit.runValidation('yep!').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the string has more than ascii characters', (done) => {
+    it('fails when the string has more than ascii characters', function(done) {
       unit.runValidation('nope! ӂ', {}, 'ASCII field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'ASCII field must use only ASCII characters.' ]);
+        expect(result.messages).to.deep.equal([
+          'ASCII field must use only ASCII characters.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isBase64', () => {
-    beforeEach(() => {
+  describe('isBase64', function() {
+    beforeEach(function() {
       unit = unit.isBase64();
     });
 
-    it('passes when the string is base64 encoded', (done) => {
+    it('passes when the string is base64 encoded', function(done) {
       unit.runValidation('eWVwIQ==').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the string is not base64 encoded', (done) => {
+    it('fails when the string is not base64 encoded', function(done) {
       unit.runValidation('nope!', {}, 'Base64 field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Base64 field must be base64 encoded.' ]);
+        expect(result.messages).to.deep.equal([
+          'Base64 field must be base64 encoded.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isBoolean', () => {
-    beforeEach(() => {
+  describe('isBoolean', function() {
+    beforeEach(function() {
       unit = unit.isBoolean();
     });
 
-    it('passes when the string is base64 encoded', (done) => {
+    it('passes when the string is base64 encoded', function(done) {
       unit.runValidation('true').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when given a true boolean value', (done) => {
+    it('passes when given a true boolean value', function(done) {
       unit.runValidation(true).then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when given a false boolean value', (done) => {
+    it('passes when given a false boolean value', function(done) {
       unit.runValidation(false).then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the string is not base64 encoded', (done) => {
+    it('fails when the string is not base64 encoded', function(done) {
       unit.runValidation('nope!', {}, 'Boolean field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Boolean field must be a boolean value.' ]);
+        expect(result.messages).to.deep.equal([
+          'Boolean field must be a boolean value.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isByteLength', () => {
-    beforeEach(() => {
+  describe('isByteLength', function() {
+    beforeEach(function() {
       unit = unit.isByteLength(3);
     });
 
-    it('passes when the string is the correct byte length', (done) => {
+    it('passes when the string is the correct byte length', function(done) {
       unit.runValidation('foo').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the string is the incorrect byte length', (done) => {
+    it('fails when the string is the incorrect byte length', function(done) {
       unit.runValidation('o', {}, 'Bytelength field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal(['Bytelength field must have a minimum byte length of 3.']);
+        expect(result.messages).to.deep.equal([
+          'Bytelength field must have a minimum byte length of 3.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isCreditCard', () => {
-    beforeEach(() => {
+  describe('isCreditCard', function() {
+    beforeEach(function() {
       unit = unit.isCreditCard();
     });
 
-    it('passes when the number is a credit card', (done) => {
-      unit.runValidation('4024007171444473').then(()=>{
+    it('passes when the number is a credit card', function(done) {
+      unit.runValidation('4024007171444473').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when the number is a credit card with spaces', (done) => {
+    it('passes when the number is a credit card with spaces', function(done) {
       unit.runValidation('4024 0071 7144 4473').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('passes when the number is a credit card with spaces', (done) => {
+    it('passes when the number is a credit card with dashes', function(done) {
       unit.runValidation('4024-0071-7144-4473').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the number is not a credit card number', (done) => {
+    it('fails when the number is not a credit card number', function(done) {
       unit.runValidation('4024-0071-7144-473', {}, 'CC field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal(['CC field must be a credit card number.']);
+        expect(result.messages).to.deep.equal([
+          'CC field must be a credit card number.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isCurrency', () => {
-    beforeEach(() => {
+  describe('isCurrency', function() {
+    beforeEach(function() {
       unit = unit.isCurrency({
         symbol: '€',
         require_symbol: true,
@@ -791,24 +879,26 @@ describe('ValidationUnit', () => {
       });
     });
 
-    it('passes when the value is currency in the proper format', (done) => {
+    it('passes when the value is currency in the proper format', function(done) {
       unit.runValidation('€1,000').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    describe('the failure message', () => {
-      it('fails with a correct validation message, symbol first by default, when required', (done) => {
+    describe('the failure message', function() {
+      it('fails with a correct validation message, symbol first by default, when required', function(done) {
         unit.runValidation('$100', {}, 'Currency field').then(() => {
           let result = unit.getState();
           expect(result.valid).to.be.false;
-          expect(result.messages).to.deep.equal(['Currency field must be in the format "€1,000.00".']);
+          expect(result.messages).to.deep.equal([
+            'Currency field must be in the format "€1,000.00".'
+          ]);
           done();
         });
       });
 
-      it('fails with a correct validation message, symbol after when configured that way and required', (done) => {
+      it('fails with a correct validation message, symbol after when configured that way and required', function(done) {
         unit = new ValidationUnit().isCurrency({
           symbol: '€',
           require_symbol: true,
@@ -818,24 +908,28 @@ describe('ValidationUnit', () => {
         unit.runValidation('$100', {}, 'Currency field').then(() => {
           let result = unit.getState();
           expect(result.valid).to.be.false;
-          expect(result.messages).to.deep.equal(['Currency field must be in the format "1,000.00€".']);
+          expect(result.messages).to.deep.equal([
+            'Currency field must be in the format "1,000.00€".'
+          ]);
           done();
         });
       });
 
-      it('fails with a correct validation message when the symbol is not required', (done) => {
+      it('fails with a correct validation message when the symbol is not required', function(done) {
         unit = new ValidationUnit().isCurrency({
           symbol: '€'
         });
         unit.runValidation('$100', {}, 'Currency field').then(() => {
           let result = unit.getState();
           expect(result.valid).to.be.false;
-          expect(result.messages).to.deep.equal(['Currency field must be in the format "1,000.00". (Currency symbol (€) not required.)']);
+          expect(result.messages).to.deep.equal([
+            'Currency field must be in the format "1,000.00". (Currency symbol (€) not required.)'
+          ]);
           done();
         });
       });
 
-      it('formats the default extra info depending on whether the symbol is required', (done) => {
+      it('formats the default extra info depending on whether the symbol is required', function(done) {
         unit = new ValidationUnit().isCurrency({
           symbol: '€',
           require_symbol: true
@@ -843,26 +937,28 @@ describe('ValidationUnit', () => {
         unit.runValidation('$100', {}, 'Currency field').then(() => {
           let result = unit.getState();
           expect(result.valid).to.be.false;
-          expect(result.messages).to.deep.equal(['Currency field must be in the format "€1,000.00". (Currency symbol (€) is required.)']);
+          expect(result.messages).to.deep.equal([
+            'Currency field must be in the format "€1,000.00". (Currency symbol (€) is required.)'
+          ]);
           done();
         });
       });
     });
   });
 
-  describe('isDate', () => {
-    beforeEach(() => {
+  describe('isDate', function() {
+    beforeEach(function() {
       unit = unit.isDate();
     });
 
-    it('passes when the given value is a date', (done) => {
+    it('passes when the given value is a date', function(done) {
       unit.runValidation('1/1/2015').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a date', (done) => {
+    it('fails when the given value is not a date', function(done) {
       unit.runValidation('not a date', {}, 'Date field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
@@ -872,638 +968,679 @@ describe('ValidationUnit', () => {
     });
   });
 
-  describe('isDecimal', () => {
-    beforeEach(() => {
+  describe('isDecimal', function() {
+    beforeEach(function() {
       unit = unit.isDecimal();
     });
 
-    it('passes when the given value is a decimal number', (done) => {
+    it('passes when the given value is a decimal number', function(done) {
       unit.runValidation('1.01').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a decimal number', (done) => {
+    it('fails when the given value is not a decimal number', function(done) {
       unit.runValidation('Hola', {}, 'Decimal field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Decimal field must represent a decimal number.' ]);
+        expect(result.messages).to.deep.equal([
+          'Decimal field must represent a decimal number.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isDivisibleBy', () => {
-    beforeEach(() => {
+  describe('isDivisibleBy', function() {
+    beforeEach(function() {
       unit = unit.isDivisibleBy(2);
     });
 
-    it('passes when the given value a divisble by the number', (done) => {
+    it('passes when the given value a divisble by the number', function(done) {
       unit.runValidation('4').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not divisble by the number', (done) => {
+    it('fails when the given value is not divisble by the number', function(done) {
       unit.runValidation('3', {}, 'Divisible field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Divisible field must be divisible by 2.' ]);
+        expect(result.messages).to.deep.equal([
+          'Divisible field must be divisible by 2.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isFQDN', () => {
-    beforeEach(() => {
+  describe('isFQDN', function() {
+    beforeEach(function() {
       unit = unit.isFQDN();
     });
 
-    it('passes when the given value is a fully qualified domain name', (done) => {
+    it('passes when the given value is a fully qualified domain name', function(done) {
       unit.runValidation('www.domain.com').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not an FQDN', (done) => {
+    it('fails when the given value is not an FQDN', function(done) {
       unit.runValidation('nope', {}, 'Domain name field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Domain name field must be a fully qualified domain name.' ]);
+        expect(result.messages).to.deep.equal([
+          'Domain name field must be a fully qualified domain name.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isFloat', () => {
-    beforeEach(() => {
+  describe('isFloat', function() {
+    beforeEach(function() {
       unit = unit.isFloat();
     });
 
-    it('passes when the given value is a float', (done) => {
+    it('passes when the given value is a float', function(done) {
       unit.runValidation('1.01').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a float', (done) => {
+    it('fails when the given value is not a float', function(done) {
       unit.runValidation('nope', {}, 'Float field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Float field must be a float.' ]);
+        expect(result.messages).to.deep.equal(['Float field must be a float.']);
         done();
       });
     });
   });
 
-  describe('isFullWidth', () => {
-    beforeEach(() => {
+  describe('isFullWidth', function() {
+    beforeEach(function() {
       unit = unit.isFullWidth();
     });
 
-    it('passes when the given value contains any full width characters', (done) => {
+    it('passes when the given value contains any full width characters', function(done) {
       unit.runValidation('Ｙｅｓ').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value does not contain full width characters', (done) => {
+    it('fails when the given value does not contain full width characters', function(done) {
       unit.runValidation('nope', {}, 'Fullwidth field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Fullwidth field must contain fullwidth characters.' ]);
+        expect(result.messages).to.deep.equal([
+          'Fullwidth field must contain fullwidth characters.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isHalfWidth', () => {
-    beforeEach(() => {
+  describe('isHalfWidth', function() {
+    beforeEach(function() {
       unit = unit.isHalfWidth();
     });
 
-    it('passes when the given value contains any halfwidth characters', (done) => {
+    it('passes when the given value contains any halfwidth characters', function(done) {
       unit.runValidation('yes').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value does not contain halfwidth characters', (done) => {
+    it('fails when the given value does not contain halfwidth characters', function(done) {
       unit.runValidation('Ｎｏｐｅ', {}, 'Halfwidth field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Halfwidth field must contain halfwidth characters.' ]);
+        expect(result.messages).to.deep.equal([
+          'Halfwidth field must contain halfwidth characters.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isVariableWidth', () => {
-    beforeEach(() => {
+  describe('isVariableWidth', function() {
+    beforeEach(function() {
       unit = unit.isVariableWidth();
     });
 
-    it('passes when the given value contains both halfwidth and fullwidth characters', (done) => {
+    it('passes when the given value contains both halfwidth and fullwidth characters', function(done) {
       unit.runValidation('yes and Ｙｅｓ').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value does not contain halfwidth characters', (done) => {
+    it('fails when the given value does not contain halfwidth characters', function(done) {
       unit.runValidation('Ｎｏｐｅ', {}, 'Variable width field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Variable width field must contain fullwidth and halfwidth characters.' ]);
+        expect(result.messages).to.deep.equal([
+          'Variable width field must contain fullwidth and halfwidth characters.'
+        ]);
         done();
       });
     });
 
-    it('fails when the given value does not contain fullwidth characters', (done) => {
+    it('fails when the given value does not contain fullwidth characters', function(done) {
       unit.runValidation('nope', {}, 'Variable width field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Variable width field must contain fullwidth and halfwidth characters.' ]);
+        expect(result.messages).to.deep.equal([
+          'Variable width field must contain fullwidth and halfwidth characters.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isHexColor', () => {
-    beforeEach(() => {
+  describe('isHexColor', function() {
+    beforeEach(function() {
       unit = unit.isHexColor();
     });
 
-    it('passes when the given value is a hexadecimal color', (done) => {
+    it('passes when the given value is a hexadecimal color', function(done) {
       unit.runValidation('#fff').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a hex color', (done) => {
+    it('fails when the given value is not a hex color', function(done) {
       unit.runValidation('nope', {}, 'Hex Color field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Hex Color field must be a hex color.' ]);
+        expect(result.messages).to.deep.equal([
+          'Hex Color field must be a hex color.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isHexadecimal', () => {
-    beforeEach(() => {
+  describe('isHexadecimal', function() {
+    beforeEach(function() {
       unit = unit.isHexadecimal();
     });
 
-    it('passes when the given value is a hexadecimal number', (done) => {
+    it('passes when the given value is a hexadecimal number', function(done) {
       unit.runValidation('fff0abab').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a hex number', (done) => {
+    it('fails when the given value is not a hex number', function(done) {
       unit.runValidation('hihihi', {}, 'Hexadecimal field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Hexadecimal field must be a hexadecimal number.' ]);
+        expect(result.messages).to.deep.equal([
+          'Hexadecimal field must be a hexadecimal number.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isIP', () => {
-    beforeEach(() => {
+  describe('isIP', function() {
+    beforeEach(function() {
       unit = unit.isIP();
     });
 
-    it('passes when the given value is an IP address', (done) => {
+    it('passes when the given value is an IP address', function(done) {
       unit.runValidation('10.0.0.1').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not an IP address', (done) => {
+    it('fails when the given value is not an IP address', function(done) {
       unit.runValidation('nope', {}, 'IP field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'IP field must be an IP address.' ]);
+        expect(result.messages).to.deep.equal([
+          'IP field must be an IP address.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isISBN', () => {
-    beforeEach(() => {
+  describe('isISBN', function() {
+    beforeEach(function() {
       unit = unit.isISBN();
     });
 
-    it('passes when the given value is an ISBN', (done) => {
+    it('passes when the given value is an ISBN', function(done) {
       unit.runValidation('978-0765350381').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not an ISBN', (done) => {
+    it('fails when the given value is not an ISBN', function(done) {
       unit.runValidation('nope', {}, 'ISBN field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'ISBN field must be an ISBN.' ]);
+        expect(result.messages).to.deep.equal(['ISBN field must be an ISBN.']);
         done();
       });
     });
   });
 
-  describe('isISIN', () => {
-    beforeEach(() => {
+  describe('isISIN', function() {
+    beforeEach(function() {
       unit = unit.isISIN();
     });
 
-    it('passes when the given value is an ISIN', (done) => {
+    it('passes when the given value is an ISIN', function(done) {
       unit.runValidation('US0378331005').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not an ISIN', (done) => {
+    it('fails when the given value is not an ISIN', function(done) {
       unit.runValidation('nope', {}, 'ISIN field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'ISIN field must be an ISIN.' ]);
+        expect(result.messages).to.deep.equal(['ISIN field must be an ISIN.']);
         done();
       });
     });
   });
 
-  describe('isISO8601', () => {
-    beforeEach(() => {
+  describe('isISO8601', function() {
+    beforeEach(function() {
       unit = unit.isISO8601();
     });
 
-    it('passes when the given value is an ISO6801 date', (done) => {
+    it('passes when the given value is an ISO6801 date', function(done) {
       unit.runValidation('2015-10-11').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not an ISO6801', (done) => {
+    it('fails when the given value is not an ISO6801', function(done) {
       unit.runValidation('nope', {}, 'ISO6801 field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'ISO6801 field must be an ISO6801 date.' ]);
+        expect(result.messages).to.deep.equal([
+          'ISO6801 field must be an ISO6801 date.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isIn', () => {
-    beforeEach(() => {
+  describe('isIn', function() {
+    beforeEach(function() {
       unit = unit.isIn(['1', '2', '3', '4', '5']);
     });
 
-    it('passes when the given value is in the given list', (done) => {
+    it('passes when the given value is in the given list', function(done) {
       unit.runValidation('1').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not in the given list', (done) => {
+    it('fails when the given value is not in the given list', function(done) {
       unit.runValidation('nope', {}, 'Listed field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Listed field must be contained in ["1","2","3","4","5"].' ]);
+        expect(result.messages).to.deep.equal([
+          'Listed field must be contained in ["1","2","3","4","5"].'
+        ]);
         done();
       });
     });
   });
 
-  describe('isInt', () => {
-    beforeEach(() => {
+  describe('isInt', function() {
+    beforeEach(function() {
       unit = unit.isInt();
     });
 
-    it('passes when the given value is an integer', (done) => {
+    it('passes when the given value is an integer', function(done) {
       unit.runValidation('1').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not an integer', (done) => {
+    it('fails when the given value is not an integer', function(done) {
       unit.runValidation('1.01', {}, 'Integer field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Integer field must be an integer.' ]);
+        expect(result.messages).to.deep.equal([
+          'Integer field must be an integer.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isJSON', () => {
-    beforeEach(() => {
+  describe('isJSON', function() {
+    beforeEach(function() {
       unit = unit.isJSON();
     });
 
-    it('passes when the given value is JSON', (done) => {
+    it('passes when the given value is JSON', function(done) {
       unit.runValidation('{"number": 1}').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not an integer', (done) => {
+    it('fails when the given value is not an integer', function(done) {
       unit.runValidation('nope', {}, 'JSON field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'JSON field must be JSON.' ]);
+        expect(result.messages).to.deep.equal(['JSON field must be JSON.']);
         done();
       });
     });
   });
 
-  describe('isLength', () => {
-    beforeEach(() => {
+  describe('isLength', function() {
+    beforeEach(function() {
       unit = unit.isLength(4);
     });
 
-    it('passes when the given value is at least the given length', (done) => {
+    it('passes when the given value is at least the given length', function(done) {
       unit.runValidation('four').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not at lest the given length', (done) => {
+    it('fails when the given value is not at lest the given length', function(done) {
       unit.runValidation('no', {}, 'Length field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Length field must be at least 4 characters.' ]);
+        expect(result.messages).to.deep.equal([
+          'Length field must be at least 4 characters.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isLowercase', () => {
-    beforeEach(() => {
+  describe('isLowercase', function() {
+    beforeEach(function() {
       unit = unit.isLowercase();
     });
 
-    it('passes when the given value is lowercase', (done) => {
+    it('passes when the given value is lowercase', function(done) {
       unit.runValidation('lowercase').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not lowercase', (done) => {
+    it('fails when the given value is not lowercase', function(done) {
       unit.runValidation('NOPE', {}, 'Lowercase field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Lowercase field must be lowercase.' ]);
+        expect(result.messages).to.deep.equal([
+          'Lowercase field must be lowercase.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isUppercase', () => {
-    beforeEach(() => {
+  describe('isUppercase', function() {
+    beforeEach(function() {
       unit = unit.isUppercase();
     });
 
-    it('passes when the given value is uppercase', (done) => {
+    it('passes when the given value is uppercase', function(done) {
       unit.runValidation('UPPERCASE').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not lowercase', (done) => {
+    it('fails when the given value is not lowercase', function(done) {
       unit.runValidation('nope', {}, 'Uppercase field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Uppercase field must be uppercase.' ]);
+        expect(result.messages).to.deep.equal([
+          'Uppercase field must be uppercase.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isMobilePhone', () => {
-    beforeEach(() => {
+  describe('isMobilePhone', function() {
+    beforeEach(function() {
       unit = unit.isMobilePhone();
     });
 
-    it('passes when the given value is a phone number', (done) => {
+    it('passes when the given value is a phone number', function(done) {
       unit.runValidation('8018858458').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a phone number', (done) => {
+    it('fails when the given value is not a phone number', function(done) {
       unit.runValidation('nope', {}, 'Phone number field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Phone number field must be a phone number.' ]);
+        expect(result.messages).to.deep.equal([
+          'Phone number field must be a phone number.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isMongoId', () => {
-    beforeEach(() => {
+  describe('isMongoId', function() {
+    beforeEach(function() {
       unit = unit.isMongoId();
     });
 
-    it('passes when the given value is a mongo id', (done) => {
+    it('passes when the given value is a mongo id', function(done) {
       unit.runValidation('507f1f77bcf86cd799439011').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a mongo id', (done) => {
+    it('fails when the given value is not a mongo id', function(done) {
       unit.runValidation('nope', {}, 'Mongo id field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Mongo id field must be a MongoDB id.' ]);
+        expect(result.messages).to.deep.equal([
+          'Mongo id field must be a MongoDB id.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isMultibyte', () => {
-    beforeEach(() => {
+  describe('isMultibyte', function() {
+    beforeEach(function() {
       unit = unit.isMultibyte();
     });
 
-    it('passes when the given value contains multibyte characters', (done) => {
+    it('passes when the given value contains multibyte characters', function(done) {
       unit.runValidation('𝌆').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value does not contain multibyte characters', (done) => {
+    it('fails when the given value does not contain multibyte characters', function(done) {
       unit.runValidation(' ', {}, 'Multibyte field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Multibyte field must contain multibyte characters.' ]);
+        expect(result.messages).to.deep.equal([
+          'Multibyte field must contain multibyte characters.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isNumeric', () => {
-    beforeEach(() => {
+  describe('isNumeric', function() {
+    beforeEach(function() {
       unit = unit.isNumeric();
     });
 
-    it('passes when the given value is numeric', (done) => {
+    it('passes when the given value is numeric', function(done) {
       unit.runValidation('1234').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not numeric', (done) => {
+    it('fails when the given value is not numeric', function(done) {
       unit.runValidation('nope', {}, 'Numeric field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Numeric field must be numeric.' ]);
+        expect(result.messages).to.deep.equal([
+          'Numeric field must be numeric.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isSurrogatePair', () => {
-    beforeEach(() => {
+  describe('isSurrogatePair', function() {
+    beforeEach(function() {
       unit = unit.isSurrogatePair();
     });
 
-    it('passes when the given value is a surrogate pair', (done) => {
+    it('passes when the given value is a surrogate pair', function(done) {
       unit.runValidation('\uD800\uDC00').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a surrogate pair', (done) => {
+    it('fails when the given value is not a surrogate pair', function(done) {
       unit.runValidation('nope', {}, 'Surrogate pair field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Surrogate pair field must be a surrogate pair.' ]);
+        expect(result.messages).to.deep.equal([
+          'Surrogate pair field must be a surrogate pair.'
+        ]);
         done();
       });
     });
   });
 
-  describe('isUrl', () => {
-    beforeEach(() => {
+  describe('isUrl', function() {
+    beforeEach(function() {
       unit = unit.isURL();
     });
 
-    it('passes when the given value is a url', (done) => {
+    it('passes when the given value is a url', function(done) {
       unit.runValidation('http://yes.it/is').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a url', (done) => {
+    it('fails when the given value is not a url', function(done) {
       unit.runValidation('nope', {}, 'Url field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Url field must be a url.' ]);
+        expect(result.messages).to.deep.equal(['Url field must be a url.']);
         done();
       });
     });
   });
 
-  describe('isUUID', () => {
-    beforeEach(() => {
+  describe('isUUID', function() {
+    beforeEach(function() {
       unit = unit.isUUID();
     });
 
-    it('passes when the given value is a UUID', (done) => {
+    it('passes when the given value is a UUID', function(done) {
       unit.runValidation('de305d54-75b4-431b-adb2-eb6b9e546014').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value is not a UUID', (done) => {
+    it('fails when the given value is not a UUID', function(done) {
       unit.runValidation('nope', {}, 'UUID field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'UUID field must be a UUID.' ]);
+        expect(result.messages).to.deep.equal(['UUID field must be a UUID.']);
         done();
       });
     });
   });
 
-  describe('matches', () => {
-    beforeEach(() => {
+  describe('matches', function() {
+    beforeEach(function() {
       unit = unit.matches(/^Yes$/);
     });
-    it('passes when the value given matches', (done) => {
+    it('passes when the value given matches', function(done) {
       unit.runValidation('Yes').then(() => {
         expect(unit.getState().valid).to.be.true;
         done();
       });
     });
 
-    it('fails when the given value does not match', (done) => {
+    it('fails when the given value does not match', function(done) {
       unit.runValidation('nope', {}, 'Yes field').then(() => {
         let result = unit.getState();
         expect(result.valid).to.be.false;
-        expect(result.messages).to.deep.equal([ 'Yes field must match /^Yes$/.' ]);
+        expect(result.messages).to.deep.equal([
+          'Yes field must match /^Yes$/.'
+        ]);
         done();
       });
     });
   });
 
-  describe('hasIsRequired', () => {
-    it('returns true when the unit is required', () => {
+  describe('hasIsRequired', function() {
+    it('returns true when the unit is required', function() {
       unit = unit.isRequired();
       expect(unit.hasIsRequired()).to.be.true;
     });
 
-    it('returns false when the unit is not required', () => {
+    it('returns false when the unit is not required', function() {
       expect(unit.hasIsRequired()).to.be.false;
     });
   });
 
-  describe('remove', () => {
-    beforeEach(() => {
+  describe('remove', function() {
+    it('removes a rule', function() {
       unit = unit.isEmail();
-    });
-
-    it('removes a rule', () => {
       unit.remove('isEmail');
       expect(unit.rules.length).to.equal(0);
     });
   });
 
-  describe('setState', () => {
-    it('can set the valid property on the unit', () => {
+  describe('setState', function() {
+    it('can set the valid property on the unit', function() {
       expect(unit.valid).to.be.undefined;
       unit.setState(true);
       expect(unit.valid).to.be.true;
     });
 
-    it('sets the valid property on the unit to true if the passed in \'valid\' parameter is truthy', () => {
+    it("sets the valid property on the unit to true if the passed in 'valid' parameter is truthy", function() {
       expect(unit.valid).to.be.undefined;
       unit.setState({});
       expect(unit.valid).to.be.true;
@@ -1511,7 +1648,7 @@ describe('ValidationUnit', () => {
       expect(unit.valid).to.be.true;
     });
 
-    it('sets the valid property on the unit to false if the passed in \'valid\' parameter is falsey', () => {
+    it("sets the valid property on the unit to false if the passed in 'valid' parameter is falsey", function() {
       expect(unit.valid).to.be.undefined;
       unit.setState(null);
       expect(unit.valid).to.be.false;
@@ -1519,7 +1656,7 @@ describe('ValidationUnit', () => {
       expect(unit.valid).to.be.false;
     });
 
-    it('sets the messages property on the unit to the passed in \'messages\' parameter', () => {
+    it("sets the messages property on the unit to the passed in 'messages' parameter", function() {
       let emptyArray = [];
       expect(unit.messages).to.be.undefined;
       unit.setState(null, null);

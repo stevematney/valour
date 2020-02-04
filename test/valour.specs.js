@@ -1,20 +1,20 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import valour from '../src/valour';
 
-describe('validation', () => {
-  afterEach(() => {
+describe('validation', function() {
+  afterEach(function() {
     valour.forms = {};
     valour.callbacks = {};
   });
 
-  describe('rule', () => {
-    it('returns a ValidationUnit', () => {
+  describe('rule', function() {
+    it('returns a ValidationUnit', function() {
       expect(valour.rule.isEmail()).not.to.be.null;
     });
   });
 
-  describe('onUpdated', () => {
-    it('adds a callback to be called when a form is updated', () => {
+  describe('onUpdated', function() {
+    it('adds a callback to be called when a form is updated', function() {
       let validatedFunc = () => {
         let validated = 'we did it!';
         return validated;
@@ -23,15 +23,15 @@ describe('validation', () => {
       expect(valour.callbacks['newForm']).to.contain(validatedFunc);
     });
 
-    it('does not add a callback when the given callback is falsey', () => {
+    it('does not add a callback when the given callback is falsey', function() {
       valour.onUpdated('newForm', null);
       expect(valour.callbacks['newForm']).to.not.be.ok;
     });
   });
 
-  describe('removingUpdatedFuncs', () => {
+  describe('removingUpdatedFuncs', function() {
     let updatedFunc;
-    beforeEach(() => {
+    beforeEach(function() {
       updatedFunc = () => {
         /*update func*/
       };
@@ -39,8 +39,8 @@ describe('validation', () => {
       valour.onUpdated('newform', () => {});
     });
 
-    describe('removeOnUpdated', () => {
-      it('removes a callback', () => {
+    describe('removeOnUpdated', function() {
+      it('removes a callback', function() {
         expect(valour.callbacks['newform'].length).to.equal(2);
         valour.removeOnUpdated('newform', updatedFunc);
         expect(valour.callbacks['newform'].length).to.equal(1);
@@ -48,8 +48,8 @@ describe('validation', () => {
       });
     });
 
-    describe('clearOnUpdated', () => {
-      it('removes all callbacsk for a form', () => {
+    describe('clearOnUpdated', function() {
+      it('removes all callbacsk for a form', function() {
         expect(valour.callbacks['newform'].length).to.equal(2);
         valour.clearOnUpdated('newform');
         expect(valour.callbacks['newform'].length).to.equal(0);
@@ -57,116 +57,116 @@ describe('validation', () => {
     });
   });
 
-  describe('register', () => {
+  describe('register', function() {
     let emailValidation, phoneValidation, formResult;
 
-    beforeEach(() => {
+    beforeEach(function() {
       emailValidation = valour.rule.isEmail().isRequired();
       phoneValidation = valour.rule.isMobilePhone();
       valour.register(
         'newForm',
         {
           email: emailValidation,
-          phone: phoneValidation,
+          phone: phoneValidation
         },
         results => {
           return results;
-        },
+        }
       );
 
       formResult = valour.getForm('newForm');
     });
 
-    it('registers a form', () => {
+    it('registers a form', function() {
       expect(formResult.email.rules.map(rule => rule.name)).to.deep.equal([
         'isEmail',
-        'isRequired',
+        'isRequired'
       ]);
       expect(formResult.phone.rules.map(rule => rule.name)).to.deep.equal([
-        'isMobilePhone',
+        'isMobilePhone'
       ]);
     });
 
-    it('adds a callback if given', () => {
+    it('adds a callback if given', function() {
       expect(valour.callbacks['newForm'].length).to.equal(1);
     });
 
-    it('does not call the callback if the validation state is not initialized', () => {
+    it('does not call the callback if the validation state is not initialized', function() {
       let wasCalled = false;
       valour.register(
         'otherForm',
         {
-          email: emailValidation,
+          email: emailValidation
         },
         () => {
           wasCalled = true;
-        },
+        }
       );
       expect(wasCalled).to.be.false;
     });
 
-    it('calls the callback if the validation state is initialized', () => {
+    it('calls the callback if the validation state is initialized', function() {
       let wasCalled = false;
       valour.register(
         'otherForm',
         {
-          email: emailValidation.initializeState({valid: false}),
+          email: emailValidation.initializeState({ valid: false })
         },
         () => {
           wasCalled = true;
-        },
+        }
       );
       expect(wasCalled).to.be.true;
     });
   });
 
-  describe('update', () => {
+  describe('update', function() {
     let emailValidation, phoneValidation, formResult;
 
-    beforeEach(() => {
+    beforeEach(function() {
       emailValidation = valour.rule.isEmail().isRequired();
       phoneValidation = valour.rule.isMobilePhone();
       valour.register(
         'newForm',
         {
           email: emailValidation,
-          phone: phoneValidation,
+          phone: phoneValidation
         },
         results => {
           return results;
-        },
+        }
       );
 
       valour.update(
         'newForm',
         {
-          email: valour.rule.matches(/\./),
+          email: valour.rule.matches(/\./)
         },
         res => {
           return res && true;
-        },
+        }
       );
 
       formResult = valour.getForm('newForm');
     });
 
-    it('registers a form', () => {
+    it('registers a form', function() {
       expect(formResult.email.rules.map(rule => rule.name)).to.deep.equal([
         'isEmail',
         'isRequired',
-        'matches /\\./',
+        'matches /\\./'
       ]);
       expect(formResult.phone.rules.map(rule => rule.name)).to.deep.equal([
-        'isMobilePhone',
+        'isMobilePhone'
       ]);
     });
 
-    it('adds a callback if given', () => {
+    it('adds a callback if given', function() {
       expect(valour.callbacks['newForm'].length).to.equal(2);
     });
   });
 
-  describe('registering callbacks', () => {
+  describe('registering callbacks', function() {
     let emailValidation,
       phoneValidation,
       requiredValidation,
@@ -176,20 +176,20 @@ describe('validation', () => {
           {
             email: emailValidation,
             phone: phoneValidation,
-            required: requiredValidation,
+            required: requiredValidation
           },
-          callback,
+          callback
         );
       };
 
-    beforeEach(() => {
+    beforeEach(function() {
       emailValidation = valour.rule.isEmail().isRequired();
       phoneValidation = valour.rule.isMobilePhone();
       requiredValidation = valour.rule.isRequired();
     });
 
-    describe('runValidation', () => {
-      it('updates with the current validation result. Unset fields are not checked.', done => {
+    describe('runValidation', function() {
+      it('updates with the current validation result. Unset fields are not checked.', function(done) {
         register(result => {
           expect(result.email.valid).to.be.false;
           expect(result.phone.valid).to.be.false;
@@ -199,11 +199,11 @@ describe('validation', () => {
 
         valour.runValidation('newForm', {
           email: 'notanemail',
-          phone: 'notanumber',
+          phone: 'notanumber'
         });
       });
 
-      it('does a small wait to ensure each "synchronous" callback gets in', done => {
+      it('does a small wait to ensure each "synchronous" callback gets in', function(done) {
         let time = new Date().getTime();
         register(() => {
           let newTime = new Date().getTime();
@@ -214,49 +214,49 @@ describe('validation', () => {
         valour.runValidation('newForm', {
           email: 'notanemail',
           phone: 'notanumber',
-          required: 'it is here!',
+          required: 'it is here!'
         });
       });
     });
 
-    describe('runValidationSync', () => {
-      it('allows a result to be checked immediately after', done => {
-        valour.register('test', {name: valour.rule.isRequired()});
+    describe('runValidationSync', function() {
+      it('allows a result to be checked immediately after', function(done) {
+        valour.register('test', { name: valour.rule.isRequired() });
 
         valour.runValidationSync('test', {});
         expect(valour.isValid('test')).to.be.false;
 
-        valour.runValidationSync('test', {name: 'test'});
+        valour.runValidationSync('test', { name: 'test' });
         expect(valour.isValid('test')).to.be.true;
 
         done();
       });
 
-      it('returns false if a single validation fails in validation chain', done => {
+      it('returns false if a single validation fails in validation chain', function(done) {
         let rule = valour.rule
           .isValidatedBy(val => val.length >= 3)
           .isValidatedBy(val => val.length <= 50);
         valour.register('test', {
-          name: rule,
+          name: rule
         });
 
         valour.runValidationSync('test', {
           name:
-            'abcdefghijklmnopqrstuvwxyzabcdefghijsdfasdfsdfasdfasdfklmnopqrstuvwxyaldkjfadf',
+            'abcdefghijklmnopqrstuvwxyzabcdefghijsdfasdfsdfasdfasdfklmnopqrstuvwxyaldkjfadf'
         });
         expect(valour.isValid('test')).to.be.false;
 
-        valour.runValidationSync('test', {name: 'Ip'});
+        valour.runValidationSync('test', { name: 'Ip' });
         expect(valour.isValid('test')).to.be.false;
 
-        valour.runValidationSync('test', {name: 'I work!'});
+        valour.runValidationSync('test', { name: 'I work!' });
         expect(valour.isValid('test')).to.be.true;
         done();
       });
     });
 
-    describe('forceValidation', () => {
-      it('updates with the current validation result. Unset fields are not checked.', done => {
+    describe('forceValidation', function() {
+      it('updates with the current validation result. Unset fields are not checked.', function(done) {
         register(result => {
           expect(result.email.valid).to.be.false;
           expect(result.phone.valid).to.be.false;
@@ -266,48 +266,48 @@ describe('validation', () => {
 
         valour.forceValidation('newForm', {
           email: 'notanemail',
-          phone: 'notanumber',
+          phone: 'notanumber'
         });
       });
     });
   });
 
-  describe('forceValidationSync', () => {
-    beforeEach(() => {
+  describe('forceValidationSync', function() {
+    beforeEach(function() {
       valour.register('forceValidationSyncTest', {
-        name: valour.rule.isRequired(),
+        name: valour.rule.isRequired()
       });
     });
 
-    it('allows unset fields to be checked', () => {
+    it('allows unset fields to be checked', function() {
       valour.forceValidation('forceValidationSyncTest', {});
       const results = valour.getResult('forceValidationSyncTest');
 
       expect(results.name.isValid).to.not.be.ok;
     });
 
-    it('allows a result to be checked immediately after', () => {
+    it('allows a result to be checked immediately after', function() {
       valour.forceValidationSync('forceValidationSyncTest', {});
       expect(valour.isValid('forceValidationSyncTest')).to.be.false;
 
-      valour.forceValidationSync('forceValidationSyncTest', {name: 'Billy'});
+      valour.forceValidationSync('forceValidationSyncTest', { name: 'Billy' });
       expect(valour.isValid('forceValidationSyncTest')).to.be.true;
     });
   });
 
-  describe('isValid', () => {
+  describe('isValid', function() {
     let register = callback => {
       valour.register(
         'newForm',
         {
           email: valour.rule.isEmail(),
-          phone: valour.rule.isMobilePhone(),
+          phone: valour.rule.isMobilePhone()
         },
-        callback,
+        callback
       );
     };
 
-    it('returns true when all fields are valid', done => {
+    it('returns true when all fields are valid', function(done) {
       register(() => {
         expect(valour.isValid('newForm')).to.be.true;
         done();
@@ -315,11 +315,11 @@ describe('validation', () => {
 
       valour.runValidation('newForm', {
         email: 'anemail@mail.com',
-        phone: '5544554554',
+        phone: '5544554554'
       });
     });
 
-    it('returns false when any fields are invalid', done => {
+    it('returns false when any fields are invalid', function(done) {
       register(() => {
         expect(valour.isValid('newForm')).to.be.false;
         done();
@@ -327,56 +327,56 @@ describe('validation', () => {
 
       valour.runValidation('newForm', {
         email: 'notanemail',
-        phone: '5544554554',
+        phone: '5544554554'
       });
     });
   });
 
-  describe('setValidationState', () => {
+  describe('setValidationState', function() {
     let formName = 'newForm',
       makeFormValid = () => {
         valour.setValidationState(formName, {
-          email: {valid: true},
+          email: { valid: true }
         });
       };
 
-    beforeEach(() => {
+    beforeEach(function() {
       valour.register(formName, {
-        email: valour.rule.isEmail(),
+        email: valour.rule.isEmail()
       });
     });
 
-    it('can set the validity of the form to true by setting all form values to true', () => {
+    it('can set the validity of the form to true by setting all form values to true', function() {
       makeFormValid();
       expect(valour.isValid()).to.be.true;
     });
 
-    it('can set the validity of the form to false by setting a form value to false', () => {
+    it('can set the validity of the form to false by setting a form value to false', function() {
       makeFormValid();
-      valour.setValidationState(formName, {email: {valid: false}});
+      valour.setValidationState(formName, { email: { valid: false } });
       expect(valour.isValid(formName)).to.be.false;
     });
 
-    it('callback is called with the new validation result', () => {
+    it('callback is called with the new validation result', function() {
       valour.onUpdated(formName, result => {
         expect(result.email.valid).to.be.true;
       });
-      valour.setValidationState(formName, {email: {valid: true}});
+      valour.setValidationState(formName, { email: { valid: true } });
     });
   });
 
-  describe('isValidationStateSet', () => {
+  describe('isValidationStateSet', function() {
     let formName = 'newForm';
 
-    beforeEach(() => {
+    beforeEach(function() {
       valour.register(formName, {
         email: valour.rule.isEmail(),
         otherEmail: valour.rule.isEmail(),
-        phone: valour.rule.isMobilePhone(),
+        phone: valour.rule.isMobilePhone()
       });
     });
 
-    it("returns false if none of the validation units on the form have a value for the 'valid' property", () => {
+    it("returns false if none of the validation units on the form have a value for the 'valid' property", function() {
       let form = valour.getForm(formName);
       Object.keys(form).forEach(key => {
         form[key].valid = undefined;
@@ -384,13 +384,13 @@ describe('validation', () => {
       expect(valour.isValidationStateSet(formName)).to.be.false;
     });
 
-    it("returns true if one of the validation units on the form have a value for the 'valid' property", () => {
+    it("returns true if one of the validation units on the form have a value for the 'valid' property", function() {
       let form = valour.getForm(formName);
       form[Object.keys(form)[0]].valid = true;
       expect(valour.isValidationStateSet(formName)).to.be.true;
     });
 
-    it("returns true if all of the validation units on the form have a value for the 'valid' property", () => {
+    it("returns true if all of the validation units on the form have a value for the 'valid' property", function() {
       let form = valour.getForm(formName);
       Object.keys(form).forEach(key => {
         form[key].valid = false;
@@ -399,16 +399,14 @@ describe('validation', () => {
     });
   });
 
-  describe('disposeForm', () => {
+  describe('disposeForm', function() {
     let formName = 'newForm';
 
-    beforeEach(() => {
+    it('resets the form back to an empty object', function() {
       valour.register(formName, {
-        email: valour.rule.isEmail(),
+        email: valour.rule.isEmail()
       });
-    });
 
-    it('resets the form back to an empty object', () => {
       expect(valour.getForm(formName)).to.be.ok;
 
       valour.disposeForm(formName);
@@ -416,24 +414,24 @@ describe('validation', () => {
     });
   });
 
-  describe('removeField', () => {
+  describe('removeField', function() {
     let formName = 'newForm';
 
-    beforeEach(() => {
+    beforeEach(function() {
       valour.register(formName, {
         email: valour.rule.isEmail(),
-        phone: valour.rule.isMobilePhone(),
+        phone: valour.rule.isMobilePhone()
       });
     });
 
-    it('removes the validation key from the form', () => {
+    it('removes the validation key from the form', function() {
       expect(valour.getForm(formName).email).to.be.ok;
 
       valour.removeField(formName, 'email');
       expect(valour.getForm(formName).email).to.be.undefined;
     });
 
-    it("does not remove keys that aren't specified", () => {
+    it("does not remove keys that aren't specified", function() {
       expect(valour.getForm(formName).phone).to.be.ok;
 
       valour.removeField(formName, 'email');

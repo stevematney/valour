@@ -10,14 +10,14 @@ it('will duplicate the rules of another ValidationUnit', () => {
   fakeUnit.rules = [
     {
       discrete: true,
-      validationFunction: () => true,
+      validationFunction: (): boolean => true,
       name: 'hello',
       failureMessage: 'hello failed',
       isAsync: false
     },
     {
       discrete: false,
-      validationFunction: () => true,
+      validationFunction: (): boolean => true,
       name: 'hola',
       failureMessage: 'hola failed',
       isAsync: false
