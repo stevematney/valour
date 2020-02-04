@@ -1,18 +1,11 @@
 module.exports = {
-  parser: 'typescript-eslint/parser',
-  extends: [
-    'eslint:recommended',
-    'plugin:react/recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended',
-    'prettier/@typescript-eslint'
-  ],
+  extends: ['eslint:recommended', 'plugin:prettier/recommended'],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module'
   },
   env: {
-    es6: true,
+    es2020: true,
     node: true
   },
   rules: {
@@ -20,5 +13,20 @@ module.exports = {
   },
   settings: {
     react: { version: 'detect' }
-  }
+  },
+  overrides: [
+    {
+      files: ['test/*.js', '**/*.test.ts'],
+      env: { mocha: true, jest: true },
+      extends: ['plugin:jest/recommended']
+    },
+    {
+      files: ['**/*.ts'],
+      parser: '@typescript-eslint/parser',
+      extends: [
+        'plugin:@typescript-eslint/recommended',
+        'prettier/@typescript-eslint'
+      ]
+    }
+  ]
 };

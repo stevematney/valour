@@ -28,29 +28,38 @@ let defaultFqdnOptions = {
 
 let requiredFunc = val => !!val;
 
-let isCheckable = val => !isUndefined(val) && !isNull(val) && !!val.toString().length;
+let isCheckable = val =>
+  !isUndefined(val) && !isNull(val) && !!val.toString().length;
 
 export default class ValidationUnit {
   constructor(...existing) {
-    let validationState = existing.filter((object) => object.valid !== undefined || object.messages !== undefined).shift() || {};
+    let validationState =
+      existing
+        .filter(
+          object => object.valid !== undefined || object.messages !== undefined
+        )
+        .shift() || {};
     this.rules = existing
-                   .map(ex => ex.rules)
-                   .reduce((list, existingRuleList) => [...list, ...existingRuleList], [])
-                   .reduce((finalRules, rule) => {
-                     let hasEquivalent = finalRules.some(existingRule => existingRule.name === rule.name);
-                     if (!rule.forced && hasEquivalent){
-                       return finalRules;
-                     }
-                     return [...finalRules, rule];
-                   }, []);
+      .map(ex => ex.rules)
+      .reduce((list, existingRuleList) => list.concat(existingRuleList), [])
+      .reduce((finalRules, rule) => {
+        let hasEquivalent = finalRules.some(
+          existingRule => existingRule.name === rule.name
+        );
+        if (!rule.forced && hasEquivalent) {
+          return finalRules;
+        }
+        return [...finalRules, rule];
+      }, []);
 
-    this.rules.filter(rule => /^is[A-Z]/.test(rule.name))
-              .forEach(rule => {
-                var ruleType = rule.name.replace(/^i/, '');
-                this[`removeI${ruleType}`] = () => {
-                  return this.remove(rule.name);
-                };
-              });
+    this.rules
+      .filter(rule => /^is[A-Z]/.test(rule.name))
+      .forEach(rule => {
+        var ruleType = rule.name.replace(/^i/, '');
+        this[`removeI${ruleType}`] = () => {
+          return this.remove(rule.name);
+        };
+      });
 
     this.waiting = 0;
     this.valid = validationState.valid;
@@ -67,17 +76,22 @@ export default class ValidationUnit {
   }
 
   createCustomPromiseGenerator(func) {
-    return (val, allValues, messageList, name) => new Promise((resolve, reject) =>  func(val, allValues, messageList, name, resolve, reject));
+    return (val, allValues, messageList, name) =>
+      new Promise((resolve, reject) =>
+        func(val, allValues, messageList, name, resolve, reject)
+      );
   }
 
   createPromiseGenerator(func, message) {
-    return this.createCustomPromiseGenerator((val, allValues, messageList, name, resolve, reject) => {
-      if (func(val, allValues)) {
-        return resolve();
+    return this.createCustomPromiseGenerator(
+      (val, allValues, messageList, name, resolve, reject) => {
+        if (func(val, allValues)) {
+          return resolve();
+        }
+        messageList.push(formatValidationMessage(message, { name }));
+        return reject();
       }
-      messageList.push(formatValidationMessage(message, { name }));
-      return reject();
-    });
+    );
   }
 
   shouldCheckValue(val) {
@@ -93,27 +107,28 @@ export default class ValidationUnit {
     this.valid = undefined;
     this.messages = [];
     if (!this.shouldCheckValue(value)) {
-      return Promise.resolve(true).then(() => this.valid = true);
+      return Promise.resolve(true).then(() => (this.valid = true));
     }
 
     this.waiting = this.waiting + 1;
 
-    let syncRules = this.rules.filter((rule) => !rule.isAsync);
-    let asyncRules = this.rules.filter((rule) => rule.isAsync);
-    let getGenerators = (rules) => rules.map((rule) => rule.generator);
+    let syncRules = this.rules.filter(rule => !rule.isAsync);
+    let asyncRules = this.rules.filter(rule => rule.isAsync);
+    let getGenerators = rules => rules.map(rule => rule.generator);
     let syncGenerators = getGenerators(syncRules);
     let asyncGenerators = getGenerators(asyncRules);
-    let getPromises = (generators) => generators.map((gen) => gen(value, allValues, this.messages, name));
-    let removeWaiting = () => this.waiting -= 1;
-    let passFunc = () => this.valid = true;
-    let failFunc = () => this.valid = false;
+    let getPromises = generators =>
+      generators.map(gen => gen(value, allValues, this.messages, name));
+    let removeWaiting = () => (this.waiting -= 1);
+    let passFunc = () => (this.valid = true);
+    let failFunc = () => (this.valid = false);
     let runSync = () => Promise.all(getPromises(syncGenerators));
     let runAsync = () => Promise.all(getPromises(asyncGenerators));
     return runSync()
-             .then(runAsync)
-             .then(passFunc)
-             .catch(failFunc)
-             .then(removeWaiting);
+      .then(runAsync)
+      .then(passFunc)
+      .catch(failFunc)
+      .then(removeWaiting);
   }
 
   runValidationSync(value, allValues, name) {
@@ -129,26 +144,32 @@ export default class ValidationUnit {
     const ruleViolationStatuses = rules.map(rule => {
       const isValid = rule.func(this.value);
       return {
-	rule,
-	isValid
+        rule,
+        isValid
       };
     });
     ruleViolationStatuses.forEach(violationStatus => {
       const { isValid, rule } = violationStatus;
 
-      if ( !isValid && rule.failureMessage ) {
-        this.messages.push(formatValidationMessage(rule.failureMessage, { name }));
+      if (!isValid && rule.failureMessage) {
+        this.messages.push(
+          formatValidationMessage(rule.failureMessage, { name })
+        );
       }
     });
-    const allRulesSatisfied = ruleViolationStatuses.every(status => status.isValid);
+    const allRulesSatisfied = ruleViolationStatuses.every(
+      status => status.isValid
+    );
     this.setState(allRulesSatisfied, this.messages);
   }
 
   getState() {
-    let {valid, messages, waiting} = this;
-    valid = (!this.shouldCheckValue(this.value) && this.valid === undefined) ? true : valid;
-    valid = (valid === undefined) ? valid :
-      (waiting) ? undefined : valid;
+    let { valid, messages, waiting } = this;
+    valid =
+      !this.shouldCheckValue(this.value) && this.valid === undefined
+        ? true
+        : valid;
+    valid = valid === undefined ? valid : waiting ? undefined : valid;
     return {
       waiting: !!waiting,
       valid,
@@ -166,21 +187,26 @@ export default class ValidationUnit {
     return this;
   }
 
-  forceRequirement(func,
-                   failureMessage,
-                   generator = this.createPromiseGenerator(func, failureMessage),
-                   name,
-                   forced = true,
-                   isAsync = false
-                  ) {
-    this.rules = [...this.rules, { func, failureMessage, forced, generator, name, isAsync }];
+  forceRequirement(
+    func,
+    failureMessage,
+    generator = this.createPromiseGenerator(func, failureMessage),
+    name,
+    forced = true,
+    isAsync = false
+  ) {
+    this.rules = [
+      ...this.rules,
+      { func, failureMessage, forced, generator, name, isAsync }
+    ];
     return new ValidationUnit(this);
   }
 
   setRequirement(func, failureMessage, name) {
-    let matchingFuncs = this.rules.filter((rule) => !rule.forced)
-                                  .map((rule) => rule.name)
-                                  .filter((testName) => testName === name);
+    let matchingFuncs = this.rules
+      .filter(rule => !rule.forced)
+      .map(rule => rule.name)
+      .filter(testName => testName === name);
     if (matchingFuncs.length) {
       return this;
     }
@@ -188,21 +214,37 @@ export default class ValidationUnit {
   }
 
   setValidatorRequirement(funcName, message, ...extraParams) {
-    return this.setRequirement(val => validator[funcName](val.toString(), ...extraParams), message, funcName);
+    return this.setRequirement(
+      val => validator[funcName](val.toString(), ...extraParams),
+      message,
+      funcName
+    );
   }
 
   isValidatedBy(func, message) {
-    return this.forceRequirement((val, allValues) => func(val, allValues), message);
+    return this.forceRequirement(
+      (val, allValues) => func(val, allValues),
+      message
+    );
   }
 
   isEventuallyValidatedBy(func, message) {
-    let generator = this.createCustomPromiseGenerator((val, allValues, messageList, name, resolve, reject) => {
-      func(val, allValues, resolve, () => {
-        messageList.push(formatValidationMessage(message, { name }));
-        reject();
-      });
-    });
-    return this.forceRequirement(func, message, generator, 'isEventuallyValidatedBy', true, true);
+    let generator = this.createCustomPromiseGenerator(
+      (val, allValues, messageList, name, resolve, reject) => {
+        func(val, allValues, resolve, () => {
+          messageList.push(formatValidationMessage(message, { name }));
+          reject();
+        });
+      }
+    );
+    return this.forceRequirement(
+      func,
+      message,
+      generator,
+      'isEventuallyValidatedBy',
+      true,
+      true
+    );
   }
 
   isRequired(message = '{name} is required.') {
@@ -210,7 +252,13 @@ export default class ValidationUnit {
   }
 
   isRequiredWhen(func, message = '{name} is required.') {
-    return this.setRequirement((val, allValues) => (func(val, allValues) && requiredFunc(val, allValues)) || !func(val, allValues), message, 'isRequired');
+    return this.setRequirement(
+      (val, allValues) =>
+        (func(val, allValues) && requiredFunc(val, allValues)) ||
+        !func(val, allValues),
+      message,
+      'isRequired'
+    );
   }
 
   isEmail(message = '{name} must be a valid email address.') {
@@ -218,7 +266,11 @@ export default class ValidationUnit {
   }
 
   contains(needle, message = '{name} must contain "{needle}."') {
-    return this.setRequirement((val) => validator.contains(val, needle), formatValidationMessage(message, {needle}), `contains ${needle}`);
+    return this.setRequirement(
+      val => validator.contains(val, needle),
+      formatValidationMessage(message, { needle }),
+      `contains ${needle}`
+    );
   }
 
   removeContains(needle) {
@@ -226,7 +278,11 @@ export default class ValidationUnit {
   }
 
   equals(comparison, message = '{name} must equal "{comparison}."') {
-    return this.setRequirement((val) => validator.equals(val, comparison), formatValidationMessage(message, {comparison}), `equals ${comparison}`);
+    return this.setRequirement(
+      val => validator.equals(val, comparison),
+      formatValidationMessage(message, { comparison }),
+      `equals ${comparison}`
+    );
   }
 
   removeEquals(comparison) {
@@ -234,27 +290,43 @@ export default class ValidationUnit {
   }
 
   equalsOther(other, message = '{name} must be equal to {other}.') {
-    return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}), `equalsOther ${other}`);
+    return this.setRequirement(
+      (val, others) => validator.equals(val, others[other]),
+      formatValidationMessage(message, { other }),
+      `equalsOther ${other}`
+    );
   }
 
   removeEqualsOther(other, message = '{name} must be equal to {other}.') {
-    return this.setRequirement((val, others) => validator.equals(val, others[other]), formatValidationMessage(message, {other}), `equalsOther ${other}`);
+    return this.setRequirement(
+      (val, others) => validator.equals(val, others[other]),
+      formatValidationMessage(message, { other }),
+      `equalsOther ${other}`
+    );
   }
 
   isAfter(date, message = '{name} must be after {date}.') {
-    return this.setRequirement((val) => {
-      let before = date.toString();
-      let after  = val.toString();
-      return validator.isAfter(after, before);
-    }, formatValidationMessage(message, { date }), 'isAfter');
+    return this.setRequirement(
+      val => {
+        let before = date.toString();
+        let after = val.toString();
+        return validator.isAfter(after, before);
+      },
+      formatValidationMessage(message, { date }),
+      'isAfter'
+    );
   }
 
   isBefore(date, message = '{name} must be before {date}.') {
-    return this.setRequirement((val) => {
-      let before = val.toString();
-      let after = date.toString();
-      return validator.isBefore(before, after);
-    }, formatValidationMessage(message, { date }), 'isBefore');
+    return this.setRequirement(
+      val => {
+        let before = val.toString();
+        let after = date.toString();
+        return validator.isBefore(before, after);
+      },
+      formatValidationMessage(message, { date }),
+      'isBefore'
+    );
   }
 
   isAlpha(message = '{name} must use only alphabetical characters.') {
@@ -277,19 +349,28 @@ export default class ValidationUnit {
     return this.setValidatorRequirement('isBoolean', message);
   }
 
-  isByteLength(min, max, message = '{name} must have a minimum byte length of {min}.') {
-    return this.setValidatorRequirement('isByteLength',
-                                        formatValidationMessage(message, {min, max}),
-                                        min, max);
+  isByteLength(
+    min,
+    max,
+    message = '{name} must have a minimum byte length of {min}.'
+  ) {
+    return this.setValidatorRequirement(
+      'isByteLength',
+      formatValidationMessage(message, { min, max }),
+      min,
+      max
+    );
   }
 
   isCreditCard(message = '{name} must be a credit card number.') {
     return this.setValidatorRequirement('isCreditCard', message);
   }
 
-  isCurrency(options = defaultCurrencyOptions,
-             message = '{name} must be in the format "{format}". {extraInfo}',
-             extraInfoMessage = '(Currency symbol ({symbol}) {notOrIs} required.)') {
+  isCurrency(
+    options = defaultCurrencyOptions,
+    message = '{name} must be in the format "{format}". {extraInfo}',
+    extraInfoMessage = '(Currency symbol ({symbol}) {notOrIs} required.)'
+  ) {
     let computedOptions = {
       ...defaultCurrencyOptions,
       ...options
@@ -297,17 +378,32 @@ export default class ValidationUnit {
     let symbol = computedOptions.require_symbol ? computedOptions.symbol : '';
     let symbolStart = computedOptions.symbol_after_digits ? '' : symbol;
     let symbolEnd = computedOptions.symbol_after_digits ? symbol : '';
-    let notOrIs = (computedOptions.require_symbol) ? 'is' : 'not';
-    let formattedExtra = formatValidationMessage(extraInfoMessage, { ...computedOptions, notOrIs });
+    let notOrIs = computedOptions.require_symbol ? 'is' : 'not';
+    let formattedExtra = formatValidationMessage(extraInfoMessage, {
+      ...computedOptions,
+      notOrIs
+    });
     let extraInfo = computedOptions.include_extra_info ? formattedExtra : '';
-    let {thousands_separator, decimal_separator} = computedOptions;
+    let { thousands_separator, decimal_separator } = computedOptions;
     let format = `${symbolStart}1${thousands_separator}000${decimal_separator}00${symbolEnd}`;
-    let messageWithFormat = formatValidationMessage(message, {format, extraInfo, ...computedOptions}).trim();
-    return this.setValidatorRequirement('isCurrency', messageWithFormat, computedOptions);
+    let messageWithFormat = formatValidationMessage(message, {
+      format,
+      extraInfo,
+      ...computedOptions
+    }).trim();
+    return this.setValidatorRequirement(
+      'isCurrency',
+      messageWithFormat,
+      computedOptions
+    );
   }
 
   isDate(message = '{name} must be a date.') {
-    return this.setRequirement(val => validator.toDate(val) !== null, message, 'isDate');
+    return this.setRequirement(
+      val => validator.toDate(val) !== null,
+      message,
+      'isDate'
+    );
   }
 
   isDecimal(message = '{name} must represent a decimal number.') {
@@ -315,10 +411,17 @@ export default class ValidationUnit {
   }
 
   isDivisibleBy(number, message = '{name} must be divisible by {number}.') {
-    return this.setValidatorRequirement('isDivisibleBy', formatValidationMessage(message, {number}), number);
+    return this.setValidatorRequirement(
+      'isDivisibleBy',
+      formatValidationMessage(message, { number }),
+      number
+    );
   }
 
-  isFQDN(options = defaultFqdnOptions, message = '{name} must be a fully qualified domain name.') {
+  isFQDN(
+    options = defaultFqdnOptions,
+    message = '{name} must be a fully qualified domain name.'
+  ) {
     return this.setValidatorRequirement('isFQDN', message, options);
   }
 
@@ -334,7 +437,9 @@ export default class ValidationUnit {
     return this.setValidatorRequirement('isHalfWidth', message);
   }
 
-  isVariableWidth(message = '{name} must contain fullwidth and halfwidth characters.') {
+  isVariableWidth(
+    message = '{name} must contain fullwidth and halfwidth characters.'
+  ) {
     return this.setValidatorRequirement('isVariableWidth', message);
   }
 
@@ -363,7 +468,9 @@ export default class ValidationUnit {
   }
 
   isIn(values, message = '{name} must be contained in {values}.') {
-    let formattedMessage = formatValidationMessage(message, { values: JSON.stringify(values) });
+    let formattedMessage = formatValidationMessage(message, {
+      values: JSON.stringify(values)
+    });
     return this.setValidatorRequirement('isIn', formattedMessage, values);
   }
 
@@ -376,7 +483,7 @@ export default class ValidationUnit {
   }
 
   isLength(min, max, message = '{name} must be at least {min} characters.') {
-    var formattedMessage = formatValidationMessage(message, {min, max});
+    var formattedMessage = formatValidationMessage(message, { min, max });
     return this.setValidatorRequirement('isLength', formattedMessage, min, max);
   }
 
@@ -417,8 +524,12 @@ export default class ValidationUnit {
   }
 
   matches(pattern, modifiers, message = '{name} must match {pattern}.') {
-    let formattedMessage = formatValidationMessage(message, {pattern});
-    return this.setRequirement(val => validator.matches(val, pattern), formattedMessage, `matches ${pattern.toString()}`);
+    let formattedMessage = formatValidationMessage(message, { pattern });
+    return this.setRequirement(
+      val => validator.matches(val, pattern),
+      formattedMessage,
+      `matches ${pattern.toString()}`
+    );
   }
 
   removeMatches(pattern) {

@@ -28,7 +28,9 @@ class Valour {
     if (!callback) {
       return;
     }
-    this.callbacks[name] = this.getCallbacks(name).filter((cb) => cb !== callback);
+    this.callbacks[name] = this.getCallbacks(name).filter(
+      cb => cb !== callback
+    );
   }
 
   clearOnUpdated(name) {
@@ -45,7 +47,7 @@ class Valour {
 
   isValidationStateSet(formName) {
     let form = this.getForm(formName);
-    return Object.keys(form).some((key) => {
+    return Object.keys(form).some(key => {
       return form[key].valid !== undefined;
     });
   }
@@ -63,8 +65,11 @@ class Valour {
 
   update(name, config = {}, callback) {
     let form = this.getForm(name);
-    Object.keys(config).forEach((key) => {
-      form[key] = new ValidationUnit(this.getRuleByName(form, key), config[key]);
+    Object.keys(config).forEach(key => {
+      form[key] = new ValidationUnit(
+        this.getRuleByName(form, key),
+        config[key]
+      );
     });
     this.onUpdated(name, callback);
   }
@@ -79,7 +84,7 @@ class Valour {
 
   runCallbacks(name) {
     let result = this.getResult(name);
-    this.getCallbacks(name).forEach((callback) => {
+    this.getCallbacks(name).forEach(callback => {
       callback(result);
     });
   }
@@ -93,7 +98,7 @@ class Valour {
       }, 101);
     };
     let form = this.getForm(name);
-    Object.keys(form).forEach((key) => {
+    Object.keys(form).forEach(key => {
       if (data[key] === undefined && !force) {
         return;
       }
@@ -103,7 +108,7 @@ class Valour {
 
   runValidationSync(name, data, force = false) {
     let form = this.getForm(name);
-    Object.keys(form).forEach((key) => {
+    Object.keys(form).forEach(key => {
       if (data[key] === undefined && !force) {
         return;
       }
@@ -121,12 +126,12 @@ class Valour {
 
   isValid(name) {
     let result = this.getResult(name);
-    return !Object.keys(result).some((key) => !result[key].valid);
+    return !Object.keys(result).some(key => !result[key].valid);
   }
 
   setValidationState(name, data) {
     let form = this.getForm(name);
-    Object.keys(form).forEach((key) => {
+    Object.keys(form).forEach(key => {
       if (data[key] === undefined) {
         return;
       }
@@ -143,7 +148,7 @@ class Valour {
   removeField(formName, fieldName) {
     let form = this.getForm(formName);
     this.forms[formName] = Object.keys(form).reduce((newForm, key) => {
-      if(key !== fieldName) {
+      if (key !== fieldName) {
         newForm[key] = form[key];
       }
       return newForm;
