@@ -1,9 +1,0 @@
-{
-  "presets": ["@babel/env"],
-  "plugins": [
-    "add-module-exports",
-    "array-includes",
-    "@babel/transform-runtime",
-    "@babel/proposal-object-rest-spread"
-  ]
-}

@@ -4,6 +4,7 @@ module.exports = {
     'add-module-exports',
     'array-includes',
     '@babel/transform-runtime',
-    '@babel/proposal-object-rest-spread'
+    '@babel/proposal-object-rest-spread',
+    'lodash'
   ]
 };
