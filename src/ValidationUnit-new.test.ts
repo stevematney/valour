@@ -40,7 +40,7 @@ describe('constructor', () => {
   });
 });
 
-describe('runValidationSync', () => {
+describe('runValidation', () => {
   let unit: ValidationUnit;
   let defaultRule: ValidationRule;
   beforeEach(() => {
@@ -55,23 +55,23 @@ describe('runValidationSync', () => {
     unit.rules.push(defaultRule);
   });
   describe('when we have no required rules', () => {
-    it('is valid if we do not have a checkable value', () => {
-      unit.runValidationSync('', {}, 'Test Rule');
+    it('is valid if we do not have a checkable value', async () => {
+      await unit.runValidation('', {}, 'Test Rule');
       expect(unit.valid).toBeTruthy();
     });
 
-    it('is valid if the value provided is undefined', () => {
-      unit.runValidationSync(undefined, {}, 'Test Rule');
+    it('is valid if the value provided is undefined', async () => {
+      await unit.runValidation(undefined, {}, 'Test Rule');
       expect(unit.valid).toBeTruthy();
     });
 
-    it('is valid if the value provided is null', () => {
-      unit.runValidationSync(null, {}, 'Test Rule');
+    it('is valid if the value provided is null', async () => {
+      await unit.runValidation(null, {}, 'Test Rule');
       expect(unit.valid).toBeTruthy();
     });
 
-    it('runs validation if we have a checkable value', () => {
-      unit.runValidationSync('hello friend!', {}, 'Test Rule');
+    it('runs validation if we have a checkable value', async () => {
+      await unit.runValidation('hello friend!', {}, 'Test Rule');
       expect(unit.valid).toBeFalsy();
       expect(unit.messages).toEqual([defaultRule.failureMessage]);
     });
@@ -81,26 +81,26 @@ describe('runValidationSync', () => {
     beforeEach(() => {
       defaultRule.name = 'isRequired';
     });
-    it('runs validation for an empty string when any rule is named "isRequired"', () => {
-      unit.runValidationSync('', {}, 'Test Rule');
+    it('runs validation for an empty string when any rule is named "isRequired"', async () => {
+      await unit.runValidation('', {}, 'Test Rule');
       expect(unit.valid).toBeFalsy();
       expect(unit.messages).toEqual([defaultRule.failureMessage]);
     });
 
-    it('runs validation for null when any rule is named "isRequired"', () => {
-      unit.runValidationSync(null, {}, 'Test Rule');
+    it('runs validation for null when any rule is named "isRequired"', async () => {
+      await unit.runValidation(null, {}, 'Test Rule');
       expect(unit.valid).toBeFalsy();
       expect(unit.messages).toEqual([defaultRule.failureMessage]);
     });
 
-    it('runs validation for undefined when any rule is named "isRequired"', () => {
-      unit.runValidationSync(undefined, {}, 'Test Rule');
+    it('runs validation for undefined when any rule is named "isRequired"', async () => {
+      await unit.runValidation(undefined, {}, 'Test Rule');
       expect(unit.valid).toBeFalsy();
       expect(unit.messages).toEqual([defaultRule.failureMessage]);
     });
   });
 
-  it('will fail when we have a single failure, even if other rules pass', () => {
+  it('will fail when we have a single failure, even if other rules pass', async () => {
     unit.rules.unshift({
       validationFunction: (): boolean => true,
       failureMessage: 'fake message',
@@ -108,12 +108,12 @@ describe('runValidationSync', () => {
       discrete: true,
       isAsync: false
     });
-    unit.runValidationSync('test value', {}, 'Test Rule');
+    await unit.runValidation('test value', {}, 'Test Rule');
     expect(unit.valid).toBeFalsy();
     expect(unit.messages).toEqual([defaultRule.failureMessage]);
   });
 
-  it('will pass when all rules pass', () => {
+  it('will pass when all rules pass', async () => {
     unit.rules = [
       {
         validationFunction: (): boolean => true,
@@ -123,8 +123,28 @@ describe('runValidationSync', () => {
         isAsync: false
       }
     ];
-    unit.runValidationSync('test value', {}, 'Test Rule');
+    await unit.runValidation('test value', {}, 'Test Rule');
     expect(unit.valid).toBeTruthy();
     expect(unit.messages).toEqual([]);
+  });
+
+  describe('runvalidationSync', () => {
+    it('does not run async functions', () => {
+      let didRunAsync = false;
+      defaultRule.validationFunction = (): boolean => true;
+      unit.rules.push({
+        validationFunction: (): boolean => {
+          return (didRunAsync = true), false;
+        },
+        failureMessage: 'Async rule failed',
+        name: 'Test Async Rule',
+        discrete: true,
+        isAsync: true
+      });
+      unit.runValidationSync('test value', {}, 'Test Rule');
+      expect(didRunAsync).toBeFalsy();
+      expect(unit.valid).toBeTruthy();
+      expect(unit.messages).toEqual([]);
+    });
   });
 });

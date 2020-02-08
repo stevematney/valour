@@ -1,4 +1,4 @@
-import { isUndefined, isNull, isBoolean } from 'lodash/lang';
+import { isUndefined, isNull } from 'lodash/lang';
 import formatValidationMessage from './util/format-validation-message';
 export interface ValidationRule {
   validationFunction(value: string, allValues: object): boolean;
@@ -6,6 +6,11 @@ export interface ValidationRule {
   name: string;
   discrete: boolean;
   isAsync: boolean;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  message: string;
 }
 
 export default class ValidationUnit {
@@ -31,11 +36,47 @@ export default class ValidationUnit {
       .reduce((rules, unit) => rules.concat(unit.rules), [])
       .reduce(getDistinctRules, []);
   }
-  remove(name: string): ValidationUnit {
-    this.rules = this.rules.filter(rule => rule.name === name);
-    return this;
+  runValidation(value: string, allValues: object, name: string): Promise<void> {
+    return this.checkRules<Promise<void>>(value, allValues, name, async () => {
+      const results = [];
+      await Promise.all(
+        this.rules.map(async rule => {
+          const isValid = await rule.validationFunction(value, allValues);
+          results.push({
+            isValid,
+            message:
+              !isValid &&
+              rule.failureMessage &&
+              formatValidationMessage(rule.failureMessage, { name })
+          });
+        })
+      );
+      this.setValidity(results);
+    });
   }
   runValidationSync(value: string, allValues: object, name: string): void {
+    return this.checkRules<void>(value, allValues, name, () => {
+      const results = this.rules
+        .filter(rule => !rule.isAsync)
+        .map(rule => {
+          const isValid = rule.validationFunction(value, allValues);
+          return {
+            isValid,
+            message:
+              !isValid &&
+              rule.failureMessage &&
+              formatValidationMessage(rule.failureMessage, { name })
+          };
+        });
+      this.setValidity(results);
+    });
+  }
+  private checkRules<T>(
+    value: string,
+    allValues: object,
+    name: string,
+    checkingFunction: (value: string, allValues: object, name: string) => T
+  ): T {
     this.value = value;
     this.valid = undefined;
     this.messages = [];
@@ -45,22 +86,17 @@ export default class ValidationUnit {
       return;
     }
 
-    const results = this.rules
-      .filter(rule => !rule.isAsync)
-      .map(rule => {
-        const isValid = rule.validationFunction(value, allValues);
-        return {
-          isValid,
-          message:
-            !isValid &&
-            rule.failureMessage &&
-            formatValidationMessage(rule.failureMessage, { name })
-        };
-      });
+    return checkingFunction(value, allValues, name);
+  }
+  private setValidity(results: ValidationResult[]): void {
     this.messages = results
       .map(rule => rule.message)
       .filter(message => message);
     this.valid = results.every(result => result.isValid);
+  }
+  private remove(name: string): ValidationUnit {
+    this.rules = this.rules.filter(rule => rule.name === name);
+    return this;
   }
   private shouldCheckValue(value: string): boolean {
     const hasRequiredRules = this.rules.some(x => x.name === 'isRequired');
