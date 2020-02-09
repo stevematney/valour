@@ -21,17 +21,22 @@ interface ValidationResult {
   message: string;
 }
 
+interface ValidationState {
+  isValid: boolean;
+  messages: string[];
+  waiting: boolean;
+}
 export default class ValidationUnit {
   rules: ValidationRule[];
-  valid: boolean;
+  isValid: boolean;
   value: string;
   messages: string[];
   waiting = false;
   constructor(...existingUnits: ValidationUnit[]) {
     const validationState = existingUnits
-      .filter(unit => unit.valid !== undefined || unit.messages !== undefined)
+      .filter(unit => unit.isValid !== undefined || unit.messages !== undefined)
       .shift();
-    this.valid = validationState?.valid;
+    this.isValid = validationState?.isValid;
     this.messages = validationState?.messages;
 
     const getDistinctRules = (finalRules, rule): ValidationRule[] => {
@@ -86,6 +91,21 @@ export default class ValidationUnit {
       this.setValidity(results);
     });
   }
+
+  getValidationState(): ValidationState {
+    const { isValid, messages, waiting, value } = this;
+    let actuallyIsValid =
+      !this.shouldCheckValue(value) && value === undefined ? true : isValid;
+    if (waiting) {
+      actuallyIsValid = undefined;
+    }
+    return {
+      waiting,
+      isValid: actuallyIsValid,
+      messages
+    };
+  }
+
   private checkRules<T>(
     value: string,
     allValues: object,
@@ -93,11 +113,11 @@ export default class ValidationUnit {
     checkingFunction: (value: string, allValues: object, name: string) => T
   ): T {
     this.value = value;
-    this.valid = undefined;
+    this.isValid = undefined;
     this.messages = [];
 
     if (!this.shouldCheckValue(value)) {
-      this.valid = true;
+      this.isValid = true;
       return;
     }
 
@@ -107,10 +127,10 @@ export default class ValidationUnit {
     this.messages = results
       .map(rule => rule.message)
       .filter(message => message);
-    this.valid = results.every(result => result.isValid);
+    this.isValid = results.every(result => result.isValid);
   }
-  private remove(name: string): ValidationUnit {
-    this.rules = this.rules.filter(rule => rule.name === name);
+  private remove(removedRule: ValidationRule): ValidationUnit {
+    this.rules = this.rules.filter(rule => rule.name === removedRule.name);
     return this;
   }
   private shouldCheckValue(value: string): boolean {

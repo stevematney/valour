@@ -29,14 +29,31 @@ describe('constructor', () => {
 
   it('will set its valid property to the valid property of an existing ValidationUnit', () => {
     const fakeUnit = new ValidationUnit();
-    fakeUnit.valid = true;
-    expect(new ValidationUnit(fakeUnit).valid).toBeTruthy();
+    fakeUnit.isValid = true;
+    expect(new ValidationUnit(fakeUnit).isValid).toBeTruthy();
   });
 
   it('will set its messages to the messages of an existing ValidationUnit', () => {
     const fakeUnit = new ValidationUnit();
     fakeUnit.messages = ['Test Message', 'Test Message 2'];
     expect(new ValidationUnit(fakeUnit).messages).toEqual(fakeUnit.messages);
+  });
+});
+
+describe('adding rules', () => {
+  let unit: ValidationUnit;
+  beforeEach(() => {
+    unit = new ValidationUnit();
+  });
+
+  it('will not add duplicate rules', () => {
+    unit.isEmail().isEmail();
+    expect(unit.rules.length).toBe(1);
+  });
+
+  it('will chain rules together', () => {
+    unit.isEmail().isRequired();
+    expect(unit.rules.length).toBe(2);
   });
 });
 
@@ -57,22 +74,22 @@ describe('runValidation', () => {
   describe('when we have no required rules', () => {
     it('is valid if we do not have a checkable value', async () => {
       await unit.runValidation('', {}, 'Test Rule');
-      expect(unit.valid).toBeTruthy();
+      expect(unit.isValid).toBeTruthy();
     });
 
     it('is valid if the value provided is undefined', async () => {
       await unit.runValidation(undefined, {}, 'Test Rule');
-      expect(unit.valid).toBeTruthy();
+      expect(unit.isValid).toBeTruthy();
     });
 
     it('is valid if the value provided is null', async () => {
       await unit.runValidation(null, {}, 'Test Rule');
-      expect(unit.valid).toBeTruthy();
+      expect(unit.isValid).toBeTruthy();
     });
 
     it('runs validation if we have a checkable value', async () => {
       await unit.runValidation('hello friend!', {}, 'Test Rule');
-      expect(unit.valid).toBeFalsy();
+      expect(unit.isValid).toBeFalsy();
       expect(unit.messages).toEqual([defaultRule.failureMessage]);
     });
   });
@@ -83,19 +100,19 @@ describe('runValidation', () => {
     });
     it('runs validation for an empty string when any rule is named "isRequired"', async () => {
       await unit.runValidation('', {}, 'Test Rule');
-      expect(unit.valid).toBeFalsy();
+      expect(unit.isValid).toBeFalsy();
       expect(unit.messages).toEqual([defaultRule.failureMessage]);
     });
 
     it('runs validation for null when any rule is named "isRequired"', async () => {
       await unit.runValidation(null, {}, 'Test Rule');
-      expect(unit.valid).toBeFalsy();
+      expect(unit.isValid).toBeFalsy();
       expect(unit.messages).toEqual([defaultRule.failureMessage]);
     });
 
     it('runs validation for undefined when any rule is named "isRequired"', async () => {
       await unit.runValidation(undefined, {}, 'Test Rule');
-      expect(unit.valid).toBeFalsy();
+      expect(unit.isValid).toBeFalsy();
       expect(unit.messages).toEqual([defaultRule.failureMessage]);
     });
   });
@@ -109,7 +126,7 @@ describe('runValidation', () => {
       isAsync: false
     });
     await unit.runValidation('test value', {}, 'Test Rule');
-    expect(unit.valid).toBeFalsy();
+    expect(unit.isValid).toBeFalsy();
     expect(unit.messages).toEqual([defaultRule.failureMessage]);
   });
 
@@ -124,7 +141,7 @@ describe('runValidation', () => {
       }
     ];
     await unit.runValidation('test value', {}, 'Test Rule');
-    expect(unit.valid).toBeTruthy();
+    expect(unit.isValid).toBeTruthy();
     expect(unit.messages).toEqual([]);
   });
 
@@ -167,8 +184,54 @@ describe('runValidation', () => {
       });
       unit.runValidationSync('test value', {}, 'Test Rule');
       expect(didRunAsync).toBeFalsy();
-      expect(unit.valid).toBeTruthy();
+      expect(unit.isValid).toBeTruthy();
       expect(unit.messages).toEqual([]);
     });
+  });
+});
+
+describe('getValidationState', function() {
+  let unit: ValidationUnit;
+  beforeEach(function() {
+    unit = new ValidationUnit().isEmail();
+  });
+
+  it('sets valid to true if the current ValidationUnit is not required, the unit has no current value, and valid has no current value', function() {
+    unit.value = undefined;
+    unit.isValid = undefined;
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('valid keeps its current value if the unit has a current value', function() {
+    unit.value = 'anycurrentvalue';
+
+    unit.isValid = undefined;
+    expect(unit.getValidationState().isValid).toBeUndefined();
+
+    unit.isValid = false;
+    expect(unit.getValidationState().isValid).toBeFalsy();
+
+    unit.isValid = true;
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('valid keeps its current value if the ValidationUnit is required and the unit has no current value', function() {
+    unit = new ValidationUnit().isEmail().isRequired();
+    unit.value = undefined;
+
+    unit.isValid = undefined;
+    expect(unit.getValidationState().isValid).toBeUndefined();
+
+    unit.isValid = false;
+    expect(unit.getValidationState().isValid).toBeFalsy();
+
+    unit.isValid = true;
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('sets valid to undefined if we are waiting for a result', () => {
+    unit.isValid = false;
+    unit.waiting = true;
+    expect(unit.getValidationState().isValid).toBeUndefined();
   });
 });
