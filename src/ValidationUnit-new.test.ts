@@ -128,6 +128,30 @@ describe('runValidation', () => {
     expect(unit.messages).toEqual([]);
   });
 
+  it('will not re-run validation while waiting for async rules', () => {
+    let validationCalled = 0;
+    unit.rules.push({
+      validationFunction: async () => {
+        return await new Promise<boolean>(resolve => {
+          validationCalled += 1;
+          setTimeout(() => {
+            resolve(true);
+          });
+        });
+      },
+      failureMessage: 'Async rule failed',
+      name: 'Test Async Rule',
+      discrete: true,
+      isAsync: true
+    });
+    unit.runValidation('test value', {}, 'Test Repeated Calls').then(() => {
+      expect(validationCalled).toBe(1);
+    });
+    unit.runValidation('test value', {}, 'Test Repeated Calls');
+    unit.runValidation('test value', {}, 'Test Repeated Calls');
+    return unit.runValidation('test value', {}, 'Test Repeated Calls');
+  });
+
   describe('runvalidationSync', () => {
     it('does not run async functions', () => {
       let didRunAsync = false;

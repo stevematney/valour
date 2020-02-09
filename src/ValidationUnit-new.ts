@@ -1,11 +1,19 @@
 import { isUndefined, isNull } from 'lodash/lang';
 import formatValidationMessage from './util/format-validation-message';
+
 export interface ValidationRule {
-  validationFunction(value: string, allValues: object): boolean;
+  validationFunction: (
+    value?: string,
+    allValues?: object
+  ) => boolean | Promise<boolean>;
   failureMessage: string;
   name: string;
   discrete: boolean;
   isAsync: boolean;
+}
+
+interface BooleanValidationRule extends ValidationRule {
+  validationFunction: (value?: string, allValues?: object) => boolean;
 }
 
 interface ValidationResult {
@@ -18,6 +26,7 @@ export default class ValidationUnit {
   valid: boolean;
   value: string;
   messages: string[];
+  waiting = false;
   constructor(...existingUnits: ValidationUnit[]) {
     const validationState = existingUnits
       .filter(unit => unit.valid !== undefined || unit.messages !== undefined)
@@ -37,6 +46,9 @@ export default class ValidationUnit {
       .reduce(getDistinctRules, []);
   }
   runValidation(value: string, allValues: object, name: string): Promise<void> {
+    if (this.waiting && this.value === value) return;
+    this.waiting = true;
+
     return this.checkRules<Promise<void>>(value, allValues, name, async () => {
       const results = [];
       await Promise.all(
@@ -52,22 +64,25 @@ export default class ValidationUnit {
         })
       );
       this.setValidity(results);
+      this.waiting = false;
     });
   }
   runValidationSync(value: string, allValues: object, name: string): void {
     return this.checkRules<void>(value, allValues, name, () => {
       const results = this.rules
         .filter(rule => !rule.isAsync)
-        .map(rule => {
-          const isValid = rule.validationFunction(value, allValues);
-          return {
-            isValid,
-            message:
-              !isValid &&
-              rule.failureMessage &&
-              formatValidationMessage(rule.failureMessage, { name })
-          };
-        });
+        .map(
+          (rule: BooleanValidationRule): ValidationResult => {
+            const isValid = rule.validationFunction(value, allValues);
+            return {
+              isValid,
+              message:
+                !isValid &&
+                rule.failureMessage &&
+                formatValidationMessage(rule.failureMessage, { name })
+            };
+          }
+        );
       this.setValidity(results);
     });
   }

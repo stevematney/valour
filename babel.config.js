@@ -5,6 +5,7 @@ module.exports = {
     'array-includes',
     '@babel/transform-runtime',
     '@babel/proposal-object-rest-spread',
-    'lodash'
+    'lodash',
+    'transform-class-properties'
   ]
 };
