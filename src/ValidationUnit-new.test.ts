@@ -235,3 +235,76 @@ describe('getValidationState', function() {
     expect(unit.getValidationState().isValid).toBeUndefined();
   });
 });
+
+describe('isValidatedBy', function() {
+  const matches = ['foo', 'bar'];
+  let unit: ValidationUnit;
+  beforeEach(function() {
+    unit = new ValidationUnit().isValidatedBy(
+      value => !!matches.filter(match => value.includes(match)).length,
+      'Value should contain "foo" or "bar".'
+    );
+  });
+
+  it('will pass a custom validator', async () => {
+    await unit.runValidation('foo', {}, 'custom rule');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('will fail a custom validator', async () => {
+    await unit.runValidation('blah', {}, 'custom rule');
+    expect(unit.getValidationState().isValid).toBeFalsy();
+    expect(unit.getValidationState().messages).toEqual([
+      'Value should contain "foo" or "bar".'
+    ]);
+  });
+
+  describe('checking against other values', function() {
+    beforeEach(function() {
+      unit = unit.isValidatedBy((value, allValues) => {
+        return value === allValues.dependent;
+      }, 'Value must be equal to "dependent."');
+    });
+
+    it('passes when its dependent values are correct', async () => {
+      await unit.runValidation('foo', { dependent: 'foo' }, 'custom rule');
+      expect(unit.getValidationState().isValid).toBeTruthy();
+    });
+
+    it('fails when its dependent values are not correct', async () => {
+      await unit.runValidation('foo', { dependent: 'bar' }, 'custom rule');
+      expect(unit.getValidationState().isValid).toBeFalsy();
+      expect(unit.getValidationState().messages).toEqual([
+        'Value must be equal to "dependent."'
+      ]);
+    });
+
+    it('will fail with multiple validation messages', async () => {
+      await unit.runValidation('doo', { dependent: 'bar' }, 'custom rule');
+      expect(unit.getValidationState().isValid).toBeFalsy();
+      expect(unit.getValidationState().messages).toEqual([
+        'Value should contain "foo" or "bar".',
+        'Value must be equal to "dependent."'
+      ]);
+    });
+  });
+
+  describe('removing isValidatedBy', () => {
+    const validationFunction = (val: string): boolean => val === 'exact value';
+    const failureMessage = '{name} must be exactly "exact value"';
+    beforeEach(() => {
+      unit = new ValidationUnit().isValidatedBy(
+        validationFunction,
+        failureMessage
+      );
+    });
+    it('can be removed referencing the validation function', () => {
+      unit.removeIsValidatedBy(validationFunction);
+      expect(unit.rules.length).toBe(0);
+    });
+    it('can be removed referencing the failure message', () => {
+      unit.removeIsValidatedBy(failureMessage);
+      expect(unit.rules.length).toBe(0);
+    });
+  });
+});

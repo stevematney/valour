@@ -1,10 +1,11 @@
 import { isUndefined, isNull } from 'lodash/lang';
 import formatValidationMessage from './util/format-validation-message';
 
+type DynamicObject = { [k: string]: any };
 export interface ValidationRule {
   validationFunction: (
     value?: string,
-    allValues?: object
+    allValues?: DynamicObject
   ) => boolean | Promise<boolean>;
   failureMessage: string;
   name: string;
@@ -12,9 +13,22 @@ export interface ValidationRule {
   isAsync: boolean;
 }
 
+type BooleanValidationFunction = (
+  value?: string,
+  allValues?: DynamicObject
+) => boolean;
+
 interface BooleanValidationRule extends ValidationRule {
-  validationFunction: (value?: string, allValues?: object) => boolean;
+  validationFunction: BooleanValidationFunction;
 }
+
+const defaultValidationRule: BooleanValidationRule = {
+  validationFunction: () => false,
+  failureMessage: 'default validation message',
+  name: 'Default Rule',
+  discrete: false,
+  isAsync: false
+};
 
 interface ValidationResult {
   isValid: boolean;
@@ -26,6 +40,7 @@ interface ValidationState {
   messages: string[];
   waiting: boolean;
 }
+
 export default class ValidationUnit {
   rules: ValidationRule[];
   isValid: boolean;
@@ -50,7 +65,11 @@ export default class ValidationUnit {
       .reduce((rules, unit) => rules.concat(unit.rules), [])
       .reduce(getDistinctRules, []);
   }
-  runValidation(value: string, allValues: object, name: string): Promise<void> {
+  runValidation(
+    value: string,
+    allValues: DynamicObject,
+    name: string
+  ): Promise<void> {
     if (this.waiting && this.value === value) return;
     this.waiting = true;
 
@@ -72,7 +91,11 @@ export default class ValidationUnit {
       this.waiting = false;
     });
   }
-  runValidationSync(value: string, allValues: object, name: string): void {
+  runValidationSync(
+    value: string,
+    allValues: DynamicObject,
+    name: string
+  ): void {
     return this.checkRules<void>(value, allValues, name, () => {
       const results = this.rules
         .filter(rule => !rule.isAsync)
@@ -92,6 +115,12 @@ export default class ValidationUnit {
     });
   }
 
+  initializeState(isValid: boolean, messages: string[]): ValidationUnit {
+    this.isValid = isValid;
+    this.messages = messages;
+    return this;
+  }
+
   getValidationState(): ValidationState {
     const { isValid, messages, waiting, value } = this;
     let actuallyIsValid =
@@ -106,11 +135,52 @@ export default class ValidationUnit {
     };
   }
 
+  isValidatedBy(
+    validationFunction: (val: string, allValues: DynamicObject) => boolean,
+    failureMessage: string
+  ): ValidationUnit {
+    return this.setRequirement({
+      validationFunction,
+      failureMessage,
+      name: failureMessage,
+      discrete: true,
+      isAsync: false
+    });
+  }
+  removeIsValidatedBy(
+    criteria: BooleanValidationFunction | string
+  ): ValidationUnit {
+    if (criteria instanceof Function) {
+      this.rules = this.rules.filter(
+        rule => rule.validationFunction !== criteria
+      );
+      return this;
+    }
+    this.remove({
+      ...defaultValidationRule,
+      name: criteria
+    });
+    return this;
+  }
+
+  private setRequirement(newRule: ValidationRule): ValidationUnit {
+    const matchingRules = this.rules
+      .filter(rule => !rule.discrete)
+      .filter(rule => rule.name === newRule.name);
+    if (matchingRules.length && !newRule.discrete) return this;
+
+    this.rules.push(newRule);
+    return this;
+  }
   private checkRules<T>(
     value: string,
-    allValues: object,
+    allValues: DynamicObject,
     name: string,
-    checkingFunction: (value: string, allValues: object, name: string) => T
+    checkingFunction: (
+      value: string,
+      allValues: DynamicObject,
+      name: string
+    ) => T
   ): T {
     this.value = value;
     this.isValid = undefined;
@@ -130,7 +200,7 @@ export default class ValidationUnit {
     this.isValid = results.every(result => result.isValid);
   }
   private remove(removedRule: ValidationRule): ValidationUnit {
-    this.rules = this.rules.filter(rule => rule.name === removedRule.name);
+    this.rules = this.rules.filter(rule => rule.name !== removedRule.name);
     return this;
   }
   private shouldCheckValue(value: string): boolean {
