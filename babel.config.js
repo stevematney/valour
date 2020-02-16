@@ -1,5 +1,11 @@
 module.exports = {
-  presets: ['@babel/env', '@babel/typescript'],
+  presets: [
+    '@babel/env',
+    {
+      useBuiltIns: 'usage'
+    },
+    '@babel/typescript'
+  ],
   plugins: [
     'add-module-exports',
     'array-includes',

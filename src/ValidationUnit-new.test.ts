@@ -190,19 +190,19 @@ describe('runValidation', () => {
   });
 });
 
-describe('getValidationState', function() {
+describe('getValidationState', () => {
   let unit: ValidationUnit;
-  beforeEach(function() {
+  beforeEach(() => {
     unit = new ValidationUnit().isEmail();
   });
 
-  it('sets valid to true if the current ValidationUnit is not required, the unit has no current value, and valid has no current value', function() {
+  it('sets valid to true if the current ValidationUnit is not required, the unit has no current value, and valid has no current value', () => {
     unit.value = undefined;
     unit.isValid = undefined;
     expect(unit.getValidationState().isValid).toBeTruthy();
   });
 
-  it('valid keeps its current value if the unit has a current value', function() {
+  it('valid keeps its current value if the unit has a current value', () => {
     unit.value = 'anycurrentvalue';
 
     unit.isValid = undefined;
@@ -215,7 +215,7 @@ describe('getValidationState', function() {
     expect(unit.getValidationState().isValid).toBeTruthy();
   });
 
-  it('valid keeps its current value if the ValidationUnit is required and the unit has no current value', function() {
+  it('valid keeps its current value if the ValidationUnit is required and the unit has no current value', () => {
     unit = new ValidationUnit().isEmail().isRequired();
     unit.value = undefined;
 
@@ -236,10 +236,10 @@ describe('getValidationState', function() {
   });
 });
 
-describe('isValidatedBy', function() {
+describe('isValidatedBy', () => {
   const matches = ['foo', 'bar'];
   let unit: ValidationUnit;
-  beforeEach(function() {
+  beforeEach(() => {
     unit = new ValidationUnit().isValidatedBy(
       value => !!matches.filter(match => value.includes(match)).length,
       'Value should contain "foo" or "bar".'
@@ -259,8 +259,8 @@ describe('isValidatedBy', function() {
     ]);
   });
 
-  describe('checking against other values', function() {
-    beforeEach(function() {
+  describe('checking against other values', () => {
+    beforeEach(() => {
       unit = unit.isValidatedBy((value, allValues) => {
         return value === allValues.dependent;
       }, 'Value must be equal to "dependent."');
@@ -306,5 +306,68 @@ describe('isValidatedBy', function() {
       unit.removeIsValidatedBy(failureMessage);
       expect(unit.rules.length).toBe(0);
     });
+  });
+});
+
+describe('isRequiredWhen', () => {
+  let unit: ValidationUnit;
+  let shouldBeRequired: boolean;
+  const shouldBeRequiredFunc = () => shouldBeRequired;
+  const requiredFailureMessage = '{name} is required.';
+
+  beforeEach(() => {
+    shouldBeRequired = false;
+    unit = new ValidationUnit().isRequiredWhen(shouldBeRequiredFunc);
+  });
+
+  it('fails when the value is not present and it is required', async () => {
+    shouldBeRequired = true;
+
+    await unit.runValidation(null, {}, 'required input');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(unit.getValidationState().messages).toEqual([
+      'required input is required.'
+    ]);
+  });
+
+  it('passes when the value is not present, but it is not required', async () => {
+    shouldBeRequired = false;
+
+    await unit.runValidation(null, {}, 'required input');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('fails on empty strings when the value is required', async () => {
+    shouldBeRequired = true;
+
+    await unit.runValidation('', {}, 'required input');
+    expect(unit.getValidationState().isValid).toBeFalsy();
+  });
+
+  it('passes on empty strings when the value is not required', async () => {
+    shouldBeRequired = false;
+
+    await unit.runValidation('', {}, 'required input');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('passes when value is present and it is required', async () => {
+    shouldBeRequired = true;
+
+    await unit.runValidation("I'm here!", {}, 'required input');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('passes when value is present and it is not required', async () => {
+    shouldBeRequired = false;
+
+    await unit.runValidation("I'm here!", {}, 'required input');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('can be removed', () => {
+    unit.removeIsRequiredWhen();
+    expect(unit.rules.length).toBe(0);
   });
 });

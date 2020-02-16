@@ -1,3 +1,4 @@
+import validator from 'validator';
 import { isUndefined, isNull } from 'lodash/lang';
 import formatValidationMessage from './util/format-validation-message';
 
@@ -17,6 +18,11 @@ type BooleanValidationFunction = (
   value?: string,
   allValues?: DynamicObject
 ) => boolean;
+
+type AsyncValidationFunction = (
+  value?: string,
+  allValues?: DynamicObject
+) => Promise<boolean>;
 
 interface BooleanValidationRule extends ValidationRule {
   validationFunction: BooleanValidationFunction;
@@ -74,17 +80,16 @@ export default class ValidationUnit {
     this.waiting = true;
 
     return this.checkRules<Promise<void>>(value, allValues, name, async () => {
-      const results = [];
-      await Promise.all(
+      const results = await Promise.all<ValidationResult>(
         this.rules.map(async rule => {
           const isValid = await rule.validationFunction(value, allValues);
-          results.push({
+          return {
             isValid,
             message:
               !isValid &&
               rule.failureMessage &&
               formatValidationMessage(rule.failureMessage, { name })
-          });
+          };
         })
       );
       this.setValidity(results);
@@ -136,7 +141,7 @@ export default class ValidationUnit {
   }
 
   isValidatedBy(
-    validationFunction: (val: string, allValues: DynamicObject) => boolean,
+    validationFunction: BooleanValidationFunction,
     failureMessage: string
   ): ValidationUnit {
     return this.setRequirement({
@@ -149,6 +154,101 @@ export default class ValidationUnit {
   }
   removeIsValidatedBy(
     criteria: BooleanValidationFunction | string
+  ): ValidationUnit {
+    return this.removeCustomRule(criteria);
+  }
+
+  isEventuallyValidatedBy(
+    validationFunction: AsyncValidationFunction,
+    failureMessage: string
+  ): ValidationUnit {
+    return this.setRequirement({
+      validationFunction,
+      failureMessage,
+      name: failureMessage,
+      discrete: true,
+      isAsync: true
+    });
+  }
+  removeIsEventuallyValidatedBy(
+    criteria: AsyncValidationFunction | string
+  ): ValidationUnit {
+    return this.removeCustomRule(criteria);
+  }
+
+  private isRequiredRule: ValidationRule = {
+    ...defaultValidationRule,
+    validationFunction: val => !!val,
+    failureMessage: '{name} is required.',
+    name: 'isRequired'
+  };
+  isRequired(failureMessage?: string): ValidationUnit {
+    return this.setRequirement({
+      ...this.isRequiredRule,
+      failureMessage: failureMessage || this.isRequiredRule.failureMessage
+    });
+  }
+  removeIsRequired(): ValidationUnit {
+    return this.remove(this.isRequiredRule);
+  }
+
+  private isRequiredWhenName = 'isRequiredWhen';
+  isRequiredWhen(
+    shouldBeRequiredFunc: BooleanValidationFunction,
+    failureMessage?: string
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      validationFunction: (value, allValues) => {
+        return (
+          !shouldBeRequiredFunc(value, allValues) ||
+          this.isRequiredRule.validationFunction(value, allValues)
+        );
+      },
+      name: this.isRequiredWhenName,
+      failureMessage: failureMessage || this.isRequiredRule.failureMessage
+    });
+  }
+  removeIsRequiredWhen(): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: this.isRequiredWhenName
+    });
+  }
+
+  isEmail(failureMessage?: string): ValidationUnit {
+    return this.setRequirement(
+      this.generateValidatorRule(
+        'isEmail',
+        failureMessage ?? '{name} must be a valid email address.'
+      )
+    );
+  }
+  removeIsEmail(): ValidationUnit {
+    return this.remove(this.generateValidatorRule('isEmail'));
+  }
+
+  private generateValidatorRule(
+    validatorFunction: string,
+    failureMessage?: string,
+    name?: string
+  ): ValidationRule {
+    if (!(validatorFunction in validator))
+      throw new Error(
+        'A validator rule must use a function in the validator library.'
+      );
+    return {
+      validationFunction: (val: string): boolean =>
+        validator[validatorFunction](val),
+      failureMessage: failureMessage || '',
+      name: name || validatorFunction,
+      isAsync: false,
+      discrete: false
+    };
+  }
+
+  private removeCustomRule(
+    criteria: BooleanValidationFunction | AsyncValidationFunction | string
   ): ValidationUnit {
     if (criteria instanceof Function) {
       this.rules = this.rules.filter(
@@ -195,7 +295,7 @@ export default class ValidationUnit {
   }
   private setValidity(results: ValidationResult[]): void {
     this.messages = results
-      .map(rule => rule.message)
+      .map(result => result.message)
       .filter(message => message);
     this.isValid = results.every(result => result.isValid);
   }
@@ -204,7 +304,9 @@ export default class ValidationUnit {
     return this;
   }
   private shouldCheckValue(value: string): boolean {
-    const hasRequiredRules = this.rules.some(x => x.name === 'isRequired');
+    const hasRequiredRules = this.rules.some(x =>
+      x.name.includes('isRequired')
+    );
     const isCheckable =
       !isUndefined(value) && !isNull(value) && !!value.toString();
     return hasRequiredRules || isCheckable;
