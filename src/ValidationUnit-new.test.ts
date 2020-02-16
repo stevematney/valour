@@ -403,4 +403,46 @@ describe('equals', () => {
     expect(result.isValid).toBeFalsy();
     expect(result.messages).toEqual(['"One" input must equal "one."']);
   });
+
+  it('can be removed by the comparison', () => {
+    unit.removeEquals('one');
+    expect(unit.rules.length).toBe(0);
+  });
+});
+
+describe('equalsOther', () => {
+  beforeEach(() => {
+    unit = unit.equalsOther('confirmation');
+  });
+
+  it('passes when the value is equal with the given other', async () => {
+    await unit.runValidation(
+      'yep',
+      {
+        confirmation: 'yep'
+      },
+      'repeat yep input'
+    );
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('fails when the value is not equal with the given other', async () => {
+    await unit.runValidation(
+      'nope',
+      {
+        confirmation: 'yep'
+      },
+      'This guy'
+    );
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'This guy must be equal to confirmation.'
+    ]);
+  });
+
+  it('can be removed by the name of the otehr field', () => {
+    unit.removeEqualsOther('confirmation');
+    expect(unit.rules.length).toBe(0);
+  });
 });

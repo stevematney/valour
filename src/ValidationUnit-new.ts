@@ -276,6 +276,25 @@ export default class ValidationUnit {
     return this.remove(this.isEmailRule);
   }
 
+  equalsOther(other: string, failureMessage?: string): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      validationFunction: (value, allValues) =>
+        validator.equals(value, allValues[other]),
+      failureMessage: formatValidationMessage(
+        failureMessage || '{name} must be equal to {other}.',
+        { other }
+      ),
+      name: `equalsOther ${other}`
+    });
+  }
+  removeEqualsOther(other: string): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `equalsOther ${other}`
+    });
+  }
+
   private removeCustomRule(
     criteria: BooleanValidationFunction | AsyncValidationFunction | string
   ): ValidationUnit {
