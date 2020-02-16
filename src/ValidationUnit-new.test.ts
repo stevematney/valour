@@ -371,3 +371,28 @@ describe('isRequiredWhen', () => {
     expect(unit.rules.length).toBe(0);
   });
 });
+
+describe('contains', () => {
+  let unit: ValidationUnit;
+  beforeEach(() => {
+    unit = new ValidationUnit().contains('foo');
+  });
+
+  it('passes when the value is contained', async () => {
+    await unit.runValidation('food', {}, 'food test');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('passes when the value is not contained', async () => {
+    await unit.runValidation('eat', {}, 'Foo input');
+    expect(unit.getValidationState().isValid).toBeFalsy();
+    expect(unit.getValidationState().messages).toEqual([
+      'Foo input must contain "foo."'
+    ]);
+  });
+
+  it('can be removed by the needle', () => {
+    unit.removeContains('foo');
+    expect(unit.rules.length).toBe(0);
+  });
+});

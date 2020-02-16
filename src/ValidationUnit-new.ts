@@ -216,35 +216,42 @@ export default class ValidationUnit {
     });
   }
 
-  isEmail(failureMessage?: string): ValidationUnit {
-    return this.setRequirement(
-      this.generateValidatorRule(
-        'isEmail',
-        failureMessage ?? '{name} must be a valid email address.'
-      )
-    );
+  containsRule: ValidationRule = {
+    ...defaultValidationRule,
+    failureMessage: '{name} must contain "{needle}."'
+  };
+  contains(needle: string, failureMessage?: string): ValidationUnit {
+    return this.setRequirement({
+      ...this.containsRule,
+      validationFunction: val => validator.contains(val, needle),
+      failureMessage: formatValidationMessage(
+        failureMessage ?? this.containsRule.failureMessage,
+        { needle }
+      ),
+      name: `contains ${needle}`
+    });
   }
-  removeIsEmail(): ValidationUnit {
-    return this.remove(this.generateValidatorRule('isEmail'));
+  removeContains(needle: string): ValidationUnit {
+    return this.remove({
+      ...this.containsRule,
+      name: `contains ${needle}`
+    });
   }
 
-  private generateValidatorRule(
-    validatorFunction: string,
-    failureMessage?: string,
-    name?: string
-  ): ValidationRule {
-    if (!(validatorFunction in validator))
-      throw new Error(
-        'A validator rule must use a function in the validator library.'
-      );
-    return {
-      validationFunction: (val: string): boolean =>
-        validator[validatorFunction](val),
-      failureMessage: failureMessage || '',
-      name: name || validatorFunction,
-      isAsync: false,
-      discrete: false
-    };
+  isEmailRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isEmail',
+    failureMessage: '{name} must be a valid email address.',
+    validationFunction: val => validator.isEmail(val)
+  };
+  isEmail(failureMessage?: string): ValidationUnit {
+    return this.setRequirement({
+      ...this.isEmailRule,
+      failureMessage: failureMessage ?? this.isEmailRule.failureMessage
+    });
+  }
+  removeIsEmail(): ValidationUnit {
+    return this.remove(this.isEmailRule);
   }
 
   private removeCustomRule(
