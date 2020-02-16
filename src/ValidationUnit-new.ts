@@ -238,6 +238,28 @@ export default class ValidationUnit {
     });
   }
 
+  equalsRule: ValidationRule = {
+    ...defaultValidationRule,
+    failureMessage: '{name} must equal "{comparison}."'
+  };
+  equals(comparison: string, failureMessage?: string): ValidationUnit {
+    return this.setRequirement({
+      ...this.equalsRule,
+      validationFunction: val => validator.equals(val, comparison),
+      failureMessage: formatValidationMessage(
+        failureMessage ?? this.equalsRule.failureMessage,
+        { comparison }
+      ),
+      name: `equals ${comparison}`
+    });
+  }
+  removeEquals(comparison: string): ValidationUnit {
+    return this.remove({
+      ...this.equalsRule,
+      name: `equals ${comparison}`
+    });
+  }
+
   isEmailRule: ValidationRule = {
     ...defaultValidationRule,
     name: 'isEmail',

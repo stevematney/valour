@@ -1,14 +1,17 @@
 import ValidationUnit, { ValidationRule } from './ValidationUnit-new';
 
+let unit: ValidationUnit;
+beforeEach(() => {
+  unit = new ValidationUnit();
+});
 describe('constructor', () => {
   it('creates an empty list without any other units', () => {
-    const unit = new ValidationUnit();
     expect(unit.rules).toHaveLength(0);
   });
 
   it('will duplicate the rules of another ValidationUnit', () => {
-    const fakeUnit = new ValidationUnit();
-    fakeUnit.rules = [
+    unit = new ValidationUnit();
+    unit.rules = [
       {
         discrete: true,
         validationFunction: (): boolean => true,
@@ -24,28 +27,21 @@ describe('constructor', () => {
         isAsync: false
       }
     ];
-    expect(new ValidationUnit(fakeUnit).rules).toEqual(fakeUnit.rules);
+    expect(new ValidationUnit(unit).rules).toEqual(unit.rules);
   });
 
   it('will set its valid property to the valid property of an existing ValidationUnit', () => {
-    const fakeUnit = new ValidationUnit();
-    fakeUnit.isValid = true;
-    expect(new ValidationUnit(fakeUnit).isValid).toBeTruthy();
+    unit.isValid = true;
+    expect(new ValidationUnit(unit).isValid).toBeTruthy();
   });
 
   it('will set its messages to the messages of an existing ValidationUnit', () => {
-    const fakeUnit = new ValidationUnit();
-    fakeUnit.messages = ['Test Message', 'Test Message 2'];
-    expect(new ValidationUnit(fakeUnit).messages).toEqual(fakeUnit.messages);
+    unit.messages = ['Test Message', 'Test Message 2'];
+    expect(new ValidationUnit(unit).messages).toEqual(unit.messages);
   });
 });
 
 describe('adding rules', () => {
-  let unit: ValidationUnit;
-  beforeEach(() => {
-    unit = new ValidationUnit();
-  });
-
   it('will not add duplicate rules', () => {
     unit.isEmail().isEmail();
     expect(unit.rules.length).toBe(1);
@@ -58,10 +54,8 @@ describe('adding rules', () => {
 });
 
 describe('runValidation', () => {
-  let unit: ValidationUnit;
   let defaultRule: ValidationRule;
   beforeEach(() => {
-    unit = new ValidationUnit();
     defaultRule = {
       validationFunction: (): boolean => false,
       failureMessage: 'fake message',
@@ -191,9 +185,8 @@ describe('runValidation', () => {
 });
 
 describe('getValidationState', () => {
-  let unit: ValidationUnit;
   beforeEach(() => {
-    unit = new ValidationUnit().isEmail();
+    unit.isEmail();
   });
 
   it('sets valid to true if the current ValidationUnit is not required, the unit has no current value, and valid has no current value', () => {
@@ -238,9 +231,8 @@ describe('getValidationState', () => {
 
 describe('isValidatedBy', () => {
   const matches = ['foo', 'bar'];
-  let unit: ValidationUnit;
   beforeEach(() => {
-    unit = new ValidationUnit().isValidatedBy(
+    unit = unit.isValidatedBy(
       value => !!matches.filter(match => value.includes(match)).length,
       'Value should contain "foo" or "bar".'
     );
@@ -310,14 +302,13 @@ describe('isValidatedBy', () => {
 });
 
 describe('isRequiredWhen', () => {
-  let unit: ValidationUnit;
   let shouldBeRequired: boolean;
   const shouldBeRequiredFunc = () => shouldBeRequired;
   const requiredFailureMessage = '{name} is required.';
 
   beforeEach(() => {
     shouldBeRequired = false;
-    unit = new ValidationUnit().isRequiredWhen(shouldBeRequiredFunc);
+    unit = unit.isRequiredWhen(shouldBeRequiredFunc);
   });
 
   it('fails when the value is not present and it is required', async () => {
@@ -373,9 +364,8 @@ describe('isRequiredWhen', () => {
 });
 
 describe('contains', () => {
-  let unit: ValidationUnit;
   beforeEach(() => {
-    unit = new ValidationUnit().contains('foo');
+    unit = unit.contains('foo');
   });
 
   it('passes when the value is contained', async () => {
@@ -394,5 +384,23 @@ describe('contains', () => {
   it('can be removed by the needle', () => {
     unit.removeContains('foo');
     expect(unit.rules.length).toBe(0);
+  });
+});
+
+describe('equals', () => {
+  beforeEach(() => {
+    unit = unit.equals('one');
+  });
+
+  it('passes when the value is equal', async () => {
+    await unit.runValidation('one', {}, '"One" input');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('fails when the value is not equal', async () => {
+    await unit.runValidation('onex', {}, '"One" input');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual(['"One" input must equal "one."']);
   });
 });
