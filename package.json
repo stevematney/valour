@@ -4,9 +4,9 @@
   "description": "Simple javascript validation for any application",
   "main": "lib/valour.js",
   "scripts": {
-    "test": "mocha --require @babel/register && jest",
-    "test-watch": "mocha --require @babel/register -w",
-    "compile": "eslint src/ test/ && babel -d lib/ src/",
+    "test": "mocha --require @babel/register --extension js --extension ts && jest",
+    "test-watch": "mocha --require @babel/register --extension js --extension ts -w",
+    "compile": "eslint src/ test/ && babel --extensions '.ts' -d lib/ src/ ",
     "prepare": "npm run compile"
   },
   "files": [

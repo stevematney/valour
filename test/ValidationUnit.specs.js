@@ -14,7 +14,7 @@ describe('ValidationUnit', function() {
     });
 
     it('will take a ValidationUnit with existing rules', function() {
-      let fakeUnit = new ValidationUnit();
+      const fakeUnit = new ValidationUnit();
       fakeUnit.rules = [
         {
           forced: true,
@@ -33,8 +33,12 @@ describe('ValidationUnit', function() {
     });
 
     it('will take multiple units with multiple rules and reduce them to a list of rules without duplicates (other than forced funcs)', function() {
-      let forcedRule = { forced: true, func: () => 'yo', generator: () => {} };
-      let finalList = [
+      const forcedRule = {
+        forced: true,
+        func: () => 'yo',
+        generator: () => {}
+      };
+      const finalList = [
         {
           forced: false,
           func: () => 'hello!',
@@ -56,30 +60,30 @@ describe('ValidationUnit', function() {
         forcedRule,
         forcedRule
       ];
-      let unitOne = new ValidationUnit({
+      const unitOne = new ValidationUnit({
         rules: [finalList[0], finalList[1], finalList[2], finalList[3]]
       });
-      let unitTwo = new ValidationUnit({
+      const unitTwo = new ValidationUnit({
         rules: [finalList[1], finalList[2], finalList[3], finalList[1]]
       });
-      let finalUnit = new ValidationUnit(unitOne, unitTwo);
+      const finalUnit = new ValidationUnit(unitOne, unitTwo);
       expect(finalUnit.rules).to.deep.equal(finalList);
     });
 
     it('makes removal rules for each "is" function', function() {
-      var unit = new ValidationUnit().isEmail().isMobilePhone();
+      const unit = new ValidationUnit().isEmail().isMobilePhone();
       expect(unit.removeIsEmail).to.be.ok;
       expect(unit.removeIsMobilePhone).to.be.ok;
     });
 
     it("will set it's valid property to the existing unit's valid property", function() {
-      let fakeUnit = new ValidationUnit();
+      const fakeUnit = new ValidationUnit();
       fakeUnit.valid = true;
       expect(new ValidationUnit(fakeUnit).valid).to.be.true;
     });
 
     it("will set it's messages to the existing unit's messages", function() {
-      let fakeUnit = new ValidationUnit();
+      const fakeUnit = new ValidationUnit();
       fakeUnit.messages = ['Test Message', 'Test Message 2'];
       expect(new ValidationUnit(fakeUnit).messages).to.deep.equal(
         fakeUnit.messages
@@ -95,7 +99,7 @@ describe('ValidationUnit', function() {
   });
 
   describe('requirement chaining', function() {
-    let matches = ['foo', 'bar'];
+    const matches = ['foo', 'bar'];
     beforeEach(function() {
       unit = unit
         .isEmail()
@@ -107,7 +111,7 @@ describe('ValidationUnit', function() {
 
     it('provides multiple invalid messages', function(done) {
       unit.runValidation('nope', {}, 'Email field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.contain(
           'Email field must be a valid email address.'
@@ -121,7 +125,7 @@ describe('ValidationUnit', function() {
 
     it('will fail only one rule', function(done) {
       unit.runValidation('foo', {}, 'Email field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Email field must be a valid email address.'
@@ -129,7 +133,7 @@ describe('ValidationUnit', function() {
       });
 
       unit.runValidation('nope@email.com').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Value should contain "foo" or "bar".'
@@ -157,12 +161,12 @@ describe('ValidationUnit', function() {
 
     describe('when the value is not required', function() {
       it('returns false if the current ValidationUnit value is undefined, null or zero length', function() {
-        let isCheckable = unit.shouldCheckValue(undefined);
+        const isCheckable = unit.shouldCheckValue(undefined);
         expect(isCheckable).to.be.false;
       });
 
       it('returns true if the current ValidationUnit should be evaluated', function() {
-        let isCheckable = unit.shouldCheckValue('working@email.com');
+        const isCheckable = unit.shouldCheckValue('working@email.com');
         expect(isCheckable).to.be.true;
       });
     });
@@ -216,7 +220,7 @@ describe('ValidationUnit', function() {
   });
 
   describe('isValidatedBy', function() {
-    let matches = ['foo', 'bar'];
+    const matches = ['foo', 'bar'];
     beforeEach(function() {
       unit = unit.isValidatedBy(
         value => !!matches.filter(match => value.includes(match)).length,
@@ -281,9 +285,9 @@ describe('ValidationUnit', function() {
   describe('isEventuallyValidatedBy', function() {
     let resolves = [],
       rejects = [];
-    let waitForNonEmpty = setFunc =>
+    const waitForNonEmpty = setFunc =>
       new Promise(res => {
-        let check = () =>
+        const check = () =>
           setTimeout(() => {
             if (setFunc().length) {
               res();
@@ -293,14 +297,14 @@ describe('ValidationUnit', function() {
           }, 10);
         check();
       });
-    let callResolve = () => {
+    const callResolve = () => {
       waitForNonEmpty(() => resolves).then(() => {
         rejects.shift();
         resolves.shift()();
       });
     };
 
-    let callReject = () => {
+    const callReject = () => {
       waitForNonEmpty(() => rejects).then(() => {
         resolves.shift();
         rejects.shift()();
@@ -564,7 +568,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the value is not equal', function(done) {
       unit.runValidation('onex', {}, '"One" input').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           '"One" input must equal "one."'
@@ -600,7 +604,7 @@ describe('ValidationUnit', function() {
           'This guy'
         )
         .then(() => {
-          let result = unit.getState();
+          const result = unit.getState();
           expect(result.valid).to.be.false;
           expect(result.messages).to.deep.equal([
             'This guy must be equal to confirmation.'
@@ -631,7 +635,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is before the given date', function(done) {
       unit.runValidation('1/1/2013', {}, 'Date input').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Date input must be after 1/1/2014.'
@@ -662,7 +666,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is after the given date', function(done) {
       unit.runValidation('1/2/2016', {}, 'Date input').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Date input must be before 1/1/2016.'
@@ -686,7 +690,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the value is not only alphabetical', function(done) {
       unit.runValidation('abc123', {}, 'Alpha input').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Alpha input must use only alphabetical characters.'
@@ -712,7 +716,7 @@ describe('ValidationUnit', function() {
       unit
         .runValidation('abc123, and you', {}, 'Alphanumeric input')
         .then(() => {
-          let result = unit.getState();
+          const result = unit.getState();
           expect(result.valid).to.be.false;
           expect(result.messages).to.deep.equal([
             'Alphanumeric input must use only alphanumeric characters.'
@@ -736,7 +740,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the string has more than ascii characters', function(done) {
       unit.runValidation('nope! ӂ', {}, 'ASCII field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'ASCII field must use only ASCII characters.'
@@ -760,7 +764,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the string is not base64 encoded', function(done) {
       unit.runValidation('nope!', {}, 'Base64 field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Base64 field must be base64 encoded.'
@@ -798,7 +802,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the string is not base64 encoded', function(done) {
       unit.runValidation('nope!', {}, 'Boolean field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Boolean field must be a boolean value.'
@@ -822,7 +826,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the string is the incorrect byte length', function(done) {
       unit.runValidation('o', {}, 'Bytelength field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Bytelength field must have a minimum byte length of 3.'
@@ -860,7 +864,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the number is not a credit card number', function(done) {
       unit.runValidation('4024-0071-7144-473', {}, 'CC field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'CC field must be a credit card number.'
@@ -889,7 +893,7 @@ describe('ValidationUnit', function() {
     describe('the failure message', function() {
       it('fails with a correct validation message, symbol first by default, when required', function(done) {
         unit.runValidation('$100', {}, 'Currency field').then(() => {
-          let result = unit.getState();
+          const result = unit.getState();
           expect(result.valid).to.be.false;
           expect(result.messages).to.deep.equal([
             'Currency field must be in the format "€1,000.00".'
@@ -906,7 +910,7 @@ describe('ValidationUnit', function() {
           include_extra_info: false
         });
         unit.runValidation('$100', {}, 'Currency field').then(() => {
-          let result = unit.getState();
+          const result = unit.getState();
           expect(result.valid).to.be.false;
           expect(result.messages).to.deep.equal([
             'Currency field must be in the format "1,000.00€".'
@@ -920,7 +924,7 @@ describe('ValidationUnit', function() {
           symbol: '€'
         });
         unit.runValidation('$100', {}, 'Currency field').then(() => {
-          let result = unit.getState();
+          const result = unit.getState();
           expect(result.valid).to.be.false;
           expect(result.messages).to.deep.equal([
             'Currency field must be in the format "1,000.00". (Currency symbol (€) not required.)'
@@ -935,7 +939,7 @@ describe('ValidationUnit', function() {
           require_symbol: true
         });
         unit.runValidation('$100', {}, 'Currency field').then(() => {
-          let result = unit.getState();
+          const result = unit.getState();
           expect(result.valid).to.be.false;
           expect(result.messages).to.deep.equal([
             'Currency field must be in the format "€1,000.00". (Currency symbol (€) is required.)'
@@ -960,7 +964,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a date', function(done) {
       unit.runValidation('not a date', {}, 'Date field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal(['Date field must be a date.']);
         done();
@@ -982,7 +986,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a decimal number', function(done) {
       unit.runValidation('Hola', {}, 'Decimal field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Decimal field must represent a decimal number.'
@@ -1006,7 +1010,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not divisble by the number', function(done) {
       unit.runValidation('3', {}, 'Divisible field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Divisible field must be divisible by 2.'
@@ -1030,7 +1034,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not an FQDN', function(done) {
       unit.runValidation('nope', {}, 'Domain name field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Domain name field must be a fully qualified domain name.'
@@ -1054,7 +1058,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a float', function(done) {
       unit.runValidation('nope', {}, 'Float field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal(['Float field must be a float.']);
         done();
@@ -1076,7 +1080,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value does not contain full width characters', function(done) {
       unit.runValidation('nope', {}, 'Fullwidth field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Fullwidth field must contain fullwidth characters.'
@@ -1100,7 +1104,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value does not contain halfwidth characters', function(done) {
       unit.runValidation('Ｎｏｐｅ', {}, 'Halfwidth field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Halfwidth field must contain halfwidth characters.'
@@ -1124,7 +1128,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value does not contain halfwidth characters', function(done) {
       unit.runValidation('Ｎｏｐｅ', {}, 'Variable width field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Variable width field must contain fullwidth and halfwidth characters.'
@@ -1135,7 +1139,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value does not contain fullwidth characters', function(done) {
       unit.runValidation('nope', {}, 'Variable width field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Variable width field must contain fullwidth and halfwidth characters.'
@@ -1159,7 +1163,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a hex color', function(done) {
       unit.runValidation('nope', {}, 'Hex Color field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Hex Color field must be a hex color.'
@@ -1183,7 +1187,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a hex number', function(done) {
       unit.runValidation('hihihi', {}, 'Hexadecimal field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Hexadecimal field must be a hexadecimal number.'
@@ -1207,7 +1211,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not an IP address', function(done) {
       unit.runValidation('nope', {}, 'IP field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'IP field must be an IP address.'
@@ -1231,7 +1235,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not an ISBN', function(done) {
       unit.runValidation('nope', {}, 'ISBN field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal(['ISBN field must be an ISBN.']);
         done();
@@ -1253,7 +1257,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not an ISIN', function(done) {
       unit.runValidation('nope', {}, 'ISIN field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal(['ISIN field must be an ISIN.']);
         done();
@@ -1275,7 +1279,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not an ISO6801', function(done) {
       unit.runValidation('nope', {}, 'ISO6801 field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'ISO6801 field must be an ISO6801 date.'
@@ -1299,7 +1303,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not in the given list', function(done) {
       unit.runValidation('nope', {}, 'Listed field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Listed field must be contained in ["1","2","3","4","5"].'
@@ -1323,7 +1327,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not an integer', function(done) {
       unit.runValidation('1.01', {}, 'Integer field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Integer field must be an integer.'
@@ -1347,7 +1351,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not an integer', function(done) {
       unit.runValidation('nope', {}, 'JSON field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal(['JSON field must be JSON.']);
         done();
@@ -1369,7 +1373,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not at lest the given length', function(done) {
       unit.runValidation('no', {}, 'Length field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Length field must be at least 4 characters.'
@@ -1393,7 +1397,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not lowercase', function(done) {
       unit.runValidation('NOPE', {}, 'Lowercase field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Lowercase field must be lowercase.'
@@ -1417,7 +1421,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not lowercase', function(done) {
       unit.runValidation('nope', {}, 'Uppercase field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Uppercase field must be uppercase.'
@@ -1441,7 +1445,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a phone number', function(done) {
       unit.runValidation('nope', {}, 'Phone number field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Phone number field must be a phone number.'
@@ -1465,7 +1469,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a mongo id', function(done) {
       unit.runValidation('nope', {}, 'Mongo id field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Mongo id field must be a MongoDB id.'
@@ -1489,7 +1493,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value does not contain multibyte characters', function(done) {
       unit.runValidation(' ', {}, 'Multibyte field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Multibyte field must contain multibyte characters.'
@@ -1513,7 +1517,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not numeric', function(done) {
       unit.runValidation('nope', {}, 'Numeric field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Numeric field must be numeric.'
@@ -1537,7 +1541,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a surrogate pair', function(done) {
       unit.runValidation('nope', {}, 'Surrogate pair field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Surrogate pair field must be a surrogate pair.'
@@ -1561,7 +1565,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a url', function(done) {
       unit.runValidation('nope', {}, 'Url field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal(['Url field must be a url.']);
         done();
@@ -1583,7 +1587,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value is not a UUID', function(done) {
       unit.runValidation('nope', {}, 'UUID field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal(['UUID field must be a UUID.']);
         done();
@@ -1604,7 +1608,7 @@ describe('ValidationUnit', function() {
 
     it('fails when the given value does not match', function(done) {
       unit.runValidation('nope', {}, 'Yes field').then(() => {
-        let result = unit.getState();
+        const result = unit.getState();
         expect(result.valid).to.be.false;
         expect(result.messages).to.deep.equal([
           'Yes field must match /^Yes$/.'
@@ -1657,7 +1661,7 @@ describe('ValidationUnit', function() {
     });
 
     it("sets the messages property on the unit to the passed in 'messages' parameter", function() {
-      let emptyArray = [];
+      const emptyArray = [];
       expect(unit.messages).to.be.undefined;
       unit.setState(null, null);
       expect(unit.messages).to.be.null;

@@ -446,3 +446,53 @@ describe('equalsOther', () => {
     expect(unit.rules.length).toBe(0);
   });
 });
+
+describe('isAfter', () => {
+  beforeEach(() => {
+    unit = unit.isAfter('1/1/2014');
+  });
+
+  it('passes when the value is after the given date', async () => {
+    await unit.runValidation('1/1/2015', {}, 'Date input');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('fails when the given value is before the given date', async () => {
+    await unit.runValidation('1/1/2013', {}, 'Date input');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'Date input must be a date after 1/1/2014.'
+    ]);
+  });
+
+  it('can be removed by date', () => {
+    unit.removeIsAfter('1/1/2014');
+    expect(unit.rules.length).toBe(0);
+  });
+});
+
+describe('isBefore', () => {
+  beforeEach(() => {
+    unit = unit.isBefore('1/1/2014');
+  });
+
+  it('passes when the value is after the given date', async () => {
+    await unit.runValidation('1/1/2013', {}, 'Date input');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('fails when the given value is before the given date', async () => {
+    await unit.runValidation('1/1/2015', {}, 'Date input');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'Date input must be a date before 1/1/2014.'
+    ]);
+  });
+
+  it('can be removed by date', () => {
+    unit.removeIsBefore('1/1/2014');
+    expect(unit.rules.length).toBe(0);
+  });
+});

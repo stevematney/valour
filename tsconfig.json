@@ -1,5 +1,12 @@
 {
   "compilerOptions": {
-    "lib": ["esnext", "dom"]
+    "lib": ["esnext", "dom"],
+    "allowJs": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "target": "esnext",
+    "module": "ESNext",
+    "noEmit": "true",
+    "isolatedModules": true
   }
 }

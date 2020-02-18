@@ -5,7 +5,7 @@ import formatValidationMessage from './util/format-validation-message';
 type DynamicObject = { [k: string]: any };
 export interface ValidationRule {
   validationFunction: (
-    value?: string,
+    value: string,
     allValues?: DynamicObject
   ) => boolean | Promise<boolean>;
   failureMessage: string;
@@ -42,16 +42,16 @@ interface ValidationResult {
 }
 
 interface ValidationState {
-  isValid: boolean;
-  messages: string[];
+  isValid?: boolean;
+  messages?: string[];
   waiting: boolean;
 }
 
 export default class ValidationUnit {
   rules: ValidationRule[];
-  isValid: boolean;
-  value: string;
-  messages: string[];
+  isValid?: boolean;
+  value?: string;
+  messages?: string[];
   waiting = false;
   constructor(...existingUnits: ValidationUnit[]) {
     const validationState = existingUnits
@@ -60,7 +60,10 @@ export default class ValidationUnit {
     this.isValid = validationState?.isValid;
     this.messages = validationState?.messages;
 
-    const getDistinctRules = (finalRules, rule): ValidationRule[] => {
+    const getDistinctRules = (
+      finalRules: ValidationRule[],
+      rule: ValidationRule
+    ): ValidationRule[] => {
       const hasEquivalent = finalRules.some(
         existingRule => existingRule.name === rule.name
       );
@@ -68,10 +71,16 @@ export default class ValidationUnit {
       return [...finalRules, rule];
     };
     this.rules = existingUnits
-      .reduce((rules, unit) => rules.concat(unit.rules), [])
+      .reduce(
+        (rules: ValidationRule[], unit: ValidationUnit) => [
+          ...rules,
+          ...unit.rules
+        ],
+        []
+      )
       .reduce(getDistinctRules, []);
   }
-  runValidation(
+  async runValidation(
     value: string,
     allValues: DynamicObject,
     name: string
@@ -79,34 +88,14 @@ export default class ValidationUnit {
     if (this.waiting && this.value === value) return;
     this.waiting = true;
 
-    return this.checkRules<Promise<void>>(value, allValues, name, async () => {
-      const results = await Promise.all<ValidationResult>(
-        this.rules.map(async rule => {
-          const isValid = await rule.validationFunction(value, allValues);
-          return {
-            isValid,
-            message:
-              !isValid &&
-              rule.failureMessage &&
-              formatValidationMessage(rule.failureMessage, { name })
-          };
-        })
-      );
-      this.setValidity(results);
-      this.waiting = false;
-    });
-  }
-  runValidationSync(
-    value: string,
-    allValues: DynamicObject,
-    name: string
-  ): void {
-    return this.checkRules<void>(value, allValues, name, () => {
-      const results = this.rules
-        .filter(rule => !rule.isAsync)
-        .map(
-          (rule: BooleanValidationRule): ValidationResult => {
-            const isValid = rule.validationFunction(value, allValues);
+    return this.checkRules<Promise<void>>(
+      value,
+      allValues,
+      name,
+      async () => {
+        const results = await Promise.all<ValidationResult>(
+          this.rules.map(async rule => {
+            const isValid = await rule.validationFunction(value, allValues);
             return {
               isValid,
               message:
@@ -114,10 +103,45 @@ export default class ValidationUnit {
                 rule.failureMessage &&
                 formatValidationMessage(rule.failureMessage, { name })
             };
-          }
+          })
         );
-      this.setValidity(results);
-    });
+        this.setValidity(results);
+        this.waiting = false;
+      },
+      () => Promise.resolve(undefined)
+    );
+  }
+  runValidationSync(
+    value: string,
+    allValues: DynamicObject,
+    name: string
+  ): void {
+    this.checkRules<void>(
+      value,
+      allValues,
+      name,
+      () => {
+        const results = this.rules
+          .filter(rule => !rule.isAsync)
+          .map(
+            (rule: ValidationRule): ValidationResult => {
+              const isValid = rule.validationFunction(
+                value,
+                allValues
+              ) as boolean;
+              return {
+                isValid,
+                message:
+                  !isValid &&
+                  rule.failureMessage &&
+                  formatValidationMessage(rule.failureMessage, { name })
+              };
+            }
+          );
+        this.setValidity(results);
+      },
+      () => undefined
+    );
   }
 
   initializeState(isValid: boolean, messages: string[]): ValidationUnit {
@@ -129,7 +153,9 @@ export default class ValidationUnit {
   getValidationState(): ValidationState {
     const { isValid, messages, waiting, value } = this;
     let actuallyIsValid =
-      !this.shouldCheckValue(value) && value === undefined ? true : isValid;
+      !this.shouldCheckValue(value as string) && value === undefined
+        ? true
+        : isValid;
     if (waiting) {
       actuallyIsValid = undefined;
     }
@@ -216,6 +242,25 @@ export default class ValidationUnit {
     });
   }
 
+  equalsOther(other: string, failureMessage?: string): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      validationFunction: (value, allValues) =>
+        validator.equals(value, allValues && allValues[other]),
+      failureMessage: formatValidationMessage(
+        failureMessage || '{name} must be equal to {other}.',
+        { other }
+      ),
+      name: `equalsOther ${other}`
+    });
+  }
+  removeEqualsOther(other: string): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `equalsOther ${other}`
+    });
+  }
+
   containsRule: ValidationRule = {
     ...defaultValidationRule,
     failureMessage: '{name} must contain "{needle}."'
@@ -223,7 +268,7 @@ export default class ValidationUnit {
   contains(needle: string, failureMessage?: string): ValidationUnit {
     return this.setRequirement({
       ...this.containsRule,
-      validationFunction: val => validator.contains(val, needle),
+      validationFunction: (value: string) => validator.contains(value, needle),
       failureMessage: formatValidationMessage(
         failureMessage ?? this.containsRule.failureMessage,
         { needle }
@@ -276,22 +321,39 @@ export default class ValidationUnit {
     return this.remove(this.isEmailRule);
   }
 
-  equalsOther(other: string, failureMessage?: string): ValidationUnit {
+  isBefore(date: string, failureMessage?: string): ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
-      validationFunction: (value, allValues) =>
-        validator.equals(value, allValues[other]),
+      name: `isBefore ${date}`,
       failureMessage: formatValidationMessage(
-        failureMessage || '{name} must be equal to {other}.',
-        { other }
+        failureMessage || '{name} must be a date before {date}.',
+        { date }
       ),
-      name: `equalsOther ${other}`
+      validationFunction: val => validator.isBefore(val, date)
     });
   }
-  removeEqualsOther(other: string): ValidationUnit {
+  removeIsBefore(date: string): ValidationUnit {
     return this.remove({
       ...defaultValidationRule,
-      name: `equalsOther ${other}`
+      name: `isBefore ${date}`
+    });
+  }
+
+  isAfter(date: string, failureMessage?: string): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isAfter ${date}`,
+      failureMessage: formatValidationMessage(
+        failureMessage || '{name} must be a date after {date}.',
+        { date }
+      ),
+      validationFunction: val => validator.isAfter(val, date)
+    });
+  }
+  removeIsAfter(date: string): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isAfter ${date}`
     });
   }
 
@@ -328,7 +390,8 @@ export default class ValidationUnit {
       value: string,
       allValues: DynamicObject,
       name: string
-    ) => T
+    ) => T,
+    earlyReturnFunction: () => T
   ): T {
     this.value = value;
     this.isValid = undefined;
@@ -336,7 +399,7 @@ export default class ValidationUnit {
 
     if (!this.shouldCheckValue(value)) {
       this.isValid = true;
-      return;
+      return earlyReturnFunction();
     }
 
     return checkingFunction(value, allValues, name);
