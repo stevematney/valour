@@ -496,3 +496,38 @@ describe('isBefore', () => {
     expect(unit.rules.length).toBe(0);
   });
 });
+
+describe('isByteLength', function() {
+  beforeEach(function() {
+    unit = unit.isByteLength(3);
+  });
+
+  it('passes when the string is the correct byte length', async () => {
+    await unit.runValidation('foo', {}, 'Bytelength field');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('fails when the string is the incorrect byte length', async () => {
+    await unit.runValidation('o', {}, 'Bytelength field');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'Bytelength field must have a minimum byte length of 3.'
+    ]);
+  });
+
+  it('fails when the string is greater than the max byte length', async () => {
+    unit = unit.isByteLength(0, 3, '{name} must be shorter than 3 bytes.');
+    await unit.runValidation('food', {}, 'Bytelength field');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'Bytelength field must be shorter than 3 bytes.'
+    ]);
+  });
+
+  it('can be removed by number', () => {
+    unit.removeIsByteLength(3);
+    expect(unit.rules.length).toBe(0);
+  });
+});

@@ -440,6 +440,25 @@ export default class ValidationUnit {
     });
   }
 
+  isByteLength(
+    min = 0,
+    max = Number.MAX_SAFE_INTEGER,
+    failureMessage = '{name} must have a minimum byte length of {min}.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isByteLength ${min} ${max}`,
+      failureMessage: formatValidationMessage(failureMessage, { min, max }),
+      validationFunction: val => validator.isByteLength(val, { min, max })
+    });
+  }
+  removeIsByteLength(min = 0, max = Number.MAX_SAFE_INTEGER): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isByteLength ${min} ${max}`
+    });
+  }
+
   private removeCustomRule(
     criteria: BooleanValidationFunction | AsyncValidationFunction | string
   ): ValidationUnit {
