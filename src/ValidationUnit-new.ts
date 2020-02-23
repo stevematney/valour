@@ -242,15 +242,15 @@ export default class ValidationUnit {
     });
   }
 
-  equalsOther(other: string, failureMessage?: string): ValidationUnit {
+  equalsOther(
+    other: string,
+    failureMessage = '{name} must be equal to {other}.'
+  ): ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
       validationFunction: (value, allValues) =>
         validator.equals(value, allValues && allValues[other]),
-      failureMessage: formatValidationMessage(
-        failureMessage || '{name} must be equal to {other}.',
-        { other }
-      ),
+      failureMessage: formatValidationMessage(failureMessage, { other }),
       name: `equalsOther ${other}`
     });
   }
@@ -321,14 +321,14 @@ export default class ValidationUnit {
     return this.remove(this.isEmailRule);
   }
 
-  isBefore(date: string, failureMessage?: string): ValidationUnit {
+  isBefore(
+    date: string,
+    failureMessage = '{name} must be a date before {date}.'
+  ): ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
       name: `isBefore ${date}`,
-      failureMessage: formatValidationMessage(
-        failureMessage || '{name} must be a date before {date}.',
-        { date }
-      ),
+      failureMessage: formatValidationMessage(failureMessage, { date }),
       validationFunction: val => validator.isBefore(val, date)
     });
   }
@@ -339,14 +339,14 @@ export default class ValidationUnit {
     });
   }
 
-  isAfter(date: string, failureMessage?: string): ValidationUnit {
+  isAfter(
+    date: string,
+    failureMessage = '{name} must be a date after {date}.'
+  ): ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
       name: `isAfter ${date}`,
-      failureMessage: formatValidationMessage(
-        failureMessage || '{name} must be a date after {date}.',
-        { date }
-      ),
+      failureMessage: formatValidationMessage(failureMessage, { date }),
       validationFunction: val => validator.isAfter(val, date)
     });
   }
@@ -354,6 +354,89 @@ export default class ValidationUnit {
     return this.remove({
       ...defaultValidationRule,
       name: `isAfter ${date}`
+    });
+  }
+
+  isAlpha(
+    failureMessage = '{name} must use only alphabetical characters.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isAlpha`,
+      failureMessage: failureMessage,
+      validationFunction: val => validator.isAlpha(val)
+    });
+  }
+  removeIsAlpha(): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isAlpha`
+    });
+  }
+
+  isAlphanumeric(
+    failureMessage = '{name} must use only alphanumeric characters.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isAlphanumeric`,
+      failureMessage: failureMessage,
+      validationFunction: val => validator.isAlphanumeric(val)
+    });
+  }
+  removeIsAlphanumeric(): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isAlphanumeric`
+    });
+  }
+
+  isAscii(
+    failureMessage = '{name} must use only ASCII characters.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isAscii`,
+      failureMessage: failureMessage,
+      validationFunction: val => validator.isAscii(val)
+    });
+  }
+  removeIsAscii(): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isAscii`
+    });
+  }
+
+  isBase64(failureMessage = '{name} must be base64 encoded.'): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isBase64`,
+      failureMessage: failureMessage,
+      validationFunction: val => validator.isBase64(val)
+    });
+  }
+  removeIsBase64(): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isBase64`
+    });
+  }
+
+  isBoolean(
+    failureMessage = '{name} must be a boolean value.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isBoolean`,
+      failureMessage: failureMessage,
+      validationFunction: val => validator.isBoolean(val)
+    });
+  }
+  removeIsBoolean(): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isBoolean`
     });
   }
 
