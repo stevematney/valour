@@ -459,6 +459,20 @@ export default class ValidationUnit {
     });
   }
 
+  private creditCardRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: `isCreditCard`,
+    validationFunction: val => validator.isCreditCard(val)
+  };
+  isCreditCard(
+    failureMessage = '{name} must be a credit card number.'
+  ): ValidationUnit {
+    return this.setRequirement({ ...this.creditCardRule, failureMessage });
+  }
+  removeisCreditCard(): ValidationUnit {
+    return this.remove(this.creditCardRule);
+  }
+
   private removeCustomRule(
     criteria: BooleanValidationFunction | AsyncValidationFunction | string
   ): ValidationUnit {
