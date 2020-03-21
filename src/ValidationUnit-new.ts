@@ -505,6 +505,10 @@ export default class ValidationUnit {
   }
   /* eslint-enable @typescript-eslint/camelcase */
 
+  private currencyRule = {
+    ...defaultValidationRule,
+    name: `isCurrency`
+  };
   isCurrency(
     options: validator.IsCurrencyOptions = defaultCurrencyOptions,
     failureMessage = '{name} must be in the format "{format}".'
@@ -516,11 +520,61 @@ export default class ValidationUnit {
       ...computedOptions
     });
     return this.setRequirement({
-      ...defaultValidationRule,
-      name: `isCurrency`,
+      ...this.currencyRule,
       failureMessage: messageWithFormat,
       validationFunction: val => validator.isCurrency(val, options)
     });
+  }
+  removeIsCurrency(): ValidationUnit {
+    return this.remove(this.currencyRule);
+  }
+
+  private dateRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: `isDate`,
+    validationFunction: val => validator.isCreditCard(val)
+  };
+  isDate(failureMessage = '{name} must be a date.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.dateRule,
+      failureMessage
+    });
+  }
+  removeIsDate(): ValidationUnit {
+    return this.remove(this.dateRule);
+  }
+
+  private decimalRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: `isDate`,
+    validationFunction: val => validator.isDecimal(val)
+  };
+  isDecimal(failureMessage = '{name} must be a date.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.decimalRule,
+      failureMessage
+    });
+  }
+  removeIsDecimal(): ValidationUnit {
+    return this.remove(this.decimalRule);
+  }
+
+  private divisibleRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: `isDivisibleBy`
+  };
+  isDivisibleBy(
+    divisor: number,
+    failureMessage = '{name} must be divisible by {number}.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.divisibleRule,
+      failureMessage: formatValidationMessage(failureMessage, divisor),
+      validationFunction: val => validator.isDivisibleBy(val, divisor)
+    });
+  }
+  removeIsDivisibleBy(): ValidationUnit {
+    return this.remove(this.divisibleRule);
   }
 
   private removeCustomRule(
