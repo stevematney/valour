@@ -36,6 +36,27 @@ const defaultValidationRule: BooleanValidationRule = {
   isAsync: false
 };
 
+/* eslint-disable @typescript-eslint/camelcase */
+// copied from https://github.com/validatorjs/validator.js/blob/master/src/lib/isCurrency.js
+const defaultCurrencyOptions: validator.IsCurrencyOptions = {
+  symbol: '$',
+  require_symbol: false,
+  allow_space_after_symbol: false,
+  symbol_after_digits: false,
+  allow_negatives: true,
+  parens_for_negatives: false,
+  negative_sign_before_digits: false,
+  negative_sign_after_digits: false,
+  allow_negative_sign_placeholder: false,
+  thousands_separator: ',',
+  decimal_separator: '.',
+  allow_decimal: true,
+  require_decimal: false,
+  digits_after_decimal: [2],
+  allow_space_after_digits: false
+};
+/* eslint-enable @typescript-eslint/camelcase */
+
 interface ValidationResult {
   isValid: boolean;
   message: string;
@@ -363,7 +384,7 @@ export default class ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
       name: `isAlpha`,
-      failureMessage: failureMessage,
+      failureMessage,
       validationFunction: val => validator.isAlpha(val)
     });
   }
@@ -380,7 +401,7 @@ export default class ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
       name: `isAlphanumeric`,
-      failureMessage: failureMessage,
+      failureMessage,
       validationFunction: val => validator.isAlphanumeric(val)
     });
   }
@@ -397,7 +418,7 @@ export default class ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
       name: `isAscii`,
-      failureMessage: failureMessage,
+      failureMessage,
       validationFunction: val => validator.isAscii(val)
     });
   }
@@ -412,7 +433,7 @@ export default class ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
       name: `isBase64`,
-      failureMessage: failureMessage,
+      failureMessage,
       validationFunction: val => validator.isBase64(val)
     });
   }
@@ -429,7 +450,7 @@ export default class ValidationUnit {
     return this.setRequirement({
       ...defaultValidationRule,
       name: `isBoolean`,
-      failureMessage: failureMessage,
+      failureMessage,
       validationFunction: val => validator.isBoolean(val)
     });
   }
@@ -471,6 +492,35 @@ export default class ValidationUnit {
   }
   removeisCreditCard(): ValidationUnit {
     return this.remove(this.creditCardRule);
+  }
+
+  /* eslint-disable @typescript-eslint/camelcase */
+  private getCurrencyFormat(options: validator.IsCurrencyOptions): string {
+    const symbol = options.require_symbol ? options.symbol : '';
+    const symbolStart = options.symbol_after_digits ? '' : symbol;
+    const symbolEnd = options.symbol_after_digits ? symbol : '';
+    const { thousands_separator, decimal_separator } = options;
+    const format = `${symbolStart}1${thousands_separator}000${decimal_separator}00${symbolEnd}`;
+    return format;
+  }
+  /* eslint-enable @typescript-eslint/camelcase */
+
+  isCurrency(
+    options: validator.IsCurrencyOptions = defaultCurrencyOptions,
+    failureMessage = '{name} must be in the format "{format}".'
+  ): ValidationUnit {
+    const computedOptions = { ...defaultCurrencyOptions, ...options };
+    const format = this.getCurrencyFormat(computedOptions);
+    const messageWithFormat = formatValidationMessage(failureMessage, {
+      format,
+      ...computedOptions
+    });
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isCurrency`,
+      failureMessage: messageWithFormat,
+      validationFunction: val => validator.isCurrency(val, options)
+    });
   }
 
   private removeCustomRule(

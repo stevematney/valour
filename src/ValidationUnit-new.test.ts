@@ -531,3 +531,54 @@ describe('isByteLength', function() {
     expect(unit.rules.length).toBe(0);
   });
 });
+
+/* eslint-disable @typescript-eslint/camelcase */
+describe('isCurrency', () => {
+  beforeEach(() => {
+    unit = unit.isCurrency({
+      symbol: '€',
+      require_symbol: true
+    });
+  });
+
+  it('passes when the value is currency in the proper format', async () => {
+    await unit.runValidation('€1,000', {}, 'currency-test');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('fails with a correct validation message, symbol first by default, when required', async () => {
+    await unit.runValidation('$100', {}, 'Currency field');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'Currency field must be in the format "€1,000.00".'
+    ]);
+  });
+
+  it('fails with a correct validation message, symbol after when configured that way and required', async () => {
+    unit = new ValidationUnit().isCurrency({
+      symbol: '€',
+      require_symbol: true,
+      symbol_after_digits: true
+    });
+    await unit.runValidation('$100', {}, 'Currency field');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'Currency field must be in the format "1,000.00€".'
+    ]);
+  });
+
+  it('fails with a correct validation message when the symbol is not required', async () => {
+    unit = new ValidationUnit().isCurrency({
+      symbol: '€'
+    });
+    await unit.runValidation('$100', {}, 'Currency field');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'Currency field must be in the format "1,000.00".'
+    ]);
+  });
+});
+/* eslint-enable @typescript-eslint/camelcase */
