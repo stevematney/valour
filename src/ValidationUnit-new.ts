@@ -55,6 +55,12 @@ const defaultCurrencyOptions: validator.IsCurrencyOptions = {
   digits_after_decimal: [2],
   allow_space_after_digits: false
 };
+
+const defaultFqdnOptions: validator.IsFQDNOptions = {
+  require_tld: true,
+  allow_underscores: false,
+  allow_trailing_dot: false
+};
 /* eslint-enable @typescript-eslint/camelcase */
 
 interface ValidationResult {
@@ -575,6 +581,193 @@ export default class ValidationUnit {
   }
   removeIsDivisibleBy(): ValidationUnit {
     return this.remove(this.divisibleRule);
+  }
+
+  private fqdnRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: `isDivisibleBy`
+  };
+  isFQDN(
+    options = defaultFqdnOptions,
+    failureMessage = '{name} must be a fully qualified domain name.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.divisibleRule,
+      failureMessage,
+      validationFunction: val => validator.isFQDN(val, options)
+    });
+  }
+  removeIsFQDN(): ValidationUnit {
+    return this.remove(this.fqdnRule);
+  }
+
+  private floatRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isFloat'
+  };
+  isFloat(
+    options: validator.IsFloatOptions = {},
+    failureMessage = '{name} must be a float.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.floatRule,
+      validationFunction: val => validator.isFloat(val, options),
+      failureMessage
+    });
+  }
+  removeIsFloat(): ValidationUnit {
+    return this.remove(this.floatRule);
+  }
+
+  private fullWidthRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isFullWidth',
+    validationFunction: val => validator.isFullWidth(val)
+  };
+  isFullWidth(
+    failureMessage = '{name} must contain fullwidth characters.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.fullWidthRule,
+      failureMessage
+    });
+  }
+  removeIsFullWidth(): ValidationUnit {
+    return this.remove(this.fullWidthRule);
+  }
+
+  private halfWidthRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isHalfWidth',
+    validationFunction: val => validator.isHalfWidth(val)
+  };
+  isHalfWidth(
+    failureMessage = '{name} must contain halfwidth characters.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.halfWidthRule,
+      failureMessage
+    });
+  }
+  removeIsHalfWidth(): ValidationUnit {
+    return this.remove(this.halfWidthRule);
+  }
+
+  private variableWidthRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'ishalfWidth',
+    validationFunction: val => validator.isVariableWidth(val)
+  };
+  isVariableWidth(
+    failureMessage = '{name} must contain fullwidth and halfwidth ccharacters.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.variableWidthRule,
+      failureMessage
+    });
+  }
+  removeIsVariableWidth(): ValidationUnit {
+    return this.remove(this.variableWidthRule);
+  }
+
+  private hexColorRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isHexColor',
+    validationFunction: val => validator.isHexColor(val)
+  };
+  isHexColor(failureMessage = '{name} must be a hex color.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.hexColorRule,
+      failureMessage
+    });
+  }
+  removeIsHexColor(): ValidationUnit {
+    return this.remove(this.hexColorRule);
+  }
+
+  private hexadecimalRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isHexadecimal',
+    validationFunction: val => validator.isHexadecimal(val)
+  };
+  isHexadecimal(
+    failureMessage = '{name} must be a hexadecimal number.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.hexadecimalRule,
+      failureMessage
+    });
+  }
+  removeIsHexadecimal(): ValidationUnit {
+    return this.remove(this.hexadecimalRule);
+  }
+
+  private ipRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isIP'
+  };
+  isIP(
+    failureMessage = '{name} must be an IP address.',
+    version = undefined
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.ipRule,
+      validationFunction: val => validator.isIP(val, version),
+      failureMessage
+    });
+  }
+  removeIsIP(): ValidationUnit {
+    return this.remove(this.ipRule);
+  }
+
+  private isbnRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isISBN'
+  };
+  isISBN(
+    failureMessage = '{name} must be an ISBN.',
+    version?: '10' | '13'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.isbnRule,
+      failureMessage,
+      validationFunction: val => validator.isISBN(val, version)
+    });
+  }
+  removeIsISBN(): ValidationUnit {
+    return this.remove(this.isbnRule);
+  }
+
+  private isinRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isISIN',
+    validationFunction: val => validator.isISIN(val)
+  };
+  isISIN(failureMessage = '{name} must be an ISIN.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.isinRule,
+      failureMessage
+    });
+  }
+  removeIsISIN(): ValidationUnit {
+    return this.remove(this.isinRule);
+  }
+
+  private iso8601Rule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isISO8601',
+    validationFunction: val => validator.isISO8601(val)
+  };
+  isISO8601(
+    failureMessage = '{name} must be an ISO6801 date.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.iso8601Rule,
+      failureMessage
+    });
+  }
+  removeIsISO8601(): ValidationUnit {
+    return this.remove(this.iso8601Rule);
   }
 
   private removeCustomRule(
