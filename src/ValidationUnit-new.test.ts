@@ -582,3 +582,29 @@ describe('isCurrency', () => {
   });
 });
 /* eslint-enable @typescript-eslint/camelcase */
+
+describe('isIn', () => {
+  const containedArray = ['1', '2', '3', '4', '5'];
+  beforeEach(() => {
+    unit = unit.isIn(containedArray);
+  });
+
+  it('passes when the given value is in the given list', async () => {
+    await unit.runValidation('1', {}, 'Listed field');
+    expect(unit.getValidationState().isValid).toBeTruthy();
+  });
+
+  it('fails when the given value is not in the given list', async () => {
+    await unit.runValidation('nope', {}, 'Listed field');
+    const result = unit.getValidationState();
+    expect(result.isValid).toBeFalsy();
+    expect(result.messages).toEqual([
+      'Listed field must be contained in ["1","2","3","4","5"].'
+    ]);
+  });
+
+  it('can remove the validation', () => {
+    unit.removeIsIn(containedArray);
+    expect(unit.rules.length).toBe(0);
+  });
+});

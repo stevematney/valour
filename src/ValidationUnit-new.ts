@@ -770,6 +770,27 @@ export default class ValidationUnit {
     return this.remove(this.iso8601Rule);
   }
 
+  isIn(
+    values: any[],
+    failureMessage = '{name} must be contained in {values}.'
+  ): ValidationUnit {
+    const stringValues = JSON.stringify(values);
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isIn ${stringValues}`,
+      validationFunction: val => validator.isIn(val, values),
+      failureMessage: formatValidationMessage(failureMessage, {
+        values: stringValues
+      })
+    });
+  }
+  removeIsIn(values: any[]): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isIn ${JSON.stringify(values)}`
+    });
+  }
+
   private removeCustomRule(
     criteria: BooleanValidationFunction | AsyncValidationFunction | string
   ): ValidationUnit {
