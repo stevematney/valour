@@ -2,6 +2,14 @@ import validator from 'validator';
 import { isUndefined, isNull } from 'lodash/lang';
 import formatValidationMessage from './util/format-validation-message';
 
+import IsCurrencyOptions = validator.IsCurrencyOptions;
+import IsFQDNOptions = validator.IsFQDNOptions;
+import IsFloatOptions = validator.IsFloatOptions;
+import IsIntOptions = validator.IsIntOptions;
+import IsLengthOptions = validator.IsLengthOptions;
+import MobilePhoneLocale = validator.MobilePhoneLocale;
+import IsURLOptions = validator.IsURLOptions;
+
 type DynamicObject = { [k: string]: any };
 export interface ValidationRule {
   validationFunction: (
@@ -38,7 +46,7 @@ const defaultValidationRule: BooleanValidationRule = {
 
 /* eslint-disable @typescript-eslint/camelcase */
 // copied from https://github.com/validatorjs/validator.js/blob/master/src/lib/isCurrency.js
-const defaultCurrencyOptions: validator.IsCurrencyOptions = {
+const defaultCurrencyOptions: IsCurrencyOptions = {
   symbol: '$',
   require_symbol: false,
   allow_space_after_symbol: false,
@@ -56,10 +64,22 @@ const defaultCurrencyOptions: validator.IsCurrencyOptions = {
   allow_space_after_digits: false
 };
 
-const defaultFqdnOptions: validator.IsFQDNOptions = {
+const defaultFqdnOptions: IsFQDNOptions = {
   require_tld: true,
   allow_underscores: false,
   allow_trailing_dot: false
+};
+
+// copied from https://github.com/validatorjs/validator.js/blob/master/lib/isURL.js
+const defaultUrlOptions: IsURLOptions = {
+  protocols: ['http', 'https', 'ftp'],
+  require_tld: true,
+  require_protocol: false,
+  require_host: true,
+  require_valid_protocol: true,
+  allow_underscores: false,
+  allow_trailing_dot: false,
+  allow_protocol_relative_urls: false
 };
 /* eslint-enable @typescript-eslint/camelcase */
 
@@ -501,7 +521,7 @@ export default class ValidationUnit {
   }
 
   /* eslint-disable @typescript-eslint/camelcase */
-  private getCurrencyFormat(options: validator.IsCurrencyOptions): string {
+  private getCurrencyFormat(options: IsCurrencyOptions): string {
     const symbol = options.require_symbol ? options.symbol : '';
     const symbolStart = options.symbol_after_digits ? '' : symbol;
     const symbolEnd = options.symbol_after_digits ? symbol : '';
@@ -516,7 +536,7 @@ export default class ValidationUnit {
     name: `isCurrency`
   };
   isCurrency(
-    options: validator.IsCurrencyOptions = defaultCurrencyOptions,
+    options: IsCurrencyOptions = defaultCurrencyOptions,
     failureMessage = '{name} must be in the format "{format}".'
   ): ValidationUnit {
     const computedOptions = { ...defaultCurrencyOptions, ...options };
@@ -606,7 +626,7 @@ export default class ValidationUnit {
     name: 'isFloat'
   };
   isFloat(
-    options: validator.IsFloatOptions = {},
+    options: IsFloatOptions = {},
     failureMessage = '{name} must be a float.'
   ): ValidationUnit {
     return this.setRequirement({
@@ -789,6 +809,208 @@ export default class ValidationUnit {
       ...defaultValidationRule,
       name: `isIn ${JSON.stringify(values)}`
     });
+  }
+
+  private intRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isInt'
+  };
+  isInt(
+    failureMessage = '{name} must be an integer.',
+    options?: IsIntOptions
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.intRule,
+      failureMessage,
+      validationFunction: val => validator.isInt(val, options)
+    });
+  }
+  removeIsInt(): ValidationUnit {
+    return this.remove(this.intRule);
+  }
+
+  private jsonRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isJSON',
+    validationFunction: val => validator.isJSON(val)
+  };
+  isJSON(failureMessage = '{name} must be JSON.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.jsonRule,
+      failureMessage
+    });
+  }
+  removeIsJSON(): ValidationUnit {
+    return this.remove(this.jsonRule);
+  }
+
+  isLength(
+    options: IsLengthOptions = {},
+    failureMessage = '{name} must be at least {min} characters.'
+  ): ValidationUnit {
+    const { min, max } = options;
+    const formattedMessage = formatValidationMessage(failureMessage, {
+      min,
+      max
+    });
+    return this.setRequirement({
+      ...defaultValidationRule,
+      name: `isLength ${min} ${max}`,
+      failureMessage: formattedMessage,
+      validationFunction: val => validator.isLength(val, options)
+    });
+  }
+  removeIsLength(options: IsLengthOptions): ValidationUnit {
+    return this.remove({
+      ...defaultValidationRule,
+      name: `isLength ${options.min} ${options.max}`
+    });
+  }
+
+  private lowercaseRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isLowercase',
+    validationFunction: val => validator.isLowercase(val)
+  };
+  isLowercase(failureMessage = '{name} must be lowercase.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.lowercaseRule,
+      failureMessage
+    });
+  }
+  removeIsLowercase(): ValidationUnit {
+    return this.remove(this.lowercaseRule);
+  }
+
+  private uppercaseRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isLowercase',
+    validationFunction: val => validator.isLowercase(val)
+  };
+  isUppercase(failureMessage = '{name} must be uppercase.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.uppercaseRule,
+      failureMessage
+    });
+  }
+  removeIsUppercase(): ValidationUnit {
+    return this.remove(this.uppercaseRule);
+  }
+
+  private mobilePhoneRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isMobilePhone'
+  };
+  isMobilePhone(
+    failureMessage = '{name} must be a phone number.',
+    locale: 'any' | MobilePhoneLocale | MobilePhoneLocale[] = 'en-US'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.mobilePhoneRule,
+      failureMessage,
+      validationFunction: val => validator.isMobilePhone(val, locale)
+    });
+  }
+  removeIsMobilePhone(): ValidationUnit {
+    return this.remove(this.mobilePhoneRule);
+  }
+
+  private mongoIdRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isMongoId',
+    validationFunction: val => validator.isMongoId(val)
+  };
+  isMongoId(failureMessage = '{name} must be a MongoDB id.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.mongoIdRule,
+      failureMessage
+    });
+  }
+  removeIsMongoId(): ValidationUnit {
+    return this.remove(this.mongoIdRule);
+  }
+
+  private multibyteRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isNullByte',
+    validationFunction: val => validator.isMultibyte(val)
+  };
+  isMultibyte(failureMessage = '{name} must be a null byte.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.multibyteRule,
+      failureMessage
+    });
+  }
+  removeIsMultiByte(): ValidationUnit {
+    return this.remove(this.multibyteRule);
+  }
+
+  private numericRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isNumeric',
+    validationFunction: val => validator.isNumeric(val)
+  };
+  isNumeric(failureMessage = '{name} must be numeric.'): ValidationUnit {
+    return this.setRequirement({
+      ...this.numericRule,
+      failureMessage
+    });
+  }
+  removeIsNumeric(): ValidationUnit {
+    return this.remove(this.numericRule);
+  }
+
+  private surrogatePairRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isNumeric',
+    validationFunction: val => validator.isNumeric(val)
+  };
+  isSurrogatePair(
+    failureMessage = '{name} must be a surrogate pair.'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.surrogatePairRule,
+      failureMessage
+    });
+  }
+  removeIsSurrogatePair(): ValidationUnit {
+    return this.remove(this.surrogatePairRule);
+  }
+
+  private urlRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isURL'
+  };
+  isURL(
+    failureMessage = '{name} must be a url.',
+    options: IsURLOptions = defaultUrlOptions
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.urlRule,
+      validationFunction: val => validator.isURL(val, options),
+      failureMessage: formatValidationMessage(failureMessage, options)
+    });
+  }
+  removeIsURL(): ValidationUnit {
+    return this.remove(this.urlRule);
+  }
+
+  private uuidRule: ValidationRule = {
+    ...defaultValidationRule,
+    name: 'isUUID'
+  };
+  isUUID(
+    failureMessage = '{name} must be a UUID.',
+    version: 3 | 4 | 5 | '3' | '4' | '5' | 'all' = 'all'
+  ): ValidationUnit {
+    return this.setRequirement({
+      ...this.urlRule,
+      validationFunction: val => validator.isUUID(val, version),
+      failureMessage: formatValidationMessage(failureMessage, version)
+    });
+  }
+  removeIsUUID(): ValidationUnit {
+    return this.remove(this.uuidRule);
   }
 
   private removeCustomRule(
